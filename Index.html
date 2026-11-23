@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Z Darkness</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; font-family: -apple-system, "Segoe UI", Roboto, sans-serif; color: #f3e6d0; }
+  canvas { display: block; position: fixed; inset: 0; touch-action: none; }
+  #title { position: fixed; top: 22px; left: 0; right: 0; text-align: center; letter-spacing: 0.5em; font-size: 14px; color: #ffb347; opacity: .85; pointer-events: none; text-shadow: 0 0 12px rgba(255,160,50,.6); }
+  #tip { position: fixed; padding: 6px 12px; border-radius: 10px; background: rgba(15,10,5,.85); border: 1px solid rgba(255,170,70,.5); font-size: 13px; pointer-events: none; opacity: 0; transform: translate(-50%, -140%); transition: opacity .2s; white-space: nowrap; }
+  #panel { position: fixed; left: 50%; top: 50%; width: min(86vw, 520px); max-height: 70vh; overflow: auto; transform: translate(-50%, -50%) scale(.6); opacity: 0; pointer-events: none; padding: 26px; border-radius: 18px; background: rgba(12,8,4,.88); border: 1px solid rgba(255,170,70,.55); box-shadow: 0 0 60px rgba(255,150,40,.25); backdrop-filter: blur(10px); transition: transform .45s cubic-bezier(.2,.9,.3,1.2), opacity .35s; }
+  #panel.open { transform: translate(-50%, -50%) scale(1); opacity: 1; pointer-events: auto; }
+  #panel h2 { margin: 0 0 12px; font-weight: 500; letter-spacing: .15em; color: #ffb347; }
+  #panel p { line-height: 1.55; opacity: .9; }
+  #close { position: absolute; top: 10px; right: 16px; font-size: 26px; cursor: pointer; color: #ffb347; }
+</style>
+</head>
+<body>
+<div id="title">Z DARKNESS</div>
+<div id="tip"></div>
+<div id="panel"><div id="close">×</div><h2 id="ph"></h2><div id="pb"></div></div>
+
+<script type="importmap">
+{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
+</script>
+<script type="module">
+import * as THREE from 'three';
+
+/* ---------- Разделы (названия и тексты легко поменять здесь) ---------- */
+const SECTIONS = [
+  { name: 'Описание', html: '<p>Z Darkness — наше пространство для разработки и проверки приложений, документов и идей. Свет знания во тьме.</p>' },
+  { name: 'Проекты',  html: '<p>Здесь будут наши приложения, документы и наработки.</p>' },
+  { name: 'Меню',     html: '<p>Навигация по сайту. Скоро.</p>' },
+  { name: 'Контакты', html: '<p>Контакты добавим позже.</p>' }
+];
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 400);
+camera.position.set(0, 0, 9);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+document.body.appendChild(renderer.domElement);
+
+function dotTexture() {
+  const c = document.createElement('canvas'); c.width = c.height = 64;
+  const g = c.getContext('2d');
+  const grd = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+  grd.addColorStop(0, 'rgba(255,255,255,1)'); grd.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = grd; g.fillRect(0, 0, 64, 64);
+  return new THREE.CanvasTexture(c);
+}
+const tex = dotTexture();
+
+/* ---------- Фон: бесконечный туннель из частиц ---------- */
+const N = 4500, DEPTH = 220;
+const tpos = new Float32Array(N * 3);
+for (let i = 0; i < N; i++) {
+  const a = Math.random() * Math.PI * 2, r = 6 + Math.random() * 38;
+  tpos[i*3] = Math.cos(a) * r; tpos[i*3+1] = Math.sin(a) * r * 0.7; tpos[i*3+2] = -Math.random() * DEPTH;
+}
+const tgeo = new THREE.BufferGeometry();
+tgeo.setAttribute('position', new THREE.BufferAttribute(tpos, 3));
+const tunnel = new THREE.Points(tgeo, new THREE.PointsMaterial({ size: 0.28, map: tex, color: 0x9fb4d6, transparent: true, opacity: 0.85, depthWrite: false, blending: THREE.AdditiveBlending }));
+scene.add(tunnel);
+
+/* ---------- Сфера из золотых точек ---------- */
+const group = new THREE.Group(); scene.add(group);
+const M = 9000, R = 3;
+const spos = new Float32Array(M * 3);
+for (let i = 0; i < M; i++) {
+  const u = Math.random() * 2 - 1, t = Math.random() * Math.PI * 2, s = Math.sqrt(1 - u*u);
+  spos[i*3] = R * s * Math.cos(t); spos[i*3+1] = R * u; spos[i*3+2] = R * s * Math.sin(t);
+}
+const sgeo = new THREE.BufferGeometry();
+sgeo.setAttribute('position', new THREE.BufferAttribute(spos, 3));
+group.add(new THREE.Points(sgeo, new THREE.PointsMaterial({ size: 0.07, map: tex, color: 0xffa733, transparent: true, opacity: 0.95, depthWrite: false, blending: THREE.AdditiveBlending })));
+
+/* ---------- Значки на сфере ---------- */
+const markers = [];
+const dirs = [[0.0, 0.55, 0.83], [0.85, -0.1, 0.5], [-0.8, 0.2, 0.55], [0.1, -0.7, 0.7]];
+SECTIONS.forEach((sec, i) => {
+  const v = new THREE.Vector3(...dirs[i]).normalize().multiplyScalar(R + 0.05);
+  const m = new THREE.Mesh(new THREE.SphereGeometry(0.16, 20, 20), new THREE.MeshBasicMaterial({ color: 0xfff2c8 }));
+  m.position.copy(v); m.userData = sec;
+  const halo = new THREE.Mesh(new THREE.SphereGeometry(0.3, 20, 20), new THREE.MeshBasicMaterial({ color: 0xffa733, transparent: true, opacity: 0.25, depthWrite: false }));
+  m.add(halo); group.add(m); markers.push(m);
+});
+
+/* ---------- Управление: авто-вращение, остановка при касании, ручное вращение ---------- */
+let dragging = false, moved = 0, lx = 0, ly = 0, vx = 0, vy = 0, idle = true;
+const el = renderer.domElement;
+el.addEventListener('pointerdown', e => { dragging = true; idle = false; moved = 0; lx = e.clientX; ly = e.clientY; el.setPointerCapture(e.pointerId); });
+el.addEventListener('pointermove', e => {
+  if (dragging) {
+    const dx = e.clientX - lx, dy = e.clientY - ly; lx = e.clientX; ly = e.clientY; moved += Math.abs(dx) + Math.abs(dy);
+    group.rotation.y += dx * 0.006; group.rotation.x += dy * 0.006;
+  }
+  hover(e);
+});
+el.addEventListener('pointerup', e => {
+  dragging = false;
+  if (moved < 6) pick(e);
+  setTimeout(() => { if (!dragging) idle = true; }, 1500);
+});
+
+const ray = new THREE.Raycaster(), mouse = new THREE.Vector2(), tip = document.getElementById('tip');
+function setMouse(e) { mouse.x = (e.clientX / innerWidth) * 2 - 1; mouse.y = -(e.clientY / innerHeight) * 2 + 1; ray.setFromCamera(mouse, camera); }
+function hit(e) { setMouse(e); const h = ray.intersectObjects(markers, false); return h.length ? h[0].object : null; }
+function hover(e) {
+  const m = hit(e);
+  if (m) { tip.textContent = m.userData.name; tip.style.left = e.clientX + 'px'; tip.style.top = e.clientY + 'px'; tip.style.opacity = 1; el.style.cursor = 'pointer'; }
+  else { tip.style.opacity = 0; el.style.cursor = 'grab'; }
+}
+
+const panel = document.getElementById('panel');
+function pick(e) {
+  const m = hit(e); if (!m) return;
+  document.getElementById('ph').textContent = m.userData.name;
+  document.getElementById('pb').innerHTML = m.userData.html;
+  panel.classList.add('open');
+  tip.style.opacity = 0;
+}
+document.getElementById('close').onclick = () => panel.classList.remove('open');
+
+/* ---------- Анимация ---------- */
+const clock = new THREE.Clock();
+function loop() {
+  const dt = clock.getDelta();
+  const p = tunnel.geometry.attributes.position;
+  for (let i = 0; i < N; i++) { let z = p.getZ(i) + dt * 14; if (z > 10) z -= DEPTH; p.setZ(i, z); }
+  p.needsUpdate = true;
+  if (idle) group.rotation.y += dt * 0.12;
+  renderer.render(scene, camera);
+  requestAnimationFrame(loop);
+}
+loop();
+
+addEventListener('resize', () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); });
+</script>
+</body>
+</html>
