@@ -15,27 +15,146 @@
   #panel p { line-height: 1.6; opacity: .9; }
   #close { position: absolute; top: 10px; right: 18px; font-size: 28px; cursor: pointer; color: #ff4d4d; }
   #err { position: fixed; left: 16px; right: 16px; bottom: 16px; padding: 12px 14px; border-radius: 12px; background: rgba(60,10,10,.9); border: 1px solid rgba(255,100,90,.6); color: #ffe6e0; font-size: 13px; display: none; z-index: 10; word-break: break-all; }
+
+  /* ---------- provisioning form inside the panel ---------- */
+  #panel form { margin: 0; }
+  #panel label { display: block; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: #b08d86; margin: 18px 0 7px; }
+  #panel label span { letter-spacing: normal; text-transform: none; opacity: .6; }
+  #panel input[type=text] {
+    width: 100%; box-sizing: border-box; padding: 11px 13px; font-size: 15px; color: #f3e6d0;
+    background: rgba(255,62,62,.06); border: 1px solid rgba(255,62,62,.35); border-radius: 11px;
+    outline: none; font-family: inherit; transition: border-color .2s, box-shadow .2s;
+  }
+  #panel input[type=text]:focus { border-color: #ff4d4d; box-shadow: 0 0 0 3px rgba(255,62,62,.15); }
+  #pv-go {
+    width: 100%; margin-top: 20px; padding: 12px 16px; font-size: 14px; font-weight: 600; letter-spacing: .12em;
+    color: #fff2ee; background: linear-gradient(180deg, #d81f2a, #8d0f16); border: 1px solid rgba(255,90,90,.55);
+    border-radius: 11px; cursor: pointer; font-family: inherit; text-transform: uppercase;
+    box-shadow: 0 8px 26px rgba(216,31,42,.35); transition: filter .2s, transform .15s;
+  }
+  #pv-go:hover:not(:disabled) { filter: brightness(1.12); }
+  #pv-go:active:not(:disabled) { transform: translateY(1px); }
+  #pv-go:disabled { opacity: .55; cursor: progress; }
+  .pv-msg { margin-top: 14px; font-size: 12.5px; line-height: 1.5; border-radius: 10px; padding: 0; transition: all .2s; }
+  .pv-msg.on { padding: 10px 12px; border: 1px solid rgba(255,120,100,.5); background: rgba(80,12,12,.6); color: #ffd9d2; }
+  .pv-out { margin-top: 20px; border: 1px solid rgba(255,62,62,.28); border-radius: 14px; overflow: hidden; }
+  .pv-out[hidden] { display: none; }
+  .pv-row { display: flex; align-items: center; gap: 10px; padding: 11px 13px; border-top: 1px solid rgba(255,62,62,.16); }
+  .pv-row:first-child { border-top: 0; }
+  .pv-k { flex: 0 0 104px; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: #a9827c; }
+  .pv-v { flex: 1; font-size: 14px; word-break: break-all; }
+  .pv-v.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: #ffe9b0; letter-spacing: .04em; }
+  .pv-copy { border: 1px solid rgba(255,62,62,.4); background: transparent; color: #ff8a8a; border-radius: 8px;
+             padding: 4px 9px; font-size: 11px; cursor: pointer; font-family: inherit; letter-spacing: .06em; }
+  .pv-copy:hover { background: rgba(255,62,62,.15); color: #ffc9c9; }
+
+  /* ---------- fixed corner buttons ---------- */
+  #audioBtn, #accessBtn {
+    position: fixed; bottom: 22px; z-index: 6; display: flex; align-items: center; gap: 9px;
+    padding: 11px 16px; border-radius: 14px; cursor: pointer; font-family: inherit; font-size: 12px;
+    letter-spacing: .14em; text-transform: uppercase; color: #ffb3ae;
+    background: rgba(14,5,5,.72); border: 1px solid rgba(255,62,62,.4);
+    backdrop-filter: blur(10px); transition: color .2s, border-color .2s, box-shadow .25s, transform .15s;
+  }
+  #audioBtn:hover, #accessBtn:hover { color: #fff0ee; border-color: rgba(255,90,90,.85); box-shadow: 0 0 26px rgba(255,50,50,.35); }
+  #audioBtn:active, #accessBtn:active { transform: translateY(1px); }
+  #audioBtn { right: 22px; }
+  #accessBtn { left: 22px; }
+  #audioBtn .ico, #accessBtn .ico { font-size: 15px; line-height: 1; }
+  #audioBtn.muted { color: #8d6f6b; border-color: rgba(120,60,60,.5); box-shadow: none; }
+  #audioBtn.muted .ico { opacity: .55; }
+  /* animated equaliser while playing */
+  #audioBtn .bars { display: flex; align-items: flex-end; gap: 2px; height: 12px; }
+  #audioBtn .bars i { width: 2px; background: currentColor; animation: eq 1s ease-in-out infinite; }
+  #audioBtn .bars i:nth-child(1) { height: 40%; animation-delay: -.2s; }
+  #audioBtn .bars i:nth-child(2) { height: 90%; animation-delay: -.5s; }
+  #audioBtn .bars i:nth-child(3) { height: 60%; animation-delay: -.8s; }
+  #audioBtn.muted .bars i { animation-play-state: paused; height: 25%; }
+  @keyframes eq { 0%,100% { transform: scaleY(.4); } 50% { transform: scaleY(1); } }
+
+  @media (max-width: 520px) {
+    #audioBtn, #accessBtn { padding: 10px 13px; font-size: 10.5px; }
+    #audioBtn { right: 14px; bottom: 16px; }
+    #accessBtn { left: 14px; bottom: 16px; }
+    #panel { padding: 22px; max-height: 78vh; }
+    .pv-k { flex-basis: 86px; }
+  }
 </style>
 </head>
-<audio id="bg-music"src="PONTE SALVAJE (Slowed).mp3" loop preload="auto"></audio>
-<script>
-  (() => {
-    const audio = document.getElementById('bg-music');
-    if (!audio) return;
-    const playAudio = () => {
-      audio.play().catch(() => {});
-      window.removeEventListener('pointerdown', playAudio);
-      window.removeEventListener('keydown', playAudio);
-    };
-    window.addEventListener('pointerdown', playAudio, { once: true });
-    window.addEventListener('keydown', playAudio, { once: true });
-  })();
-</script>
+<body>
+<audio id="bg-music" src="PONTE SALVAJE (Slowed).mp3" loop preload="auto"></audio>
 
 <div id="title">ZT DARKNESS</div>
 <div id="tip"></div>
 <div id="panel"><div id="close">×</div><h2 id="ph"></h2><div id="pb"></div></div>
 <div id="err"></div>
+
+<button id="accessBtn" type="button" title="Открыть панель доступа">
+  <span class="ico">＋</span> Доступ
+</button>
+<button id="audioBtn" type="button" aria-pressed="false" title="Mute / unmute (M)">
+  <span class="ico">🔊</span>
+  <span class="bars"><i></i><i></i><i></i></span>
+  <span id="audioLabel">Sound</span>
+</button>
+
+<script>
+/* ============================================================
+   1. BACKGROUND MUSIC + MUTE TOGGLE
+   ============================================================ */
+(() => {
+  const audio = document.getElementById('bg-music');
+  const btn   = document.getElementById('audioBtn');
+  const label = document.getElementById('audioLabel');
+
+  // remember the choice between visits
+  let muted = false;
+  try { muted = localStorage.getItem('zt-muted') === '1'; } catch {}
+
+  function paint() {
+    audio.muted = muted;
+    btn.classList.toggle('muted', muted);
+    btn.setAttribute('aria-pressed', String(muted));
+    btn.querySelector('.ico').textContent = muted ? '🔇' : '🔊';
+    label.textContent = muted ? 'Muted' : 'Sound';
+  }
+
+  function toggle() {
+    muted = !muted;
+    paint();
+    try { localStorage.setItem('zt-muted', muted ? '1' : '0'); } catch {}
+    // if the user unmutes before any gesture happened, start playback now
+    if (!muted && audio.paused) audio.play().catch(() => {});
+  }
+
+  btn.addEventListener('click', (e) => { e.stopPropagation(); toggle(); });
+
+  // M key, but not while typing in the provisioning form
+  window.addEventListener('keydown', (e) => {
+    if (e.key.toLowerCase() !== 'm') return;
+    const t = e.target;
+    if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+    toggle();
+  });
+
+  // autoplay is blocked until a gesture — same approach as before
+  const unlock = () => {
+    paint();
+    if (!muted) audio.play().catch(() => {});
+    window.removeEventListener('pointerdown', unlock);
+    window.removeEventListener('keydown', unlock);
+  };
+  window.addEventListener('pointerdown', unlock, { once: true });
+  window.addEventListener('keydown', unlock, { once: true });
+
+  paint();
+
+  // if the mp3 is missing the toggle still works, just say so on hover
+  audio.addEventListener('error', () => {
+    btn.title = 'Файл "PONTE SALVAJE (Slowed).mp3" не найден рядом с html';
+  });
+})();
+</script>
 
 <script type="importmap">
 {
@@ -45,14 +164,183 @@
 }
 </script>
 <script type="module">
+/* ============================================================
+   2. MAKE SCENARIO INTEGRATION
+   ------------------------------------------------------------
+   Paste your Make custom webhook URL below.
+   The blueprint returns:
+     { status, employee_name, username, password, password_strength,
+       email_service, email_address, email_login_url, notes, generated_at }
+   ============================================================ */
+const WEBHOOK_URL = 'https://hook.eu1.make.com/REPLACE_WITH_YOUR_HOOK_ID';
+
 const errBox = document.getElementById('err');
 function showErr(msg) {
-  errBox.textContent = 'Ошибка загрузки: ' + msg;
+  errBox.textContent = 'Ошибка: ' + msg;
   errBox.style.display = 'block';
   console.error(msg);
 }
 window.addEventListener('error', e => showErr(e.message || e.type));
 window.addEventListener('unhandledrejection', e => showErr(e.reason?.message || e.reason || 'неизвестно'));
+
+/* ---------------- provisioning UI (works with or without 3D) ---------------- */
+const ACCESS_INDEX = 4;   // 5th marker on the sphere
+const isMobile = matchMedia('(pointer: coarse)').matches;
+const panel = document.getElementById('panel');
+
+/* One source of truth for the sphere markers. Declared BEFORE three.js loads so
+   the panel still works when the CDN is unreachable (sandboxed preview, offline). */
+const SECTIONS = [
+  { name: 'Описание', dir: [0.0, 0.62, 0.78],  html: '<p>ZT Darkness — чистая энергия и динамика.</p>' },
+  { name: 'Проекты',  dir: [0.85, -0.1, 0.52],  html: '<p>Архив активных структур.</p>' },
+  { name: 'Меню',     dir: [-0.82, 0.2, 0.54],  html: '<p>Системная навигация.</p>' },
+  { name: 'Контакты', dir: [0.1, -0.72, 0.69], html: '<p>Точки взаимодействия.</p>' },
+  { name: 'Доступ',   dir: [-0.45, 0.62, 0.64], html: accessMarkup(), isForm: true }
+];
+
+/* the 3D scene plugs into these; no-ops until it exists */
+const sceneHooks = { onOpen() {}, onClose() {} };
+
+function openPanel(i) {
+  const sec = SECTIONS[i] || SECTIONS[ACCESS_INDEX];
+  document.getElementById('ph').textContent = sec.name;
+  document.getElementById('pb').innerHTML = sec.html;
+  panel.classList.add('open');
+  sceneHooks.onOpen(sec);
+  if (sec.isForm && !isMobile) {
+    setTimeout(() => document.getElementById('pv-name')?.focus(), 350);
+  }
+}
+
+function closePanel() {
+  panel.classList.remove('open');
+  sceneHooks.onClose();
+}
+
+document.getElementById('close').addEventListener('click', closePanel);
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePanel(); });
+
+function accessMarkup() {
+  return `
+    <form id="pv-form" novalidate>
+      <p style="margin:0 0 4px;opacity:.75">Создать логин, пароль и почтовый ящик для нового сотрудника.</p>
+      <label for="pv-name">Имя сотрудника</label>
+      <input id="pv-name" name="employee_name" type="text" placeholder="Jane Doe" autocomplete="off">
+      <label for="pv-title">Должность <span>(необязательно)</span></label>
+      <input id="pv-title" name="job_title" type="text" placeholder="Backend Engineer" autocomplete="off">
+      <button type="submit" id="pv-go">Сгенерировать доступ</button>
+      <div class="pv-msg" id="pv-msg"></div>
+      <div class="pv-out" id="pv-out" hidden></div>
+    </form>`;
+}
+
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c =>
+  ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+function row(k, v, mono, copyable) {
+  if (!v) return '';
+  return `<div class="pv-row">
+    <span class="pv-k">${esc(k)}</span>
+    <span class="pv-v${mono ? ' mono' : ''}" data-v="${esc(v)}">${esc(v)}</span>
+    ${copyable ? `<button type="button" class="pv-copy" data-copy>Copy</button>` : ''}
+  </div>`;
+}
+
+function renderCreds(d) {
+  const out = document.getElementById('pv-out');
+  const msg = document.getElementById('pv-msg');
+  msg.className = 'pv-msg';
+  msg.textContent = '';
+
+  out.innerHTML =
+    row('Username', d.username, true, true) +
+    row('Password', d.password, true, true) +
+    row('Mail service', d.email_service, false, false) +
+    row('Mailbox', d.email_address, false, true) +
+    row('Password', d.password_strength, false, false) +
+    row('Handover', d.notes, false, false) +
+    row('Created', d.generated_at, false, false);
+  out.hidden = false;
+
+  if (d.ai_used === false || d.ai_used === 'false') {
+    msg.className = 'pv-msg on';
+    msg.textContent = 'Gemini недоступен (квота) — сервис почты назначен по умолчанию: ' +
+      (d.email_service || 'Google Workspace') + '.';
+  }
+}
+
+async function submitProvision(form) {
+  const go = document.getElementById('pv-go');
+  const msg = document.getElementById('pv-msg');
+  const out = document.getElementById('pv-out');
+  const name = form.querySelector('#pv-name').value.trim();
+  const title = form.querySelector('#pv-title').value.trim();
+
+  msg.className = 'pv-msg';
+  msg.textContent = '';
+  out.hidden = true;
+
+  if (!name) {
+    msg.className = 'pv-msg on';
+    msg.textContent = 'Введите имя сотрудника.';
+    form.querySelector('#pv-name').focus();
+    return;
+  }
+
+  go.disabled = true;
+  go.textContent = 'Генерирую…';
+  try {
+    // text/plain: a JSON content-type would trigger a CORS preflight that
+    // Make webhooks do not answer. Make still parses the JSON body.
+    const res = await fetch(WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+      body: JSON.stringify({ employee_name: name, job_title: title })
+    });
+    if (!res.ok) throw new Error('Make ответил HTTP ' + res.status);
+    const data = await res.json();
+    if (data.status && data.status !== 'ok') throw new Error('Сценарий вернул: ' + data.status);
+    renderCreds(data);
+  } catch (e) {
+    msg.className = 'pv-msg on';
+    msg.textContent = e.message === 'Failed to fetch'
+      ? 'Не удалось связаться с Make. Проверьте WEBHOOK_URL в коде и что сценарий включён (toggle ON).'
+      : e.message;
+  } finally {
+    go.disabled = false;
+    go.textContent = 'Сгенерировать доступ';
+  }
+}
+
+/* ---------------- panel plumbing ---------------- */
+panel.addEventListener('submit', (e) => {
+  if (e.target.id !== 'pv-form') return;
+  e.preventDefault();
+  submitProvision(e.target);
+});
+
+panel.addEventListener('click', async (e) => {
+  const copy = e.target.closest('.pv-copy');
+  if (!copy) return;
+  const val = copy.closest('.pv-row').querySelector('.pv-v').dataset.v;
+  try {
+    await navigator.clipboard.writeText(val);
+    copy.textContent = 'OK';
+    setTimeout(() => (copy.textContent = 'Copy'), 1200);
+  } catch {
+    copy.textContent = '—';
+  }
+});
+
+/* fallback entry point: works even when WebGL/three.js never loads */
+document.getElementById('accessBtn').addEventListener('click', (e) => {
+  e.stopPropagation();
+  openPanel(ACCESS_INDEX);
+});
+/* Used only when three.js can't be loaded: page stays usable. */
+function initNoWebGL() {
+  document.getElementById('accessBtn').style.display = 'flex';
+}
 
 let THREE;
 try {
@@ -61,19 +349,21 @@ try {
   try {
     THREE = await import('https://esm.sh/three@0.160.0');
   } catch (e2) {
-    showErr('Не удалось загрузить 3D библиотеку.');
-    throw new Error('Three.js failed to load');
+    // No network (sandboxed preview): keep the page usable, 3D stays off.
+    THREE = null;
+    showErr('3D-сцена требует интернета (three.js с CDN). Панель «Доступ», форма и звук работают — откройте файл в браузере обычным способом.');
+    initNoWebGL();
   }
 }
 
-const SECTIONS = [
-  { name: 'Описание', dir: [0.0, 0.62, 0.78],  html: '<p>ZT Darkness — чистая энергия и динамика.</p>' },
-  { name: 'Проекты',  dir: [0.85, -0.1, 0.52],  html: '<p>Архив активных структур.</p>' },
-  { name: 'Меню',     dir: [-0.82, 0.2, 0.54],  html: '<p>Системная навигация.</p>' },
-  { name: 'Контакты', dir: [0.1, -0.72, 0.69], html: '<p>Точки взаимодействия.</p>' }
-];
 
-const isMobile = matchMedia('(pointer: coarse)').matches;
+/* ============================================================
+   3. SCENE — only when three.js actually loaded
+   ============================================================ */
+if (THREE) {
+/* ============================================================
+   3. SCENE (unchanged, + one extra marker for "Доступ")
+   ============================================================ */
 const scene = new THREE.Scene();
 scene.fog = new THREE.FogExp2(0x020103, 0.01);
 const camera = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.1, 600);
@@ -157,12 +447,12 @@ sg.setAttribute('position', new THREE.BufferAttribute(sp, 3));
 sg.setAttribute('aRnd', new THREE.BufferAttribute(sr, 1));
 sg.setAttribute('aSize', new THREE.BufferAttribute(sz, 1));
 
-const MAXM = 4;
+const MAXM = SECTIONS.length;           // was 4 — now 5, driven by SECTIONS
 const sUniforms = {
   ...uniforms,
   uR: { value: R },
   uMarks: { value: SECTIONS.map(s => new THREE.Vector3(...s.dir).normalize()) },
-  uMarkAmt: { value: [0, 0, 0, 0] }
+  uMarkAmt: { value: new Array(MAXM).fill(0) }
 };
 
 const sphereMat = new THREE.ShaderMaterial({
@@ -204,8 +494,8 @@ const sphereMat = new THREE.ShaderMaterial({
 });
 
 const sphere = new THREE.Points(sg, sphereMat);
-const group = new THREE.Group(); 
-group.add(sphere); 
+const group = new THREE.Group();
+group.add(sphere);
 scene.add(group);
 
 const el = renderer.domElement;
@@ -213,18 +503,17 @@ let dragging = false, moved = 0, lx = 0, ly = 0, idle = true, idleTimer = 0;
 let vyaw = 0, vpitch = 0;
 let reach = 0, reachTarget = 0;
 const ray = new THREE.Raycaster(), mouse = new THREE.Vector2(), tip = document.getElementById('tip');
-const markAmt = [0, 0, 0, 0], markTarget = [0, 0, 0, 0];
+const markAmt = new Array(MAXM).fill(0), markTarget = new Array(MAXM).fill(0);
 let activeMark = -1;
-const panel = document.getElementById('panel');
 
-function toNDC(e) { 
-  mouse.x = (e.clientX / innerWidth) * 2 - 1; 
-  mouse.y = -(e.clientY / innerHeight) * 2 + 1; 
+function toNDC(e) {
+  mouse.x = (e.clientX / innerWidth) * 2 - 1;
+  mouse.y = -(e.clientY / innerHeight) * 2 + 1;
 }
 const hitSphere = new THREE.Sphere(new THREE.Vector3(), R);
 
 function pickPoint(e) {
-  toNDC(e); 
+  toNDC(e);
   ray.setFromCamera(mouse, camera);
   const pt = new THREE.Vector3();
   if (ray.ray.intersectSphere(hitSphere, pt)) {
@@ -236,9 +525,9 @@ function pickPoint(e) {
 
 function nearestMark(local) {
   let best = -1, bd = 0.35;
-  SECTIONS.forEach((s, i) => { 
-    const d = local.distanceTo(new THREE.Vector3(...s.dir).normalize()); 
-    if (d < bd) { bd = d; best = i; } 
+  SECTIONS.forEach((s, i) => {
+    const d = local.distanceTo(new THREE.Vector3(...s.dir).normalize());
+    if (d < bd) { bd = d; best = i; }
   });
   return best;
 }
@@ -250,15 +539,15 @@ function onHover(e) {
     const m = nearestMark(local);
     activeMark = m;
     for (let i = 0; i < MAXM; i++) markTarget[i] = (i === m) ? 1 : 0;
-    if (m >= 0) { 
-      tip.textContent = SECTIONS[m].name; 
-      tip.style.left = e.clientX + 'px'; 
-      tip.style.top = e.clientY + 'px'; 
-      tip.style.opacity = 1; 
-      el.style.cursor = 'pointer'; 
-    } else { 
-      tip.style.opacity = 0; 
-      el.style.cursor = 'grab'; 
+    if (m >= 0) {
+      tip.textContent = SECTIONS[m].name;
+      tip.style.left = e.clientX + 'px';
+      tip.style.top = e.clientY + 'px';
+      tip.style.opacity = 1;
+      el.style.cursor = 'pointer';
+    } else {
+      tip.style.opacity = 0;
+      el.style.cursor = 'grab';
     }
   } else {
     reachTarget = dragging ? 1 : 0; activeMark = -1;
@@ -274,8 +563,8 @@ el.addEventListener('pointerdown', e => {
 
 el.addEventListener('pointermove', e => {
   if (dragging) {
-    const dx = e.clientX - lx, dy = e.clientY - ly; 
-    lx = e.clientX; ly = e.clientY; 
+    const dx = e.clientX - lx, dy = e.clientY - ly;
+    lx = e.clientX; ly = e.clientY;
     moved += Math.abs(dx) + Math.abs(dy);
     vyaw = dx * 0.0035; vpitch = dy * 0.0035;
   }
@@ -286,30 +575,24 @@ el.addEventListener('pointerup', e => {
   dragging = false;
   if (moved < 8 && activeMark >= 0) openPanel(activeMark);
   idleTimer = setTimeout(() => { idle = true; }, 1800);
-  if (isMobile) { 
-    reachTarget = panel.classList.contains('open') ? 1 : 0; 
-    for (let i = 0; i < MAXM; i++) markTarget[i] = 0; 
-    tip.style.opacity = 0; 
+  if (isMobile) {
+    reachTarget = panel.classList.contains('open') ? 1 : 0;
+    for (let i = 0; i < MAXM; i++) markTarget[i] = 0;
+    tip.style.opacity = 0;
   }
 });
 
-el.addEventListener('pointerleave', () => { 
-  if (!dragging) { 
-    reachTarget = 0; 
-    for (let i = 0; i < MAXM; i++) markTarget[i] = 0; 
-    tip.style.opacity = 0; 
-  } 
+el.addEventListener('pointerleave', () => {
+  if (!dragging) {
+    reachTarget = 0;
+    for (let i = 0; i < MAXM; i++) markTarget[i] = 0;
+    tip.style.opacity = 0;
+  }
 });
 
-function openPanel(i) {
-  document.getElementById('ph').textContent = SECTIONS[i].name;
-  document.getElementById('pb').innerHTML = SECTIONS[i].html;
-  panel.classList.add('open'); tip.style.opacity = 0; reachTarget = 1;
-}
-
-document.getElementById('close').onclick = () => { 
-  panel.classList.remove('open'); reachTarget = 0; 
-};
+/* connect the hoisted panel logic to the 3D state */
+sceneHooks.onOpen = () => { tip.style.opacity = 0; reachTarget = 1; };
+sceneHooks.onClose = () => { reachTarget = 0; };
 
 const lerp = (a, b, t) => a + (b - a) * t;
 
@@ -329,9 +612,9 @@ function loop() {
   camera.position.z = zCam;
 
   const arr = sUniforms.uMarkAmt.value;
-  for (let i = 0; i < MAXM; i++) { 
-    markAmt[i] = lerp(markAmt[i], markTarget[i], 1 - Math.pow(0.0008, dt)); 
-    arr[i] = markAmt[i]; 
+  for (let i = 0; i < MAXM; i++) {
+    markAmt[i] = lerp(markAmt[i], markTarget[i], 1 - Math.pow(0.0008, dt));
+    arr[i] = markAmt[i];
   }
 
   camera.position.x = lerp(camera.position.x, mouse.x * 0.2, 0.03);
@@ -345,11 +628,12 @@ function loop() {
 loop();
 
 addEventListener('resize', () => {
-  camera.aspect = innerWidth / innerHeight; 
+  camera.aspect = innerWidth / innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(innerWidth, innerHeight);
   uniforms.uPix.value = renderer.getPixelRatio();
 });
+}
 </script>
 </body>
 </html>
