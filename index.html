@@ -7,27 +7,22 @@
 <style>
   html, body { margin: 0; height: 100%; background: #000; overflow: hidden; font-family: -apple-system, "Segoe UI", Roboto, sans-serif; color: #f3e6d0; }
   canvas { display: block; position: fixed; inset: 0; touch-action: none; }
-  #title { position: fixed; top: 22px; left: 0; right: 0; text-align: center; letter-spacing: 0.55em; font-size: 13px; color: #ffb347; opacity: .8; pointer-events: none; text-shadow: 0 0 14px rgba(255,160,50,.7); }
-  #tip { position: fixed; padding: 6px 14px; border-radius: 12px; background: rgba(15,10,5,.8); border: 1px solid rgba(255,170,70,.45); font-size: 13px; letter-spacing: .08em; pointer-events: none; opacity: 0; transform: translate(-50%, -160%); transition: opacity .25s; white-space: nowrap; backdrop-filter: blur(6px); }
-  #panel { position: fixed; left: 50%; top: 50%; width: min(86vw, 520px); max-height: 70vh; overflow: auto; transform: translate(-50%, -50%) scale(.5); opacity: 0; pointer-events: none; padding: 28px; border-radius: 20px; background: rgba(10,6,3,.82); border: 1px solid rgba(255,170,70,.5); box-shadow: 0 0 80px rgba(255,150,40,.22); backdrop-filter: blur(14px); transition: transform .6s cubic-bezier(.2,.9,.25,1.15), opacity .45s; }
+  #title { position: fixed; top: 22px; left: 0; right: 0; text-align: center; letter-spacing: 0.55em; font-size: 13px; color: #ffb347; opacity: .8; pointer-events: none; text-shadow: 0 0 14px rgba(255,160,50,.7); z-index: 2; }
+  #tip { position: fixed; padding: 6px 14px; border-radius: 12px; background: rgba(15,10,5,.8); border: 1px solid rgba(255,170,70,.45); font-size: 13px; letter-spacing: .08em; pointer-events: none; opacity: 0; transform: translate(-50%, -160%); transition: opacity .25s; white-space: nowrap; backdrop-filter: blur(6px); z-index: 3; }
+  #panel { position: fixed; left: 50%; top: 50%; width: min(86vw, 520px); max-height: 70vh; overflow: auto; transform: translate(-50%, -50%) scale(.5); opacity: 0; pointer-events: none; padding: 28px; border-radius: 20px; background: rgba(10,6,3,.82); border: 1px solid rgba(255,170,70,.5); box-shadow: 0 0 80px rgba(255,150,40,.22); backdrop-filter: blur(14px); transition: transform .6s cubic-bezier(.2,.9,.25,1.15), opacity .45s; z-index: 4; }
   #panel.open { transform: translate(-50%, -50%) scale(1); opacity: 1; pointer-events: auto; }
   #panel h2 { margin: 0 0 12px; font-weight: 500; letter-spacing: .18em; color: #ffb347; }
   #panel p { line-height: 1.6; opacity: .9; }
   #close { position: absolute; top: 10px; right: 18px; font-size: 28px; cursor: pointer; color: #ffb347; }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
 <div id="title">Z DARKNESS</div>
 <div id="tip"></div>
 <div id="panel"><div id="close">×</div><h2 id="ph"></h2><div id="pb"></div></div>
 
-<script type="importmap">
-{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
-</script>
-<script type="module">
-import * as THREE from 'three';
-
-/* ====== Разделы: названия и тексты меняются здесь ====== */
+<script>
 const SECTIONS = [
   { name: 'Описание', dir: [0.0, 0.62, 0.78],  html: '<p>Z Darkness — наше пространство для разработки и проверки приложений, документов и идей. Свет знания во тьме.</p>' },
   { name: 'Проекты',  dir: [0.85, -0.1, 0.52],  html: '<p>Здесь будут наши приложения, документы и наработки.</p>' },
@@ -38,18 +33,18 @@ const SECTIONS = [
 const isMobile = matchMedia('(pointer: coarse)').matches;
 const scene = new THREE.Scene();
 scene.fog = new THREE.FogExp2(0x000000, 0.012);
-const camera = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.1, 600);
+const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 600);
 const CAM_FAR = 17, CAM_NEAR = 11;
 camera.position.set(0, 0, CAM_FAR);
-const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
-renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-renderer.setSize(innerWidth, innerHeight);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
 const clock = new THREE.Clock();
 const uniforms = { uTime: { value: 0 }, uPix: { value: renderer.getPixelRatio() } };
 
-/* ====== Фон: бесконечный коридор из частиц с полосками скорости и отражением горизонта ====== */
 const TN = isMobile ? 14000 : 30000, DEPTH = 420;
 const tg = new THREE.BufferGeometry();
 const tp = new Float32Array(TN * 3), ts = new Float32Array(TN), tr = new Float32Array(TN);
@@ -65,6 +60,7 @@ for (let i = 0; i < TN; i++) {
 tg.setAttribute('position', new THREE.BufferAttribute(tp, 3));
 tg.setAttribute('aSize', new THREE.BufferAttribute(ts, 1));
 tg.setAttribute('aRnd', new THREE.BufferAttribute(tr, 1));
+
 const tunnelMat = new THREE.ShaderMaterial({
   uniforms: { ...uniforms, uDepth: { value: DEPTH }, uSpeed: { value: 26 } },
   transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
@@ -101,7 +97,6 @@ const tunnelMat = new THREE.ShaderMaterial({
 });
 scene.add(new THREE.Points(tg, tunnelMat));
 
-/* Горизонт — мягкое свечение в центре туннеля */
 const glow = new THREE.Mesh(
   new THREE.PlaneGeometry(260, 70),
   new THREE.ShaderMaterial({
@@ -120,7 +115,6 @@ const glow = new THREE.Mesh(
 glow.position.set(0, 0, -150);
 scene.add(glow);
 
-/* ====== Сфера: тысячи лучиков-волосков, пульсация, притяжение к курсору, бугорки-значки ====== */
 const R = 3.2;
 const SN = isMobile ? 26000 : 60000;
 const sg = new THREE.BufferGeometry();
@@ -144,6 +138,7 @@ const sUniforms = {
   uMarks: { value: SECTIONS.map(s => new THREE.Vector3(...s.dir).normalize()) },
   uMarkAmt: { value: [0, 0, 0, 0] }
 };
+
 const sphereMat = new THREE.ShaderMaterial({
   uniforms: sUniforms, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
   vertexShader: `
@@ -156,13 +151,10 @@ const sphereMat = new THREE.ShaderMaterial({
       float pulse = sin(uTime * 1.6 + aRnd * 6.2831 * 3.0);
       float len = uR * (1.0 + 0.012 * pulse + 0.01 * sin(uTime * 0.7 + n.x * 5.0 + n.y * 4.0));
       float bump = 0.0;
-      // бугорок под курсором: волоски тянутся к нему
       float hd = distance(n, uHover);
       float hk = exp(-hd * hd * 26.0) * uHoverAmt;
       bump += hk * 0.55;
-      vec3 dirn = n;
-      dirn = normalize(mix(n, uHover, hk * 0.22));
-      // значки: еле заметные бугорки и сгустки света
+      vec3 dirn = normalize(mix(n, uHover, hk * 0.22));
       float mk = 0.0;
       for (int i = 0; i < ${MAXM}; i++) {
         float md = distance(n, uMarks[i]);
@@ -177,7 +169,6 @@ const sphereMat = new THREE.ShaderMaterial({
       float sizeBoost = 1.0 + hk * 1.4 + mk * 1.8;
       gl_PointSize = aSize * sizeBoost * uPix * (62.0 / d) * (1.0 + 0.18 * pulse);
       vGlow = clamp(hk * 0.9 + mk * 0.9, 0.0, 1.6);
-      // подсветка края сферы
       float rim = pow(1.0 - abs(normalize(mat3(modelViewMatrix) * n).z), 1.6);
       vA = 0.38 + 0.5 * rim + 0.15 * pulse;
     }`,
@@ -193,10 +184,12 @@ const sphereMat = new THREE.ShaderMaterial({
       gl_FragColor = vec4(col, core * (vA + vGlow * 0.6));
     }`
 });
-const sphere = new THREE.Points(sg, sphereMat);
-const group = new THREE.Group(); group.add(sphere); scene.add(group);
 
-/* Тонкое золотое гало вокруг сферы */
+const sphere = new THREE.Points(sg, sphereMat);
+const group = new THREE.Group(); 
+group.add(sphere); 
+scene.add(group);
+
 const halo = new THREE.Mesh(
   new THREE.PlaneGeometry(R * 3.4, R * 3.4),
   new THREE.ShaderMaterial({
@@ -215,7 +208,6 @@ const halo = new THREE.Mesh(
 halo.position.z = -0.5;
 scene.add(halo);
 
-/* ====== Управление ====== */
 const el = renderer.domElement;
 let dragging = false, moved = 0, lx = 0, ly = 0, idle = true, idleTimer = 0;
 let vyaw = 0, vpitch = 0;
@@ -226,10 +218,15 @@ const markAmt = [0, 0, 0, 0], markTarget = [0, 0, 0, 0];
 let hoverAmtTarget = 0, activeMark = -1;
 const panel = document.getElementById('panel');
 
-function toNDC(e) { mouse.x = (e.clientX / innerWidth) * 2 - 1; mouse.y = -(e.clientY / innerHeight) * 2 + 1; }
+function toNDC(e) { 
+  mouse.x = (e.clientX / window.innerWidth) * 2 - 1; 
+  mouse.y = -(e.clientY / window.innerHeight) * 2 + 1; 
+}
 const hitSphere = new THREE.Sphere(new THREE.Vector3(), R);
+
 function pickPoint(e) {
-  toNDC(e); ray.setFromCamera(mouse, camera);
+  toNDC(e); 
+  ray.setFromCamera(mouse, camera);
   const pt = new THREE.Vector3();
   if (ray.ray.intersectSphere(hitSphere, pt)) {
     group.updateMatrixWorld();
@@ -237,11 +234,16 @@ function pickPoint(e) {
   }
   return null;
 }
+
 function nearestMark(local) {
   let best = -1, bd = 0.32;
-  SECTIONS.forEach((s, i) => { const d = local.distanceTo(new THREE.Vector3(...s.dir).normalize()); if (d < bd) { bd = d; best = i; } });
+  SECTIONS.forEach((s, i) => { 
+    const d = local.distanceTo(new THREE.Vector3(...s.dir).normalize()); 
+    if (d < bd) { bd = d; best = i; } 
+  });
   return best;
 }
+
 function onHover(e) {
   const local = pickPoint(e);
   if (local) {
@@ -249,54 +251,80 @@ function onHover(e) {
     const m = nearestMark(local);
     activeMark = m;
     for (let i = 0; i < MAXM; i++) markTarget[i] = (i === m) ? 1 : 0;
-    if (m >= 0) { tip.textContent = SECTIONS[m].name; tip.style.left = e.clientX + 'px'; tip.style.top = e.clientY + 'px'; tip.style.opacity = 1; el.style.cursor = 'pointer'; }
-    else { tip.style.opacity = 0; el.style.cursor = 'grab'; }
+    if (m >= 0) { 
+      tip.textContent = SECTIONS[m].name; 
+      tip.style.left = e.clientX + 'px'; 
+      tip.style.top = e.clientY + 'px'; 
+      tip.style.opacity = 1; 
+      el.style.cursor = 'pointer'; 
+    } else { 
+      tip.style.opacity = 0; 
+      el.style.cursor = 'grab'; 
+    }
   } else {
     hoverAmtTarget = 0; reachTarget = dragging ? 1 : 0; activeMark = -1;
     for (let i = 0; i < MAXM; i++) markTarget[i] = 0;
     tip.style.opacity = 0; el.style.cursor = 'grab';
   }
 }
+
 el.addEventListener('pointerdown', e => {
   dragging = true; idle = false; moved = 0; lx = e.clientX; ly = e.clientY; clearTimeout(idleTimer);
   el.setPointerCapture(e.pointerId); reachTarget = 1; onHover(e);
 });
+
 el.addEventListener('pointermove', e => {
   if (dragging) {
-    const dx = e.clientX - lx, dy = e.clientY - ly; lx = e.clientX; ly = e.clientY; moved += Math.abs(dx) + Math.abs(dy);
+    const dx = e.clientX - lx, dy = e.clientY - ly; 
+    lx = e.clientX; ly = e.clientY; 
+    moved += Math.abs(dx) + Math.abs(dy);
     vyaw = dx * 0.0042; vpitch = dy * 0.0042;
   }
   onHover(e);
 });
+
 el.addEventListener('pointerup', e => {
   dragging = false;
   if (moved < 8 && activeMark >= 0) openPanel(activeMark);
   idleTimer = setTimeout(() => { idle = true; }, 1800);
-  if (isMobile) { hoverAmtTarget = 0; reachTarget = panel.classList.contains('open') ? 1 : 0; for (let i = 0; i < MAXM; i++) markTarget[i] = 0; tip.style.opacity = 0; }
+  if (isMobile) { 
+    hoverAmtTarget = 0; 
+    reachTarget = panel.classList.contains('open') ? 1 : 0; 
+    for (let i = 0; i < MAXM; i++) markTarget[i] = 0; 
+    tip.style.opacity = 0; 
+  }
 });
-el.addEventListener('pointerleave', () => { if (!dragging) { hoverAmtTarget = 0; reachTarget = 0; for (let i = 0; i < MAXM; i++) markTarget[i] = 0; tip.style.opacity = 0; } });
+
+el.addEventListener('pointerleave', () => { 
+  if (!dragging) { 
+    hoverAmtTarget = 0; reachTarget = 0; 
+    for (let i = 0; i < MAXM; i++) markTarget[i] = 0; 
+    tip.style.opacity = 0; 
+  } 
+});
 
 function openPanel(i) {
   document.getElementById('ph').textContent = SECTIONS[i].name;
   document.getElementById('pb').innerHTML = SECTIONS[i].html;
   panel.classList.add('open'); tip.style.opacity = 0; reachTarget = 1;
 }
-document.getElementById('close').onclick = () => { panel.classList.remove('open'); reachTarget = 0; };
 
-/* ====== Цикл ====== */
+document.getElementById('close').onclick = () => { 
+  panel.classList.remove('open'); reachTarget = 0; 
+};
+
 const lerp = (a, b, t) => a + (b - a) * t;
+
 function loop() {
   const dt = Math.min(clock.getDelta(), 0.05);
   uniforms.uTime.value += dt;
 
-  // авто-вращение и инерция ручного вращения
   if (idle && !panel.classList.contains('open')) group.rotation.y += dt * 0.1;
   group.rotation.y += vyaw; group.rotation.x += vpitch;
   group.rotation.x = Math.max(-1.2, Math.min(1.2, group.rotation.x));
   const damp = dragging ? 0.0 : Math.pow(0.04, dt);
   vyaw *= dragging ? 0.6 : damp; vpitch *= dragging ? 0.6 : damp;
 
-  // приближение сферы, когда тянутся к ней
   reach = lerp(reach, reachTarget, 1 - Math.pow(0.002, dt));
   const z = lerp(CAM_FAR, CAM_NEAR, reach);
   camera.position.z = z;
@@ -306,9 +334,11 @@ function loop() {
   sUniforms.uHover.value.copy(hoverLocal);
   sUniforms.uHoverAmt.value = lerp(sUniforms.uHoverAmt.value, hoverAmtTarget, 1 - Math.pow(0.0008, dt));
   const arr = sUniforms.uMarkAmt.value;
-  for (let i = 0; i < MAXM; i++) { markAmt[i] = lerp(markAmt[i], markTarget[i], 1 - Math.pow(0.001, dt)); arr[i] = markAmt[i]; }
+  for (let i = 0; i < MAXM; i++) { 
+    markAmt[i] = lerp(markAmt[i], markTarget[i], 1 - Math.pow(0.001, dt)); 
+    arr[i] = markAmt[i]; 
+  }
 
-  // легкий параллакс камеры
   camera.position.x = lerp(camera.position.x, mouse.x * 0.35, 0.03);
   camera.position.y = lerp(camera.position.y, mouse.y * 0.25, 0.03);
   camera.lookAt(0, 0, 0);
@@ -316,11 +346,13 @@ function loop() {
   renderer.render(scene, camera);
   requestAnimationFrame(loop);
 }
+
 loop();
 
-addEventListener('resize', () => {
-  camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
-  renderer.setSize(innerWidth, innerHeight);
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight; 
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
   uniforms.uPix.value = renderer.getPixelRatio();
 });
 </script>
