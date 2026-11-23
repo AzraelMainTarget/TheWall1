@@ -5,15 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Z Darkness</title>
 <style>
-  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; font-family: -apple-system, "Segoe UI", Roboto, sans-serif; color: #f3e6d0; }
+  html, body { margin: 0; height: 100%; background: #070605; overflow: hidden; font-family: -apple-system, "Segoe UI", Roboto, sans-serif; color: #f3e6d0; }
   canvas { display: block; position: fixed; inset: 0; touch-action: none; }
-  #title { position: fixed; top: 22px; left: 0; right: 0; text-align: center; letter-spacing: 0.55em; font-size: 13px; color: #ffb347; opacity: .8; pointer-events: none; text-shadow: 0 0 14px rgba(255,160,50,.7); z-index: 2; }
-  #tip { position: fixed; padding: 6px 14px; border-radius: 12px; background: rgba(15,10,5,.8); border: 1px solid rgba(255,170,70,.45); font-size: 13px; letter-spacing: .08em; pointer-events: none; opacity: 0; transform: translate(-50%, -160%); transition: opacity .25s; white-space: nowrap; backdrop-filter: blur(6px); z-index: 3; }
-  #panel { position: fixed; left: 50%; top: 50%; width: min(86vw, 520px); max-height: 70vh; overflow: auto; transform: translate(-50%, -50%) scale(.5); opacity: 0; pointer-events: none; padding: 28px; border-radius: 20px; background: rgba(10,6,3,.82); border: 1px solid rgba(255,170,70,.5); box-shadow: 0 0 80px rgba(255,150,40,.22); backdrop-filter: blur(14px); transition: transform .6s cubic-bezier(.2,.9,.25,1.15), opacity .45s; z-index: 4; }
+  #title { position: fixed; top: 22px; left: 0; right: 0; text-align: center; letter-spacing: 0.55em; font-size: 13px; color: #d4af37; opacity: .8; pointer-events: none; text-shadow: 0 0 14px rgba(212,175,55,.7); z-index: 2; }
+  #tip { position: fixed; padding: 6px 14px; border-radius: 12px; background: rgba(15,12,5,.8); border: 1px solid rgba(212,175,55,.45); font-size: 13px; letter-spacing: .08em; pointer-events: none; opacity: 0; transform: translate(-50%, -160%); transition: opacity .25s; white-space: nowrap; backdrop-filter: blur(6px); z-index: 3; }
+  #panel { position: fixed; left: 50%; top: 50%; width: min(86vw, 520px); max-height: 70vh; overflow: auto; transform: translate(-50%, -50%) scale(.5); opacity: 0; pointer-events: none; padding: 28px; border-radius: 20px; background: rgba(10,8,3,.85); border: 1px solid rgba(212,175,55,.5); box-shadow: 0 0 80px rgba(212,175,55,.22); backdrop-filter: blur(14px); transition: transform .6s cubic-bezier(.2,.9,.25,1.15), opacity .45s; z-index: 4; }
   #panel.open { transform: translate(-50%, -50%) scale(1); opacity: 1; pointer-events: auto; }
-  #panel h2 { margin: 0 0 12px; font-weight: 500; letter-spacing: .18em; color: #ffb347; }
+  #panel h2 { margin: 0 0 12px; font-weight: 500; letter-spacing: .18em; color: #d4af37; }
   #panel p { line-height: 1.6; opacity: .9; }
-  #close { position: absolute; top: 10px; right: 18px; font-size: 28px; cursor: pointer; color: #ffb347; }
+  #close { position: absolute; top: 10px; right: 18px; font-size: 28px; cursor: pointer; color: #d4af37; }
   #err { position: fixed; left: 16px; right: 16px; bottom: 16px; padding: 12px 14px; border-radius: 12px; background: rgba(60,15,10,.9); border: 1px solid rgba(255,120,90,.6); color: #ffd6cc; font-size: 13px; display: none; z-index: 10; word-break: break-all; }
 </style>
 </head>
@@ -45,28 +45,27 @@ try {
   THREE = await import('three');
 } catch (e1) {
   try {
-    console.warn('Основной CDN не ответил, пробуем secondary esm.sh');
     THREE = await import('https://esm.sh/three@0.160.0');
   } catch (e2) {
-    showErr('Не удалось загрузить 3D библиотеку. Проверьте подключение к сети.');
+    showErr('Не удалось загрузить 3D библиотеку.');
     throw new Error('Three.js failed to load');
   }
 }
 
-/* ====== Разделы: названия и тексты меняются здесь ====== */
 const SECTIONS = [
-  { name: 'Описание', dir: [0.0, 0.62, 0.78],  html: '<p>Z Darkness — наше пространство для разработки и проверки приложений, документов и идей. Свет знания во тьме.</p>' },
-  { name: 'Проекты',  dir: [0.85, -0.1, 0.52],  html: '<p>Здесь будут наши приложения, документы и наработки.</p>' },
-  { name: 'Меню',     dir: [-0.82, 0.2, 0.54],  html: '<p>Навигация по сайту. Скоро.</p>' },
-  { name: 'Контакты', dir: [0.1, -0.72, 0.69], html: '<p>Контакты добавим позже.</p>' }
+  { name: 'Описание', dir: [0.0, 0.62, 0.78],  html: '<p>Z Darkness — пространство глубокого поиска и реализации.</p>' },
+  { name: 'Проекты',  dir: [0.85, -0.1, 0.52],  html: '<p>Архивы разработок и структурных решений.</p>' },
+  { name: 'Меню',     dir: [-0.82, 0.2, 0.54],  html: '<p>Системная навигация.</p>' },
+  { name: 'Контакты', dir: [0.1, -0.72, 0.69], html: '<p>Точки связи.</p>' }
 ];
 
 const isMobile = matchMedia('(pointer: coarse)').matches;
 const scene = new THREE.Scene();
-scene.fog = new THREE.FogExp2(0x000000, 0.012);
+scene.fog = new THREE.FogExp2(0x050403, 0.013);
 const camera = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.1, 600);
 const CAM_FAR = 17, CAM_NEAR = 11;
 camera.position.set(0, 0, CAM_FAR);
+
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.setSize(innerWidth, innerHeight);
@@ -75,24 +74,25 @@ document.body.appendChild(renderer.domElement);
 const clock = new THREE.Clock();
 const uniforms = { uTime: { value: 0 }, uPix: { value: renderer.getPixelRatio() } };
 
-/* ====== Фон: бесконечный коридор из частиц ====== */
-const TN = isMobile ? 14000 : 30000, DEPTH = 420;
+/* Окружение: глубокий темный поток с золотыми искрами */
+const TN = isMobile ? 16000 : 32000, DEPTH = 450;
 const tg = new THREE.BufferGeometry();
 const tp = new Float32Array(TN * 3), ts = new Float32Array(TN), tr = new Float32Array(TN);
 for (let i = 0; i < TN; i++) {
   const a = Math.random() * Math.PI * 2;
-  const r = 9 + Math.pow(Math.random(), 0.6) * 90;
-  tp[i*3] = Math.cos(a) * r * 1.6;
-  tp[i*3+1] = Math.sin(a) * r * 0.55;
+  const r = 8 + Math.pow(Math.random(), 0.6) * 95;
+  tp[i*3] = Math.cos(a) * r * 1.7;
+  tp[i*3+1] = Math.sin(a) * r * 0.6;
   tp[i*3+2] = -Math.random() * DEPTH;
-  ts[i] = 0.4 + Math.random() * 1.6;
+  ts[i] = 0.5 + Math.random() * 1.5;
   tr[i] = Math.random();
 }
 tg.setAttribute('position', new THREE.BufferAttribute(tp, 3));
 tg.setAttribute('aSize', new THREE.BufferAttribute(ts, 1));
 tg.setAttribute('aRnd', new THREE.BufferAttribute(tr, 1));
+
 const tunnelMat = new THREE.ShaderMaterial({
-  uniforms: { ...uniforms, uDepth: { value: DEPTH }, uSpeed: { value: 26 } },
+  uniforms: { ...uniforms, uDepth: { value: DEPTH }, uSpeed: { value: 22 } },
   transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
   vertexShader: `
     attribute float aSize; attribute float aRnd;
@@ -100,16 +100,16 @@ const tunnelMat = new THREE.ShaderMaterial({
     varying float vA; varying float vMix;
     void main(){
       vec3 p = position;
-      p.z = mod(p.z + uTime * uSpeed * (0.6 + aRnd * 0.8), uDepth) - uDepth + 20.0;
-      p.x += sin(uTime * 0.3 + aRnd * 40.0) * 0.6;
-      p.y += cos(uTime * 0.25 + aRnd * 30.0) * 0.4;
+      p.z = mod(p.z + uTime * uSpeed * (0.5 + aRnd * 0.8), uDepth) - uDepth + 25.0;
+      p.x += sin(uTime * 0.2 + aRnd * 50.0) * 0.5;
+      p.y += cos(uTime * 0.25 + aRnd * 40.0) * 0.3;
       vec4 mv = modelViewMatrix * vec4(p, 1.0);
       gl_Position = projectionMatrix * mv;
       float d = -mv.z;
-      gl_PointSize = aSize * uPix * (160.0 / d);
-      float fadeFar = smoothstep(uDepth, uDepth * 0.35, d);
-      float fadeNear = smoothstep(1.0, 10.0, d);
-      vA = fadeFar * fadeNear * (0.35 + aRnd * 0.65);
+      gl_PointSize = aSize * uPix * (150.0 / d);
+      float fadeFar = smoothstep(uDepth, uDepth * 0.4, d);
+      float fadeNear = smoothstep(1.0, 12.0, d);
+      vA = fadeFar * fadeNear * (0.4 + aRnd * 0.6);
       vMix = aRnd;
     }`,
   fragmentShader: `
@@ -118,18 +118,18 @@ const tunnelMat = new THREE.ShaderMaterial({
       vec2 c = gl_PointCoord - 0.5;
       float d = length(c);
       float core = smoothstep(0.5, 0.0, d);
-      core = pow(core, 2.2);
-      vec3 cold = vec3(0.60, 0.72, 0.95);
-      vec3 warm = vec3(1.0, 0.72, 0.38);
-      vec3 col = mix(cold, warm, step(0.93, vMix) * 0.8);
-      gl_FragColor = vec4(col, core * vA);
+      core = pow(core, 2.0);
+      vec3 deepGold = vec3(0.85, 0.65, 0.30);
+      vec3 warmAmber = vec3(1.0, 0.80, 0.45);
+      vec3 col = mix(deepGold, warmAmber, vMix);
+      gl_FragColor = vec4(col, core * vA * 0.8);
     }`
 });
 scene.add(new THREE.Points(tg, tunnelMat));
 
-/* Горизонт */
+/* Центральное глубинное свечение */
 const glow = new THREE.Mesh(
-  new THREE.PlaneGeometry(260, 70),
+  new THREE.PlaneGeometry(280, 80),
   new THREE.ShaderMaterial({
     transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, uniforms,
     vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }`,
@@ -137,25 +137,25 @@ const glow = new THREE.Mesh(
       varying vec2 vUv; uniform float uTime;
       void main(){
         vec2 p = (vUv - 0.5) * vec2(2.0, 2.0);
-        float h = exp(-abs(p.y) * 14.0) * exp(-abs(p.x) * 1.3);
-        float pulse = 0.9 + 0.1 * sin(uTime * 0.6);
-        gl_FragColor = vec4(vec3(0.42, 0.52, 0.72) * h * 0.55 * pulse, h * 0.55);
+        float h = exp(-abs(p.y) * 16.0) * exp(-abs(p.x) * 1.2);
+        float pulse = 0.95 + 0.08 * sin(uTime * 0.5);
+        gl_FragColor = vec4(vec3(0.75, 0.55, 0.25) * h * 0.5 * pulse, h * 0.4);
       }`
   })
 );
-glow.position.set(0, 0, -150);
+glow.position.set(0, 0, -160);
 scene.add(glow);
 
-/* ====== Сфера ====== */
+/* Сфера: Темное золото / Этрусский золотой массив */
 const R = 3.2;
-const SN = isMobile ? 26000 : 60000;
+const SN = isMobile ? 28000 : 65000;
 const sg = new THREE.BufferGeometry();
 const sp = new Float32Array(SN * 3), sr = new Float32Array(SN), sz = new Float32Array(SN);
 const golden = Math.PI * (3 - Math.sqrt(5));
 for (let i = 0; i < SN; i++) {
   const y = 1 - (i / (SN - 1)) * 2, rad = Math.sqrt(1 - y * y), th = golden * i;
   sp[i*3] = Math.cos(th) * rad; sp[i*3+1] = y; sp[i*3+2] = Math.sin(th) * rad;
-  sr[i] = Math.random(); sz[i] = 0.55 + Math.random() * 0.9;
+  sr[i] = Math.random(); sz[i] = 0.6 + Math.random() * 0.8;
 }
 sg.setAttribute('position', new THREE.BufferAttribute(sp, 3));
 sg.setAttribute('aRnd', new THREE.BufferAttribute(sr, 1));
@@ -170,6 +170,7 @@ const sUniforms = {
   uMarks: { value: SECTIONS.map(s => new THREE.Vector3(...s.dir).normalize()) },
   uMarkAmt: { value: [0, 0, 0, 0] }
 };
+
 const sphereMat = new THREE.ShaderMaterial({
   uniforms: sUniforms, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
   vertexShader: `
@@ -179,48 +180,50 @@ const sphereMat = new THREE.ShaderMaterial({
     varying float vGlow; varying float vA;
     void main(){
       vec3 n = normalize(position);
-      float pulse = sin(uTime * 1.6 + aRnd * 6.2831 * 3.0);
-      float len = uR * (1.0 + 0.012 * pulse + 0.01 * sin(uTime * 0.7 + n.x * 5.0 + n.y * 4.0));
+      float pulse = sin(uTime * 1.2 + aRnd * 6.2831 * 2.0);
+      float len = uR * (1.0 + 0.01 * pulse + 0.008 * sin(uTime * 0.6 + n.x * 4.0 + n.y * 3.0));
       float bump = 0.0;
       float hd = distance(n, uHover);
-      float hk = exp(-hd * hd * 26.0) * uHoverAmt;
-      bump += hk * 0.55;
-      vec3 dirn = normalize(mix(n, uHover, hk * 0.22));
+      float hk = exp(-hd * hd * 28.0) * uHoverAmt;
+      bump += hk * 0.5;
+      vec3 dirn = normalize(mix(n, uHover, hk * 0.2));
       float mk = 0.0;
       for (int i = 0; i < ${MAXM}; i++) {
         float md = distance(n, uMarks[i]);
-        float m = exp(-md * md * 90.0);
-        mk += m * (0.55 + 0.45 * sin(uTime * 2.2 + float(i) * 1.7) + uMarkAmt[i] * 0.9);
-        bump += m * (0.10 + uMarkAmt[i] * 0.22);
+        float m = exp(-md * md * 85.0);
+        mk += m * (0.5 + 0.5 * sin(uTime * 2.0 + float(i) * 1.5) + uMarkAmt[i] * 0.8);
+        bump += m * (0.08 + uMarkAmt[i] * 0.2);
       }
       vec3 p = dirn * (len + bump);
       vec4 mv = modelViewMatrix * vec4(p, 1.0);
       gl_Position = projectionMatrix * mv;
       float d = -mv.z;
-      float sizeBoost = 1.0 + hk * 1.4 + mk * 1.8;
-      gl_PointSize = aSize * sizeBoost * uPix * (62.0 / d) * (1.0 + 0.18 * pulse);
-      vGlow = clamp(hk * 0.9 + mk * 0.9, 0.0, 1.6);
-      float rim = pow(1.0 - abs(normalize(mat3(modelViewMatrix) * n).z), 1.6);
-      vA = 0.38 + 0.5 * rim + 0.15 * pulse;
+      float sizeBoost = 1.0 + hk * 1.5 + mk * 1.8;
+      gl_PointSize = aSize * sizeBoost * uPix * (60.0 / d) * (1.0 + 0.15 * pulse);
+      vGlow = clamp(hk * 0.9 + mk * 0.9, 0.0, 1.0);
+      float rim = pow(1.0 - abs(normalize(mat3(modelViewMatrix) * n).z), 1.8);
+      vA = 0.35 + 0.45 * rim + 0.12 * pulse;
     }`,
   fragmentShader: `
     varying float vGlow; varying float vA;
     void main(){
       vec2 c = gl_PointCoord - 0.5;
       float d = length(c);
-      float core = pow(smoothstep(0.5, 0.0, d), 2.0);
-      vec3 base = vec3(1.0, 0.56, 0.14);
-      vec3 hot = vec3(1.0, 0.88, 0.58);
-      vec3 col = mix(base, hot, clamp(vGlow, 0.0, 1.0));
-      gl_FragColor = vec4(col, core * (vA + vGlow * 0.6));
+      float core = pow(smoothstep(0.5, 0.0, d), 2.2);
+      vec3 darkGold = vec3(0.40, 0.28, 0.12);
+      vec3 brightGold = vec3(0.95, 0.75, 0.35);
+      vec3 col = mix(darkGold, brightGold, clamp(vGlow * 1.2, 0.0, 1.0));
+      gl_FragColor = vec4(col, core * (vA + vGlow * 0.5));
     }`
 });
-const sphere = new THREE.Points(sg, sphereMat);
-const group = new THREE.Group(); group.add(sphere); scene.add(group);
 
-/* Гало */
+const sphere = new THREE.Points(sg, sphereMat);
+const group = new THREE.Group(); 
+group.add(sphere); 
+scene.add(group);
+
 const halo = new THREE.Mesh(
-  new THREE.PlaneGeometry(R * 3.4, R * 3.4),
+  new THREE.PlaneGeometry(R * 3.6, R * 3.6),
   new THREE.ShaderMaterial({
     transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, uniforms,
     vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }`,
@@ -228,16 +231,15 @@ const halo = new THREE.Mesh(
       varying vec2 vUv; uniform float uTime;
       void main(){
         float d = length(vUv - 0.5) * 2.0;
-        float g = exp(-pow(max(d - 0.55, 0.0) * 3.2, 2.0)) * smoothstep(1.0, 0.5, d);
-        g *= 0.32 + 0.05 * sin(uTime * 0.9);
-        gl_FragColor = vec4(vec3(1.0, 0.58, 0.18) * g, g);
+        float g = exp(-pow(max(d - 0.5, 0.0) * 3.5, 2.0)) * smoothstep(1.0, 0.4, d);
+        g *= 0.3 + 0.08 * sin(uTime * 0.7);
+        gl_FragColor = vec4(vec3(0.85, 0.65, 0.3) * g, g);
       }`
   })
 );
-halo.position.z = -0.5;
+halo.position.z = -0.3;
 scene.add(halo);
 
-/* ====== Управление ====== */
 const el = renderer.domElement;
 let dragging = false, moved = 0, lx = 0, ly = 0, idle = true, idleTimer = 0;
 let vyaw = 0, vpitch = 0;
@@ -248,10 +250,15 @@ const markAmt = [0, 0, 0, 0], markTarget = [0, 0, 0, 0];
 let hoverAmtTarget = 0, activeMark = -1;
 const panel = document.getElementById('panel');
 
-function toNDC(e) { mouse.x = (e.clientX / innerWidth) * 2 - 1; mouse.y = -(e.clientY / innerHeight) * 2 + 1; }
+function toNDC(e) { 
+  mouse.x = (e.clientX / innerWidth) * 2 - 1; 
+  mouse.y = -(e.clientY / innerHeight) * 2 + 1; 
+}
 const hitSphere = new THREE.Sphere(new THREE.Vector3(), R);
+
 function pickPoint(e) {
-  toNDC(e); ray.setFromCamera(mouse, camera);
+  toNDC(e); 
+  ray.setFromCamera(mouse, camera);
   const pt = new THREE.Vector3();
   if (ray.ray.intersectSphere(hitSphere, pt)) {
     group.updateMatrixWorld();
@@ -259,11 +266,16 @@ function pickPoint(e) {
   }
   return null;
 }
+
 function nearestMark(local) {
   let best = -1, bd = 0.32;
-  SECTIONS.forEach((s, i) => { const d = local.distanceTo(new THREE.Vector3(...s.dir).normalize()); if (d < bd) { bd = d; best = i; } });
+  SECTIONS.forEach((s, i) => { 
+    const d = local.distanceTo(new THREE.Vector3(...s.dir).normalize()); 
+    if (d < bd) { bd = d; best = i; } 
+  });
   return best;
 }
+
 function onHover(e) {
   const local = pickPoint(e);
   if (local) {
@@ -271,73 +283,106 @@ function onHover(e) {
     const m = nearestMark(local);
     activeMark = m;
     for (let i = 0; i < MAXM; i++) markTarget[i] = (i === m) ? 1 : 0;
-    if (m >= 0) { tip.textContent = SECTIONS[m].name; tip.style.left = e.clientX + 'px'; tip.style.top = e.clientY + 'px'; tip.style.opacity = 1; el.style.cursor = 'pointer'; }
-    else { tip.style.opacity = 0; el.style.cursor = 'grab'; }
+    if (m >= 0) { 
+      tip.textContent = SECTIONS[m].name; 
+      tip.style.left = e.clientX + 'px'; 
+      tip.style.top = e.clientY + 'px'; 
+      tip.style.opacity = 1; 
+      el.style.cursor = 'pointer'; 
+    } else { 
+      tip.style.opacity = 0; 
+      el.style.cursor = 'grab'; 
+    }
   } else {
     hoverAmtTarget = 0; reachTarget = dragging ? 1 : 0; activeMark = -1;
     for (let i = 0; i < MAXM; i++) markTarget[i] = 0;
     tip.style.opacity = 0; el.style.cursor = 'grab';
   }
 }
+
 el.addEventListener('pointerdown', e => {
   dragging = true; idle = false; moved = 0; lx = e.clientX; ly = e.clientY; clearTimeout(idleTimer);
   el.setPointerCapture(e.pointerId); reachTarget = 1; onHover(e);
 });
+
 el.addEventListener('pointermove', e => {
   if (dragging) {
-    const dx = e.clientX - lx, dy = e.clientY - ly; lx = e.clientX; ly = e.clientY; moved += Math.abs(dx) + Math.abs(dy);
-    vyaw = dx * 0.0042; vpitch = dy * 0.0042;
+    const dx = e.clientX - lx, dy = e.clientY - ly; 
+    lx = e.clientX; ly = e.clientY; 
+    moved += Math.abs(dx) + Math.abs(dy);
+    vyaw = dx * 0.004; vpitch = dy * 0.004;
   }
   onHover(e);
 });
+
 el.addEventListener('pointerup', e => {
   dragging = false;
   if (moved < 8 && activeMark >= 0) openPanel(activeMark);
   idleTimer = setTimeout(() => { idle = true; }, 1800);
-  if (isMobile) { hoverAmtTarget = 0; reachTarget = panel.classList.contains('open') ? 1 : 0; for (let i = 0; i < MAXM; i++) markTarget[i] = 0; tip.style.opacity = 0; }
+  if (isMobile) { 
+    hoverAmtTarget = 0; 
+    reachTarget = panel.classList.contains('open') ? 1 : 0; 
+    for (let i = 0; i < MAXM; i++) markTarget[i] = 0; 
+    tip.style.opacity = 0; 
+  }
 });
-el.addEventListener('pointerleave', () => { if (!dragging) { hoverAmtTarget = 0; reachTarget = 0; for (let i = 0; i < MAXM; i++) markTarget[i] = 0; tip.style.opacity = 0; } });
+
+el.addEventListener('pointerleave', () => { 
+  if (!dragging) { 
+    hoverAmtTarget = 0; reachTarget = 0; 
+    for (let i = 0; i < MAXM; i++) markTarget[i] = 0; 
+    tip.style.opacity = 0; 
+  } 
+});
 
 function openPanel(i) {
   document.getElementById('ph').textContent = SECTIONS[i].name;
   document.getElementById('pb').innerHTML = SECTIONS[i].html;
   panel.classList.add('open'); tip.style.opacity = 0; reachTarget = 1;
 }
-document.getElementById('close').onclick = () => { panel.classList.remove('open'); reachTarget = 0; };
 
-/* ====== Цикл ====== */
+document.getElementById('close').onclick = () => { 
+  panel.classList.remove('open'); reachTarget = 0; 
+};
+
 const lerp = (a, b, t) => a + (b - a) * t;
+
 function loop() {
   const dt = Math.min(clock.getDelta(), 0.05);
   uniforms.uTime.value += dt;
 
-  if (idle && !panel.classList.contains('open')) group.rotation.y += dt * 0.1;
+  if (idle && !panel.classList.contains('open')) group.rotation.y += dt * 0.08;
   group.rotation.y += vyaw; group.rotation.x += vpitch;
   group.rotation.x = Math.max(-1.2, Math.min(1.2, group.rotation.x));
-  const damp = dragging ? 0.0 : Math.pow(0.04, dt);
-  vyaw *= dragging ? 0.6 : damp; vpitch *= dragging ? 0.6 : damp;
+  const damp = dragging ? 0.0 : Math.pow(0.05, dt);
+  vyaw *= dragging ? 0.5 : damp; vpitch *= dragging ? 0.5 : damp;
 
   reach = lerp(reach, reachTarget, 1 - Math.pow(0.002, dt));
-  camera.position.z = lerp(CAM_FAR, CAM_NEAR, reach);
-  halo.position.z = -0.5;
-  halo.scale.setScalar(1);
+  const z = lerp(CAM_FAR, CAM_NEAR, reach);
+  camera.position.z = z;
+  halo.position.z = -0.3;
 
   sUniforms.uHover.value.copy(hoverLocal);
   sUniforms.uHoverAmt.value = lerp(sUniforms.uHoverAmt.value, hoverAmtTarget, 1 - Math.pow(0.0008, dt));
   const arr = sUniforms.uMarkAmt.value;
-  for (let i = 0; i < MAXM; i++) { markAmt[i] = lerp(markAmt[i], markTarget[i], 1 - Math.pow(0.001, dt)); arr[i] = markAmt[i]; }
+  for (let i = 0; i < MAXM; i++) { 
+    markAmt[i] = lerp(markAmt[i], markTarget[i], 1 - Math.pow(0.001, dt)); 
+    arr[i] = markAmt[i]; 
+  }
 
-  camera.position.x = lerp(camera.position.x, mouse.x * 0.35, 0.03);
-  camera.position.y = lerp(camera.position.y, mouse.y * 0.25, 0.03);
+  camera.position.x = lerp(camera.position.x, mouse.x * 0.3, 0.03);
+  camera.position.y = lerp(camera.position.y, mouse.y * 0.2, 0.03);
   camera.lookAt(0, 0, 0);
 
   renderer.render(scene, camera);
   requestAnimationFrame(loop);
 }
+
 loop();
 
 addEventListener('resize', () => {
-  camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
+  camera.aspect = innerWidth / innerHeight; 
+  camera.updateProjectionMatrix();
   renderer.setSize(innerWidth, innerHeight);
   uniforms.uPix.value = renderer.getPixelRatio();
 });
