@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Z Darkness</title>
+<title>ZT Darkness</title>
 <style>
-  html, body { margin: 0; height: 100%; background: #020205; overflow: hidden; font-family: -apple-system, "Segoe UI", Roboto, sans-serif; color: #f3e6d0; }
+  html, body { margin: 0; height: 100%; background: #020103; overflow: hidden; font-family: -apple-system, "Segoe UI", Roboto, sans-serif; color: #f3e6d0; }
   canvas { display: block; position: fixed; inset: 0; touch-action: none; }
   #title { position: fixed; top: 22px; left: 0; right: 0; text-align: center; letter-spacing: 0.55em; font-size: 13px; color: #ff3e3e; opacity: .85; pointer-events: none; text-shadow: 0 0 16px rgba(255,62,62,.8); z-index: 2; }
   #tip { position: fixed; padding: 6px 14px; border-radius: 12px; background: rgba(15,5,5,.85); border: 1px solid rgba(255,62,62,.45); font-size: 13px; letter-spacing: .08em; pointer-events: none; opacity: 0; transform: translate(-50%, -160%); transition: opacity .25s; white-space: nowrap; backdrop-filter: blur(6px); z-index: 3; }
@@ -18,7 +18,7 @@
 </style>
 </head>
 <body>
-<div id="title">Z DARKNESS</div>
+<div id="title">ZT DARKNESS</div>
 <div id="tip"></div>
 <div id="panel"><div id="close">×</div><h2 id="ph"></h2><div id="pb"></div></div>
 <div id="err"></div>
@@ -53,15 +53,15 @@ try {
 }
 
 const SECTIONS = [
-  { name: 'Описание', dir: [0.0, 0.62, 0.78],  html: '<p>Z Darkness — концентрация энергии и структуры.</p>' },
-  { name: 'Проекты',  dir: [0.85, -0.1, 0.52],  html: '<p>Архив разработок.</p>' },
-  { name: 'Меню',     dir: [-0.82, 0.2, 0.54],  html: '<p>Навигация.</p>' },
-  { name: 'Контакты', dir: [0.1, -0.72, 0.69], html: '<p>Связь.</p>' }
+  { name: 'Описание', dir: [0.0, 0.62, 0.78],  html: '<p>ZT Darkness — чистая энергия и динамика.</p>' },
+  { name: 'Проекты',  dir: [0.85, -0.1, 0.52],  html: '<p>Архив активных структур.</p>' },
+  { name: 'Меню',     dir: [-0.82, 0.2, 0.54],  html: '<p>Системная навигация.</p>' },
+  { name: 'Контакты', dir: [0.1, -0.72, 0.69], html: '<p>Точки взаимодействия.</p>' }
 ];
 
 const isMobile = matchMedia('(pointer: coarse)').matches;
 const scene = new THREE.Scene();
-scene.fog = new THREE.FogExp2(0x020104, 0.012);
+scene.fog = new THREE.FogExp2(0x020103, 0.01);
 const camera = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.1, 600);
 const CAM_FAR = 17, CAM_NEAR = 11;
 camera.position.set(0, 0, CAM_FAR);
@@ -74,17 +74,18 @@ document.body.appendChild(renderer.domElement);
 const clock = new THREE.Clock();
 const uniforms = { uTime: { value: 0 }, uPix: { value: renderer.getPixelRatio() } };
 
-/* Окружение: Космическая бездна с редкими алыми искрами */
-const TN = isMobile ? 18000 : 36000, DEPTH = 500;
+/* Фон: Сходящийся коридор частиц, летящих на камеру */
+const TN = isMobile ? 20000 : 40000, DEPTH = 600;
 const tg = new THREE.BufferGeometry();
 const tp = new Float32Array(TN * 3), ts = new Float32Array(TN), tr = new Float32Array(TN);
 for (let i = 0; i < TN; i++) {
-  const a = Math.random() * Math.PI * 2;
-  const r = 9 + Math.pow(Math.random(), 0.5) * 110;
-  tp[i*3] = Math.cos(a) * r * 1.8;
-  tp[i*3+1] = Math.sin(a) * r * 0.65;
+  const theta = Math.random() * Math.PI * 2;
+  const radiusSq = Math.random();
+  const r = 2 + Math.sqrt(radiusSq) * 140;
+  tp[i*3] = Math.cos(theta) * r;
+  tp[i*3+1] = Math.sin(theta) * r;
   tp[i*3+2] = -Math.random() * DEPTH;
-  ts[i] = 0.4 + Math.random() * 1.4;
+  ts[i] = 0.5 + Math.random() * 1.5;
   tr[i] = Math.random();
 }
 tg.setAttribute('position', new THREE.BufferAttribute(tp, 3));
@@ -92,7 +93,7 @@ tg.setAttribute('aSize', new THREE.BufferAttribute(ts, 1));
 tg.setAttribute('aRnd', new THREE.BufferAttribute(tr, 1));
 
 const tunnelMat = new THREE.ShaderMaterial({
-  uniforms: { ...uniforms, uDepth: { value: DEPTH }, uSpeed: { value: 18 } },
+  uniforms: { ...uniforms, uDepth: { value: DEPTH }, uSpeed: { value: 35 } },
   transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
   vertexShader: `
     attribute float aSize; attribute float aRnd;
@@ -100,15 +101,14 @@ const tunnelMat = new THREE.ShaderMaterial({
     varying float vA; varying float vMix;
     void main(){
       vec3 p = position;
-      p.z = mod(p.z + uTime * uSpeed * (0.4 + aRnd * 0.8), uDepth) - uDepth + 30.0;
-      p.x += sin(uTime * 0.15 + aRnd * 40.0) * 0.7;
-      p.y += cos(uTime * 0.2 + aRnd * 30.0) * 0.4;
+      float zPos = mod(p.z + uTime * uSpeed * (0.8 + aRnd * 0.5), uDepth) - uDepth;
+      p.z = zPos;
       vec4 mv = modelViewMatrix * vec4(p, 1.0);
       gl_Position = projectionMatrix * mv;
       float d = -mv.z;
-      gl_PointSize = aSize * uPix * (140.0 / d);
-      float fadeFar = smoothstep(uDepth, uDepth * 0.45, d);
-      float fadeNear = smoothstep(1.0, 15.0, d);
+      gl_PointSize = aSize * uPix * (180.0 / max(d, 1.0));
+      float fadeFar = smoothstep(uDepth, uDepth * 0.7, d);
+      float fadeNear = smoothstep(1.0, 20.0, d);
       vA = fadeFar * fadeNear * (0.3 + aRnd * 0.7);
       vMix = aRnd;
     }`,
@@ -117,45 +117,27 @@ const tunnelMat = new THREE.ShaderMaterial({
     void main(){
       vec2 c = gl_PointCoord - 0.5;
       float d = length(c);
+      if(d > 0.5) discard;
       float core = smoothstep(0.5, 0.0, d);
-      core = pow(core, 2.2);
-      vec3 deepRed = vec3(0.6, 0.1, 0.1);
-      vec3 brightCrimson = vec3(1.0, 0.2, 0.3);
-      vec3 col = mix(deepRed, brightCrimson, step(0.85, vMix));
-      gl_FragColor = vec4(col, core * vA * 0.85);
+      core = pow(core, 2.0);
+      vec3 deepCrimson = vec3(0.5, 0.05, 0.08);
+      vec3 brightScarlet = vec3(1.0, 0.15, 0.25);
+      vec3 col = mix(deepCrimson, brightScarlet, vMix);
+      gl_FragColor = vec4(col, core * vA);
     }`
 });
 scene.add(new THREE.Points(tg, tunnelMat));
 
-/* Глубинный красный ореол горизонта */
-const glow = new THREE.Mesh(
-  new THREE.PlaneGeometry(300, 90),
-  new THREE.ShaderMaterial({
-    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, uniforms,
-    vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }`,
-    fragmentShader: `
-      varying vec2 vUv; uniform float uTime;
-      void main(){
-        vec2 p = (vUv - 0.5) * vec2(2.0, 2.0);
-        float h = exp(-abs(p.y) * 15.0) * exp(-abs(p.x) * 1.1);
-        float pulse = 0.9 + 0.1 * sin(uTime * 0.4);
-        gl_FragColor = vec4(vec3(0.7, 0.08, 0.12) * h * 0.6 * pulse, h * 0.45);
-      }`
-  })
-);
-glow.position.set(0, 0, -170);
-scene.add(glow);
-
-/* Сфера: Плотная масса раскаленных алых частиц */
+/* Сфера: Живой рой частиц */
 const R = 3.2;
-const SN = isMobile ? 35000 : 80000;
+const SN = isMobile ? 30000 : 70000;
 const sg = new THREE.BufferGeometry();
 const sp = new Float32Array(SN * 3), sr = new Float32Array(SN), sz = new Float32Array(SN);
 const golden = Math.PI * (3 - Math.sqrt(5));
 for (let i = 0; i < SN; i++) {
   const y = 1 - (i / (SN - 1)) * 2, rad = Math.sqrt(1 - y * y), th = golden * i;
   sp[i*3] = Math.cos(th) * rad; sp[i*3+1] = y; sp[i*3+2] = Math.sin(th) * rad;
-  sr[i] = Math.random(); sz[i] = 0.6 + Math.random() * 0.9;
+  sr[i] = Math.random(); sz[i] = 0.5 + Math.random() * 1.0;
 }
 sg.setAttribute('position', new THREE.BufferAttribute(sp, 3));
 sg.setAttribute('aRnd', new THREE.BufferAttribute(sr, 1));
@@ -165,8 +147,6 @@ const MAXM = 4;
 const sUniforms = {
   ...uniforms,
   uR: { value: R },
-  uHover: { value: new THREE.Vector3(0, 0, 0) },
-  uHoverAmt: { value: 0 },
   uMarks: { value: SECTIONS.map(s => new THREE.Vector3(...s.dir).normalize()) },
   uMarkAmt: { value: [0, 0, 0, 0] }
 };
@@ -175,45 +155,37 @@ const sphereMat = new THREE.ShaderMaterial({
   uniforms: sUniforms, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
   vertexShader: `
     attribute float aRnd; attribute float aSize;
-    uniform float uTime, uPix, uR, uHoverAmt;
-    uniform vec3 uHover; uniform vec3 uMarks[${MAXM}]; uniform float uMarkAmt[${MAXM}];
-    varying float vGlow; varying float vA;
+    uniform float uTime, uPix, uR;
+    uniform vec3 uMarks[${MAXM}]; uniform float uMarkAmt[${MAXM}];
+    varying float vA;
     void main(){
       vec3 n = normalize(position);
-      float pulse = sin(uTime * 1.4 + aRnd * 6.2831 * 2.5);
-      float len = uR * (1.0 + 0.012 * pulse + 0.009 * sin(uTime * 0.5 + n.x * 4.5 + n.y * 3.5));
+      float swarm = sin(uTime * 3.0 + aRnd * 31.4) * cos(uTime * 2.5 + n.x * 5.0) * 0.12;
+      float pulse = sin(uTime * 1.8 + aRnd * 6.28);
+      float len = uR * (1.0 + swarm + 0.02 * pulse);
       float bump = 0.0;
-      float hd = distance(n, uHover);
-      float hk = exp(-hd * hd * 28.0) * uHoverAmt;
-      bump += hk * 0.55;
-      vec3 dirn = normalize(mix(n, uHover, hk * 0.22));
-      float mk = 0.0;
       for (int i = 0; i < ${MAXM}; i++) {
         float md = distance(n, uMarks[i]);
-        float m = exp(-md * md * 88.0);
-        mk += m * (0.55 + 0.45 * sin(uTime * 2.2 + float(i) * 1.6) + uMarkAmt[i] * 0.9);
-        bump += m * (0.10 + uMarkAmt[i] * 0.22);
+        float m = exp(-md * md * 70.0);
+        bump += m * (0.05 + uMarkAmt[i] * 0.35);
       }
-      vec3 p = dirn * (len + bump);
+      vec3 p = n * (len + bump);
       vec4 mv = modelViewMatrix * vec4(p, 1.0);
       gl_Position = projectionMatrix * mv;
       float d = -mv.z;
-      float sizeBoost = 1.0 + hk * 1.6 + mk * 1.9;
-      gl_PointSize = aSize * sizeBoost * uPix * (58.0 / d) * (1.0 + 0.18 * pulse);
-      vGlow = clamp(hk * 0.9 + mk * 0.9, 0.0, 1.0);
-      float rim = pow(1.0 - abs(normalize(mat3(modelViewMatrix) * n).z), 1.9);
-      vA = 0.38 + 0.5 * rim + 0.15 * pulse;
+      gl_PointSize = aSize * uPix * (60.0 / d) * (1.0 + 0.15 * pulse);
+      float rim = pow(1.0 - abs(normalize(mat3(modelViewMatrix) * n).z), 2.0);
+      vA = 0.4 + 0.5 * rim + 0.15 * pulse;
     }`,
   fragmentShader: `
-    varying float vGlow; varying float vA;
+    varying float vA;
     void main(){
       vec2 c = gl_PointCoord - 0.5;
       float d = length(c);
-      float core = pow(smoothstep(0.5, 0.0, d), 2.2);
-      vec3 darkCrimson = vec3(0.35, 0.04, 0.06);
-      vec3 brightScarlet = vec3(1.0, 0.15, 0.25);
-      vec3 col = mix(darkCrimson, brightScarlet, clamp(vGlow * 1.3, 0.0, 1.0));
-      gl_FragColor = vec4(col, core * (vA + vGlow * 0.65));
+      if(d > 0.5) discard;
+      float core = pow(smoothstep(0.5, 0.0, d), 2.0);
+      vec3 col = vec3(0.95, 0.18, 0.28);
+      gl_FragColor = vec4(col, core * vA * 1.2);
     }`
 });
 
@@ -222,32 +194,13 @@ const group = new THREE.Group();
 group.add(sphere); 
 scene.add(group);
 
-const halo = new THREE.Mesh(
-  new THREE.PlaneGeometry(R * 3.8, R * 3.8),
-  new THREE.ShaderMaterial({
-    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, uniforms,
-    vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }`,
-    fragmentShader: `
-      varying vec2 vUv; uniform float uTime;
-      void main(){
-        float d = length(vUv - 0.5) * 2.0;
-        float g = exp(-pow(max(d - 0.45, 0.0) * 3.6, 2.0)) * smoothstep(1.0, 0.3, d);
-        g *= 0.35 + 0.1 * sin(uTime * 0.8);
-        gl_FragColor = vec4(vec3(0.9, 0.12, 0.18) * g, g);
-      }`
-  })
-);
-halo.position.z = -0.2;
-scene.add(halo);
-
 const el = renderer.domElement;
 let dragging = false, moved = 0, lx = 0, ly = 0, idle = true, idleTimer = 0;
 let vyaw = 0, vpitch = 0;
 let reach = 0, reachTarget = 0;
 const ray = new THREE.Raycaster(), mouse = new THREE.Vector2(), tip = document.getElementById('tip');
-const hoverLocal = new THREE.Vector3(0, 0, 1);
 const markAmt = [0, 0, 0, 0], markTarget = [0, 0, 0, 0];
-let hoverAmtTarget = 0, activeMark = -1;
+let activeMark = -1;
 const panel = document.getElementById('panel');
 
 function toNDC(e) { 
@@ -268,7 +221,7 @@ function pickPoint(e) {
 }
 
 function nearestMark(local) {
-  let best = -1, bd = 0.32;
+  let best = -1, bd = 0.35;
   SECTIONS.forEach((s, i) => { 
     const d = local.distanceTo(new THREE.Vector3(...s.dir).normalize()); 
     if (d < bd) { bd = d; best = i; } 
@@ -279,7 +232,7 @@ function nearestMark(local) {
 function onHover(e) {
   const local = pickPoint(e);
   if (local) {
-    hoverLocal.copy(local); hoverAmtTarget = 1; reachTarget = 1;
+    reachTarget = 1;
     const m = nearestMark(local);
     activeMark = m;
     for (let i = 0; i < MAXM; i++) markTarget[i] = (i === m) ? 1 : 0;
@@ -294,7 +247,7 @@ function onHover(e) {
       el.style.cursor = 'grab'; 
     }
   } else {
-    hoverAmtTarget = 0; reachTarget = dragging ? 1 : 0; activeMark = -1;
+    reachTarget = dragging ? 1 : 0; activeMark = -1;
     for (let i = 0; i < MAXM; i++) markTarget[i] = 0;
     tip.style.opacity = 0; el.style.cursor = 'grab';
   }
@@ -310,7 +263,7 @@ el.addEventListener('pointermove', e => {
     const dx = e.clientX - lx, dy = e.clientY - ly; 
     lx = e.clientX; ly = e.clientY; 
     moved += Math.abs(dx) + Math.abs(dy);
-    vyaw = dx * 0.004; vpitch = dy * 0.004;
+    vyaw = dx * 0.0035; vpitch = dy * 0.0035;
   }
   onHover(e);
 });
@@ -320,7 +273,6 @@ el.addEventListener('pointerup', e => {
   if (moved < 8 && activeMark >= 0) openPanel(activeMark);
   idleTimer = setTimeout(() => { idle = true; }, 1800);
   if (isMobile) { 
-    hoverAmtTarget = 0; 
     reachTarget = panel.classList.contains('open') ? 1 : 0; 
     for (let i = 0; i < MAXM; i++) markTarget[i] = 0; 
     tip.style.opacity = 0; 
@@ -329,7 +281,7 @@ el.addEventListener('pointerup', e => {
 
 el.addEventListener('pointerleave', () => { 
   if (!dragging) { 
-    hoverAmtTarget = 0; reachTarget = 0; 
+    reachTarget = 0; 
     for (let i = 0; i < MAXM; i++) markTarget[i] = 0; 
     tip.style.opacity = 0; 
   } 
@@ -351,27 +303,25 @@ function loop() {
   const dt = Math.min(clock.getDelta(), 0.05);
   uniforms.uTime.value += dt;
 
-  if (idle && !panel.classList.contains('open')) group.rotation.y += dt * 0.08;
+  if (idle && !panel.classList.contains('open')) group.rotation.y += dt * 0.05;
   group.rotation.y += vyaw; group.rotation.x += vpitch;
   group.rotation.x = Math.max(-1.2, Math.min(1.2, group.rotation.x));
-  const damp = dragging ? 0.0 : Math.pow(0.05, dt);
-  vyaw *= dragging ? 0.5 : damp; vpitch *= dragging ? 0.5 : damp;
+  const damp = dragging ? 0.0 : Math.pow(0.06, dt);
+  vyaw *= dragging ? 0.4 : damp; vpitch *= dragging ? 0.4 : damp;
 
-  reach = lerp(reach, reachTarget, 1 - Math.pow(0.002, dt));
-  const z = lerp(CAM_FAR, CAM_NEAR, reach);
-  camera.position.z = z;
-  halo.position.z = -0.2;
+  reach = lerp(reach, reachTarget, 1 - Math.pow(0.001, dt));
+  group.position.z = lerp(0, 2.5, reach);
+  const zCam = lerp(CAM_FAR, CAM_NEAR, reach);
+  camera.position.z = zCam;
 
-  sUniforms.uHover.value.copy(hoverLocal);
-  sUniforms.uHoverAmt.value = lerp(sUniforms.uHoverAmt.value, hoverAmtTarget, 1 - Math.pow(0.0008, dt));
   const arr = sUniforms.uMarkAmt.value;
   for (let i = 0; i < MAXM; i++) { 
-    markAmt[i] = lerp(markAmt[i], markTarget[i], 1 - Math.pow(0.001, dt)); 
+    markAmt[i] = lerp(markAmt[i], markTarget[i], 1 - Math.pow(0.0008, dt)); 
     arr[i] = markAmt[i]; 
   }
 
-  camera.position.x = lerp(camera.position.x, mouse.x * 0.3, 0.03);
-  camera.position.y = lerp(camera.position.y, mouse.y * 0.2, 0.03);
+  camera.position.x = lerp(camera.position.x, mouse.x * 0.2, 0.03);
+  camera.position.y = lerp(camera.position.y, mouse.y * 0.15, 0.03);
   camera.lookAt(0, 0, 0);
 
   renderer.render(scene, camera);
