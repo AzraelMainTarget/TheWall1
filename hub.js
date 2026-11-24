@@ -95,4 +95,15 @@
 
   loadFeed();
   loadStatus();
+
+  /* автообновление ленты, чтобы не жать каждый раз */
+  const ref = document.getElementById('ref');
+  if (ref) ref.onclick = loadFeed;
+  let last = 0;
+  setInterval(() => {
+    if (document.hidden) return;
+    if (Date.now() - last < 20000) return;
+    last = Date.now();
+    loadFeed();
+  }, 5000);
 })();
