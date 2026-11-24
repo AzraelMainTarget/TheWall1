@@ -33,9 +33,26 @@
     const inp = document.getElementById('gatePass');
     msg.textContent = 'проверяю…';
     msg.className = 'mut';
-    const ok = await check((inp.value || '').trim()).catch(() => false);
+    const raw = (inp.value || '');
+    /* iPhone autocapitalises password fields — the code is lowercase, so we
+       try as typed, then lowercased, then without any spaces */
+    const variants = [...new Set([
+      raw.trim(),
+      raw.trim().toLowerCase(),
+      raw.replace(/\s+/g, ''),
+      raw.replace(/\s+/g, '').toLowerCase()
+    ])].filter(Boolean);
+
+    let ok = false;
+    for (const v of variants) {
+      if (await check(v).catch(() => false)) { ok = true; break; }
+    }
     if (ok) { try { localStorage.setItem(SESSION, String(Date.now())); } catch {} open(); }
-    else { msg.textContent = 'неверный код'; msg.className = 'bad'; inp.value = ''; }
+    else {
+      msg.textContent = 'неверный код · введено «' + (raw.trim() || '—') + '»';
+      msg.className = 'bad';
+      inp.value = '';
+    }
   };
   document.getElementById('gatePass').addEventListener('keydown', e => {
     if (e.key === 'Enter') document.getElementById('gateBtn').click();

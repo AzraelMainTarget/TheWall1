@@ -70,9 +70,10 @@
   <div id="gate">
     <h1>Tools</h1>
     <p class="sub">Private</p>
-    <input id="gatePass" type="password" placeholder="Access code" autocomplete="current-password">
+    <input id="gatePass" type="password" placeholder="Access code" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" inputmode="text" aria-label="Access code">
     <button id="gateBtn">Enter</button>
     <div id="gateMsg"></div>
+    <p style="margin-top:12px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#485768">код без заглавных букв</p>
   </div>
 
   <div id="app" style="display:none">
@@ -114,6 +115,6 @@
   </div>
 </div>
 
-<script src="tools.js"></script>
+<script src="tools.js?v=3"></script>
 </body>
 </html>
