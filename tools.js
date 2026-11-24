@@ -1,7 +1,6 @@
 
 (() => {
-  const GATE_HASH = 'pbkdf2$sha256$150000$vngfCPefeLcNgXM0ajqQ1A==$kdDmd5q3sk26k7p1QSzwbuonE/0+Mg4b3Jh1WUUWzbg=';
-  const SESSION = 'td-tools';
+    const SESSION = 'td-tools';
   const SESSION_MS = 12 * 60 * 60 * 1000;
 
   const gate = document.getElementById('gate');
@@ -18,59 +17,67 @@
     if (t && Date.now() - t < SESSION_MS) open();
   } catch {}
 
-  const b64b = (s) => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+  /* ============================================================
+     Проверка кода — намеренно простыми средствами.
+     WebCrypto с PBKDF2 в Safari падал с NotSupportedError, а мы
+     потом врали «неверный код». Здесь ничего не может упасть:
+     чистая арифметика над строкой, синхронная, без промисов.
+     ============================================================ */
+  const GATE_KEY = 0x5f3a91c7;          // контрольная константа
 
-  /* WebCrypto only accepts 'SHA-256' with the hyphen — 'SHA256' throws
-     NotSupportedError, which used to be swallowed and shown as a wrong code. */
-  const hashName = (n) => {
-    const s = String(n).toUpperCase();
-    return s.includes('-') ? s : s.replace(/^SHA(\d+)$/, 'SHA-$1');
-  };
-
-  async function check(code) {
-    const [, name, iter, salt, want] = GATE_HASH.split('$');
-    const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(code), 'PBKDF2', false, ['deriveBits']);
-    const bits = await crypto.subtle.deriveBits(
-      { name: 'PBKDF2', salt: b64b(salt), iterations: Number(iter), hash: hashName(name) }, key, 256);
-    return btoa(String.fromCharCode(...new Uint8Array(bits))) === want;
+  /* простая, но не тривиальная свёртка строки (FNV-1a) */
+  function fold(str) {
+    let h = 0x811c9dc5;
+    for (let i = 0; i < str.length; i++) {
+      h ^= str.charCodeAt(i);
+      h = Math.imul(h, 0x01000193) >>> 0;
+    }
+    return h >>> 0;
   }
 
-  document.getElementById('gateBtn').onclick = async () => {
+  /* ожидаемое значение для кода 'thatdarkness' */
+  const WANT = fold('td|thatdarkness') ^ GATE_KEY;
+
+  function normalise(raw) {
+    return String(raw || '')
+      .replace(/[\u0400-\u04FF]/g, '')   // выкидываем случайную кириллицу
+      .replace(/[\s\u00A0\u2000-\u200F\uFEFF]/g, '')  // все виды пробелов и невидимки
+      .toLowerCase();
+  }
+
+  function check(raw) {
+    const v = normalise(raw);
+    if (!v) return false;
+    return (fold('td|' + v) ^ GATE_KEY) === WANT;
+  }
+
+  document.getElementById('gateBtn').onclick = () => {
     const msg = document.getElementById('gateMsg');
     const inp = document.getElementById('gatePass');
-    msg.textContent = 'проверяю…';
-    msg.className = 'mut';
-    let threw = null;
-    const raw = (inp.value || '');
-    /* iPhone autocapitalises password fields — the code is lowercase, so we
-       try as typed, then lowercased, then without any spaces */
-    const variants = [...new Set([
-      raw.trim(),
-      raw.trim().toLowerCase(),
-      raw.replace(/\s+/g, ''),
-      raw.replace(/\s+/g, '').toLowerCase()
-    ])].filter(Boolean);
+    const shown = (inp.value || '').trim();
 
     let ok = false;
-    for (const v of variants) {
-      try {
-        if (await check(v)) { ok = true; break; }
-      } catch (e) {
-        threw = e;
-        break;
-      }
-    }
-    if (ok) { try { localStorage.setItem(SESSION, String(Date.now())); } catch {} open(); }
-    else if (threw) {
-      msg.textContent = 'ошибка проверки: ' + threw.name + ' — ' + threw.message.slice(0, 60);
+    try {
+      ok = check(inp.value);
+    } catch (e) {
+      msg.textContent = 'сбой проверки: ' + e.message;
       msg.className = 'bad';
+      return;
     }
-    else {
-      msg.textContent = 'неверный код · введено «' + (raw.trim() || '—') + '»';
+
+    if (ok) {
+      try { localStorage.setItem(SESSION, String(Date.now())); } catch {}
+      msg.textContent = '';
+      open();
+    } else {
+      msg.textContent = 'не подошло «' + (shown || '—') + '» · длина ' +
+        (inp.value || '').length;
       msg.className = 'bad';
       inp.value = '';
+      inp.focus();
     }
   };
+
   document.getElementById('gatePass').addEventListener('keydown', e => {
     if (e.key === 'Enter') document.getElementById('gateBtn').click();
   });
