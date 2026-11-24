@@ -30,11 +30,18 @@
   .item{padding:11px 0;border-bottom:1px solid rgba(150,190,255,.09);font-size:13.5px;line-height:1.5;}
   .item:last-child{border-bottom:none;}
   .item .t{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:#4d5f76;display:block;margin-bottom:3px;}
-  .item .meta{display:flex;align-items:baseline;gap:9px;margin-bottom:4px;}
-  .item .meta b{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;font-weight:600;}
-  .who-arena{color:#8fd0ff;} .who-me{color:#ffd08f;}
-  .item .when{font-size:10px;letter-spacing:.1em;color:#54657c;}
-  .item .body{display:block;color:#dbe8f8;word-break:break-word;}
+  .item .meta{display:flex;align-items:baseline;gap:10px;margin-bottom:5px;}
+  .item .meta b.who{
+    font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;
+    font-size:12px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+  }
+  .item .when{font-size:10.5px;letter-spacing:.1em;color:#5b6e86;font-variant-numeric:tabular-nums;}
+  .item .body{display:block;color:#e4eefb;font-size:14.5px;line-height:1.55;word-break:break-word;}
+  /* Arena — голубая полоса слева, Ты — оранжевая */
+  .from-arena{border-left:3px solid #4fa8e8; padding-left:11px;}
+  .from-me{border-left:3px solid #e8a24f; padding-left:11px;}
+  .from-arena .who{color:#7cc4f5;}
+  .from-me .who{color:#f5c27c;}
   .item a{color:#a9c8ee;word-break:break-all;}
   .item audio{width:100%;margin-top:6px;height:34px;}
   details{margin-top:20px;}
@@ -69,173 +76,6 @@
   </details>
 </div>
 
-<script>
-(() => {
-  const O = 'AzraelMainTarget', R = 'TheWall1', FEED = 'box/messages.md', DIRS = ['box', 'voice'];
-  const TS = 'gh-voice-token';
-  const st = document.getElementById('st');
-  const feed = document.getElementById('feed');
-  const tok = document.getElementById('tok');
-
-  const token = () => { try { return (localStorage.getItem(TS) || '').trim(); } catch { return ''; } };
-  tok.value = token();
-
-  document.getElementById('saveTok').onclick = () => {
-    try { localStorage.setItem(TS, tok.value.trim()); st.textContent = 'ключ сохранён'; }
-    catch { st.textContent = 'не сохранилось'; }
-  };
-
-  const api = (p, opt = {}) => fetch('https://api.github.com/repos/' + O + '/' + R + p, {
-    ...opt,
-    headers: {
-      'Authorization': 'Bearer ' + token(),
-      'Accept': 'application/vnd.github+json',
-      'Content-Type': 'application/json',
-      ...(opt.headers || {})
-    }
-  });
-
-  const b64 = (s) => btoa(unescape(encodeURIComponent(s)));
-  const unb64 = (s) => decodeURIComponent(escape(atob(s.replace(/\n/g, ''))));
-
-  async function appendLine(line) {
-    let sha = null, body = '';
-    const r = await api('/contents/' + FEED);
-    if (r.ok) { const d = await r.json(); sha = d.sha; body = unb64(d.content); }
-    else if (r.status !== 404) throw new Error('чтение: HTTP ' + r.status);
-    body += line + '\n';
-    const put = await api('/contents/' + FEED, {
-      method: 'PUT',
-      body: JSON.stringify({ message: 'box: add entry', content: b64(body), ...(sha ? { sha } : {}) })
-    });
-    if (!put.ok) {
-      const e = await put.json().catch(() => ({}));
-      throw new Error(e.message || ('HTTP ' + put.status));
-    }
-  }
-
-  async function upload(name, buf, type) {
-    const fr = new FileReader();
-    const b = await new Promise((res, rej) => {
-      fr.onload = () => res(String(fr.result).split(',')[1]);
-      fr.onerror = rej;
-      fr.readAsDataURL(new Blob([buf], { type }));
-    });
-    const put = await api('/contents/' + DIR + '/' + name, {
-      method: 'PUT', body: JSON.stringify({ message: 'box: ' + name, content: b })
-    });
-    if (!put.ok) {
-      const e = await put.json().catch(() => ({}));
-      throw new Error(e.message || ('HTTP ' + put.status));
-    }
-  }
-
-  document.getElementById('sendMsg').onclick = async () => {
-    const v = document.getElementById('msg').value.trim();
-    if (!v) { st.textContent = 'пусто'; return; }
-    if (!token()) { st.textContent = 'нужен ключ — открой блок ниже'; return; }
-    st.textContent = 'отправляю…';
-    try {
-      const d = new Date();
-      const p = (n) => String(n).padStart(2, '0');
-      const stamp = d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) +
-                    ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
-      await appendLine('- ' + stamp + ' | Ты | ' + v.replace(/\n/g, ' '));
-      document.getElementById('msg').value = '';
-      st.textContent = 'добавлено';
-      load();
-    } catch (e) { st.textContent = 'ошибка: ' + e.message; }
-  };
-
-  let rec = null, chunks = [], blob = null, media = null;
-  document.getElementById('rec').onclick = async () => {
-    if (rec && rec.state === 'recording') { rec.stop(); return; }
-    try {
-      media = await navigator.mediaDevices.getUserMedia({ audio: true });
-    } catch { st.textContent = 'нет доступа к микрофону'; return; }
-    const t = ['audio/mp4', 'audio/webm'].find(x => MediaRecorder.isTypeSupported(x)) || '';
-    chunks = [];
-    rec = t ? new MediaRecorder(media, { mimeType: t }) : new MediaRecorder(media);
-    rec.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
-    rec.onstop = () => {
-      media.getTracks().forEach(x => x.stop());
-      blob = new Blob(chunks, { type: rec.mimeType || 'audio/webm' });
-      document.getElementById('rec').classList.remove('on');
-      document.getElementById('rec').textContent = '● Записать голос';
-      document.getElementById('sendAudio').disabled = false;
-      st.textContent = 'записано · ' + (blob.size / 1024).toFixed(0) + ' КБ';
-    };
-    rec.start();
-    document.getElementById('rec').classList.add('on');
-    document.getElementById('rec').textContent = '■ Стоп';
-    st.textContent = 'запись…';
-  };
-
-  document.getElementById('sendAudio').onclick = async () => {
-    if (!blob) return;
-    if (!token()) { st.textContent = 'нужен ключ'; return; }
-    st.textContent = 'загружаю…';
-    try {
-      const ext = blob.type.includes('mp4') ? 'm4a' : 'webm';
-      const name = 'v-' + new Date().toISOString().replace(/[:.]/g, '-') + '.' + ext;
-      await upload(name, await blob.arrayBuffer(), blob.type);
-      st.textContent = 'в Box · скажи в чате «слушай голос»';
-      document.getElementById('sendAudio').disabled = true;
-    } catch (e) { st.textContent = 'ошибка: ' + e.message; }
-  };
-
-  async function load() {
-    feed.innerHTML = '<div class="item"><span class="t">—</span>загружаю…</div>';
-    try {
-      const out = [];
-      const rm = await api('/contents/' + FEED);
-      if (rm.ok) {
-        const d = await rm.json();
-        const lines = unb64(d.content).trim().split('\n').filter(Boolean).slice(-16).reverse();
-        lines.forEach(l => {
-          const m = l.replace(/^- /, '').match(/^([\d-]+ [\d:]+) \| ([^|]+) \| (.*)$/);
-          if (!m) { out.push('<div class="item">' + l.replace(/^- /, '') + '</div>'); return; }
-          const [, when, who, text] = m;
-          const isMe = who.trim() === 'Arena';
-          const [day, time] = when.split(' ');
-          const dd = day.slice(8) + '.' + day.slice(5, 7);
-          out.push('<div class="item">' +
-            '<span class="meta">' +
-              '<b class="' + (isMe ? 'who-arena' : 'who-me') + '">' + who.trim() + '</b>' +
-              '<span class="when">' + dd + ' · ' + time + '</span>' +
-            '</span>' +
-            '<span class="body">' + text + '</span></div>');
-        });
-      }
-      let files = [];
-      for (const dir of DIRS) {
-        const ra = await api('/contents/' + dir);
-        if (ra.ok) files = files.concat((await ra.json())
-          .filter(f => /\.(m4a|webm|mp3)$/.test(f.name))
-          .map(f => ({ ...f, _dir: dir })));
-      }
-      files = files.sort((a, b) => a.name.localeCompare(b.name)).slice(-8).reverse();
-      {
-        files.forEach(f => {
-          const isArena = /voice-from-arena/.test(f.name);
-          const raw = f.name.replace(/^v-/, '').replace(/^voice-/, '').replace(/\.(m4a|webm|mp3)$/, '');
-          const dt = raw.match(/(\d{4})-(\d{2})-(\d{2})T(\d{2})-(\d{2})/);
-          const when = dt ? dt[3] + '.' + dt[2] + ' · ' + dt[4] + ':' + dt[5] : 'аудио';
-          out.push('<div class="item">' +
-            '<span class="meta"><b class="' + (isArena ? 'who-arena' : 'who-me') + '">' +
-              (isArena ? 'Arena' : 'Ты') + '</b><span class="when">' + when + ' · голос</span></span>' +
-            '<audio controls preload="none" src="' + f.download_url + '"></audio></div>');
-        });
-      }
-      feed.innerHTML = out.length ? out.join('') : '<div class="item"><span class="t">—</span>пусто</div>';
-    } catch (e) {
-      feed.innerHTML = '<div class="item"><span class="t">ошибка</span>' + e.message + '</div>';
-    }
-  }
-  document.getElementById('reload').onclick = load;
-  if (token()) load();
-  else feed.innerHTML = '<div class="item"><span class="t">—</span>вставь ключ, чтобы увидеть ленту</div>';
-})();
-</script>
+<script src="box.js?v=2"></script>
 </body>
 </html>
