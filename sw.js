@@ -1,5 +1,5 @@
 /* Service worker: Box открывается мгновенно и работает при плохой сети */
-const CACHE = 'box-v1';
+const CACHE = 'box-v2';
 const SHELL = ['box.html', 'box.js?v=11', 'icon-192.png', 'box.webmanifest'];
 
 self.addEventListener('install', (e) => {
