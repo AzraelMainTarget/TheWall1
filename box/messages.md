@@ -43,4 +43,4 @@
 - 2026-11-24 19:25 | Arena | названия крупнее и объёмнее, вывеска в цвет подписи, 20:27: audio:https://azraelmaintarget.github.io/TheWall1/box/arena-2026-11-24T17-25-00.mp3 · read
 - 2026-11-24 20:05 | Arena | стеклянные окна, палитра чата, плеер, 2027: audio:https://azraelmaintarget.github.io/TheWall1/box/arena-2026-11-24T18-05-00.mp3 · read
 - 2026-11-24 20:45 | Arena | палитра #081A23..#F0F0EA, объёмная вывеска, плавнее: audio:https://azraelmaintarget.github.io/TheWall1/box/arena-2026-11-24T18-45-00.mp3 · read
-- 2026-11-24 21:30 | Arena | новый заголовок + чат #FEB342/#F16F0D, ники бирюза: audio:https://azraelmaintarget.github.io/TheWall1/box/arena-2026-11-24T19-30-00.mp3
+- 2026-11-24 21:30 | Arena | новый заголовок + чат #FEB342/#F16F0D, ники бирюза: audio:https://azraelmaintarget.github.io/TheWall1/box/arena-2026-11-24T19-30-00.mp3 · read
