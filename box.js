@@ -87,7 +87,7 @@
   const handHtml = (who, read) => {
     const mine = who === NAME_ME;
     if (read) return '<span class="hand read" title="прочитано">🤝</span>';
-    return '<span class="hand" title="отправлено">' + (mine ? '👉' : '👈') + '</span>';
+    return '<span class="hand" title="отправлено">' + (mine ? '👉' : '👋') + '</span>';
   };
 
   const bubbleHtml = (e, inner) => {

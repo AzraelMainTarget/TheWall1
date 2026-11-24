@@ -47,7 +47,7 @@
 
   const bubble = (m, pending) => {
     const mine = m.who === NAME_ME;
-    const hand = m.read ? '🤝' : (mine ? '👉' : '👈');
+    const hand = m.read ? '🤝' : (mine ? '👉' : '👋');
     const a = (m.text || '').match(AUDIO);
     const body = a
       ? '<audio controls preload="none" style="width:100%;max-width:200px;height:30px;margin-top:4px" src="' +
@@ -56,6 +56,34 @@
     return '<div class="pm ' + (mine ? 'az' : 'ar') + '"' + (pending ? ' style="opacity:.6"' : '') + '>' +
       '<span class="w">' + esc(m.who) + ' ' + m.time + ' ' + hand + '</span>' + body + '</div>';
   };
+
+  /* --- читалка: Arena отмечает свои строки «· read», когда Azrael открыл чат --- */
+  const READNOW = 'box-read-upto';
+  async function markRead(entries){
+    if(!token()) return;
+    try{
+      const mine = entries.filter(e => e.who === NAME_AI && !e.read);
+      if(!mine.length) return;
+      const stamp = mine[mine.length-1].date + ' ' + mine[mine.length-1].time;
+      let upTo = ''; try{ upTo = localStorage.getItem(READNOW) || ''; }catch{}
+      if(upTo >= stamp) return;
+      const r = await api('/contents/' + FEED);
+      if(!r.ok) return;
+      const d = await r.json();
+      let body = unb64(d.content), changed = 0;
+      const lines = body.split('\n').map(l => {
+        const m = l.match(/^(\s*-\s*\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}\s*\|\s*([^|]+?)\s*\|\s*)(.*)$/);
+        if(!m) return l;
+        if(!/^(arena|ai)$/i.test(m[2].trim())) return l;
+        if(READ.test(m[3])) return l;
+        changed++; return m[1] + m[3].replace(/\s*$/, '') + ' · read';
+      });
+      if(!changed) return;
+      const put = await api('/contents/' + FEED, { method:'PUT',
+        body: JSON.stringify({ message:'box: read receipt', content: b64(lines.join('\n')), sha:d.sha }) });
+      if(put.ok){ try{ localStorage.setItem(READNOW, stamp); }catch{} }
+    }catch{}
+  }
 
   const readPend = () => { try { return JSON.parse(localStorage.getItem(PEND) || '[]'); } catch { return []; } };
   const addPend = (i) => { const a = readPend(); a.push(i); try { localStorage.setItem(PEND, JSON.stringify(a.slice(-40))); } catch {} };
@@ -88,9 +116,10 @@
     const have = new Set(entries.map(key));
     readPend().forEach(p => { if (!have.has(key(p))) entries.push({ ...p, read: false }); });
 
-    const last = entries.slice(-6);
+    const last = entries.slice(-40);
     feedEl.innerHTML = last.length ? last.map(e => bubble(e)).join('') : '<div class="empty">пока пусто</div>';
     feedEl.scrollTop = feedEl.scrollHeight;
+    markRead(entries);                       /* руки «здороваются», когда я прочитал */
   }
 
   async function push(line, item) {
