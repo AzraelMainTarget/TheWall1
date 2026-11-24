@@ -60,7 +60,7 @@
 
   /* ---------- разбор ---------- */
   const READ = /\s*·\s*read\s*$/;
-  const AUDIO = /^audio:(.+)$/;
+  const AUDIO = /audio:(\S+)/;
   const localise = (u) => u.replace('https://raw.githubusercontent.com/' + O + '/' + R + '/main/', PAGES);
 
   const parse = (l) => {
@@ -101,7 +101,11 @@
 
   const itemHtml = (e) => {
     const a = (e.text || '').match(AUDIO);
-    if (a) return bubbleHtml(e, '<audio controls preload="none" src="' + esc(localise(a[1])) + '"></audio>');
+    if (a) {
+      const txt=(e.text||'').replace(AUDIO,'').replace(/\s*:?\s*$/,'').trim().replace(/:$/,'');
+      return bubbleHtml(e, (txt ? '<span class="tx">' + esc(txt.slice(0,160)) + '</span>' : '') +
+        '<audio controls preload="none" src="' + esc(localise(a[1])) + '"></audio>');
+    }
     return bubbleHtml(e, linkify(esc(e.text)));
   };
 

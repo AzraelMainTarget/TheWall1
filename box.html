@@ -63,23 +63,23 @@
   .m .when{font-size:9px;opacity:.72;margin-left:6px;font-variant-numeric:tabular-nums;}
   /* Azrael — Bot (индиго) с фото, Arena — Dev (синий) с фото */
   /* Azrael — тёплый шёлк, ник чёрный как смерть; Arena — глубокая ночь с золотом */
-  .m.az{margin-left:auto;background:linear-gradient(158deg,#ffffff,#f0e9f7 60%,#e4d8f0);
-    border:1px solid rgba(255,255,255,.85);border-bottom-right-radius:5px;
-    color:#101010;font-weight:600;box-shadow:0 0 16px rgba(255,255,255,.26),0 8px 22px rgba(0,0,0,.42);}
-  .m.az .who{color:#000;-webkit-text-stroke:.6px #2fa06b;paint-order:stroke fill;}
-  .m.arena{margin-right:auto;background:linear-gradient(158deg,#c74ff0,#a12fd0 52%,#7d1ea8);
-    border:1px solid rgba(255,255,255,.55);border-bottom-left-radius:5px;
-    color:#fff;box-shadow:0 0 18px rgba(214,120,255,.42),0 0 34px rgba(255,255,255,.16),0 8px 22px rgba(0,0,0,.45);}
-  .m.arena .who{color:#fff;text-shadow:0 0 8px rgba(255,255,255,.55);}
+  .m.az{margin-left:auto;background:linear-gradient(158deg,#ffd166,#f4b400 55%,#e0a200);
+    border:1px solid rgba(255,235,170,.72);border-bottom-right-radius:5px;
+    color:#171102;font-weight:600;box-shadow:0 0 16px rgba(244,180,0,.34),0 8px 22px rgba(0,0,0,.42);}
+  .m.arena{margin-right:auto;background:linear-gradient(158deg,#ff5aa0,#ff2e88 52%,#d81e6e);
+    border:1px solid rgba(255,190,215,.62);border-bottom-left-radius:5px;
+    color:#fff;box-shadow:0 0 18px rgba(255,46,136,.42),0 0 34px rgba(255,255,255,.14),0 8px 22px rgba(0,0,0,.45);}
+  .m.az .who,.m.arena .who{color:#b6ff2e;-webkit-text-stroke:.7px #04140a;paint-order:stroke fill;
+    text-shadow:0 0 8px rgba(150,255,60,.65);}
   .m.pending{opacity:.62;}
   /* галочки доставки */
   .hand{display:inline-block;margin-left:6px;font-size:12px;line-height:1;vertical-align:baseline;
-    opacity:.7;filter:drop-shadow(0 1px 1px rgba(0,0,0,.35));
+    color:#f2d6a8;opacity:.85;filter:drop-shadow(0 1px 1px rgba(0,0,0,.55));
     transition:opacity .25s,transform .25s;}
   .hand.read{opacity:1;transform:scale(1.12);}
   .m audio{width:100%;min-width:190px;margin-top:5px;height:34px;}
-  .m a{color:#6b1fb0;text-decoration:underline;}
-  .m.arena a{color:#fff;text-decoration-color:rgba(255,255,255,.6);}
+  .m a{color:#5a3d00;text-decoration:underline;}
+  .m.arena a{color:#ffe9c6;text-decoration-color:rgba(255,255,255,.6);}
   .empty{text-align:center;color:#4a5b70;font-size:12px;padding:30px 10px;}
 
   /* композер */
@@ -137,6 +137,6 @@ if ('serviceWorker' in navigator) {
   addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 }
 </script>
-<script src="box.js?v=12"></script>
+<script src="box.js?v=13"></script>
 </body>
 </html>

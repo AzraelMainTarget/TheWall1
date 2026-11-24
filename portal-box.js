@@ -31,7 +31,7 @@
   });
 
   const READ = /\s*·\s*read\s*$/;
-  const AUDIO = /^audio:(.+)$/;
+  const AUDIO = /audio:(\S+)/;
   const parse = (l) => {
     const raw = l.replace(/^\s*-\s*/, '').trim();
     const m = raw.match(/^(\d{4}-\d{2}-\d{2})[ T](\d{2}:\d{2})\s*\|\s*([^|]+?)\s*\|\s*(.*)$/);
@@ -49,10 +49,10 @@
     const mine = m.who === NAME_ME;
     const hand = m.read ? '🤝' : (mine ? '👉' : '👋');
     const a = (m.text || '').match(AUDIO);
-    const body = a
-      ? '<audio controls preload="none" style="width:100%;max-width:200px;height:30px;margin-top:4px" src="' +
-        esc(localise(a[1])) + '"></audio>'
-      : esc((m.text || '').slice(0, 160));
+    const txt = (m.text || '').replace(AUDIO, '').replace(/\s*:?\s*$/, '').trim().replace(/:$/, '');
+    const body = (txt ? '<span class="tx">' + esc(txt.slice(0, 160)) + '</span>' : '') +
+      (a ? '<audio controls preload="none" style="width:100%;max-width:200px;height:30px;margin-top:4px" src="' +
+        esc(localise(a[1])) + '"></audio>' : '');
     return '<div class="pm ' + (mine ? 'az' : 'ar') + '"' + (pending ? ' style="opacity:.6"' : '') + '>' +
       '<span class="w">' + esc(m.who) + ' ' + m.time + ' ' + hand + '</span>' + body + '</div>';
   };
