@@ -15,7 +15,7 @@
 
   /* каркас на весь экран: шапка, лента, композер */
   .app{display:flex;flex-direction:column;height:100dvh;max-width:600px;margin:0 auto;
-    background:radial-gradient(120% 70% at 50% 0%,#06080e,#000 62%);}
+    background:radial-gradient(130% 75% at 50% 0%,#070a11 0%,#03050a 55%,#000 100%);}
 
   header{display:flex;align-items:center;justify-content:space-between;gap:10px;
     padding:calc(env(safe-area-inset-top) + 8px) 14px 8px;border-bottom:1px solid var(--line);flex:0 0 auto;}
@@ -40,14 +40,18 @@
   .m .who{font-family:"SF Mono",ui-monospace,Menlo,monospace;font-size:9px;font-weight:800;
     letter-spacing:.13em;text-transform:uppercase;display:block;margin-bottom:3px;opacity:.85;}
   .m .when{font-size:9px;opacity:.5;margin-left:6px;font-variant-numeric:tabular-nums;}
-  .m.me{margin-left:auto;background:rgba(210,140,55,.10);border:1px solid rgba(210,140,55,.20);border-bottom-right-radius:5px;}
-  .m.me .who{color:#d9a465;}
-  .m.arena{margin-right:auto;background:rgba(60,130,190,.09);border:1px solid rgba(60,130,190,.20);border-bottom-left-radius:5px;}
-  .m.arena .who{color:#6aa8d8;}
+  /* Azrael — тёплый камень, Arena — холодная сталь. Никакого коричневого */
+  .m.az{margin-left:auto;background:rgba(196,204,214,.075);border:1px solid rgba(196,204,214,.14);
+    border-bottom-right-radius:5px;color:#e6ecf3;}
+  .m.az .who{color:#b9c6d4;}
+  .m.arena{margin-right:auto;background:rgba(96,148,204,.085);border:1px solid rgba(110,165,220,.18);
+    border-bottom-left-radius:5px;color:#e2edf8;}
+  .m.arena .who{color:#82b6e0;}
   .m.pending{opacity:.62;}
   /* галочки доставки */
-  .ticks{display:inline-block;margin-left:7px;font-size:10px;letter-spacing:-1px;color:#5a6b80;vertical-align:baseline;}
-  .ticks.read{color:#5aa9e8;}
+  .hand{display:inline-block;margin-left:6px;font-size:12px;line-height:1;vertical-align:baseline;
+    opacity:.55;transition:opacity .25s,transform .25s;}
+  .hand.read{opacity:1;transform:scale(1.08);}
   .m audio{width:100%;min-width:190px;margin-top:5px;height:34px;}
   .m a{color:#a9c8ee;}
   .empty{text-align:center;color:#4a5b70;font-size:12px;padding:30px 10px;}
@@ -78,7 +82,7 @@
   <header>
     <h1>Box</h1>
     <div class="r">
-      <span id="ver">b9</span>
+      <span id="ver">b10</span>
       <button id="reload">↻</button>
     </div>
   </header>
@@ -102,6 +106,6 @@
     <button id="saveTok">Сохранить</button>
   </details>
 </div>
-<script src="box.js?v=9"></script>
+<script src="box.js?v=10"></script>
 </body>
 </html>
