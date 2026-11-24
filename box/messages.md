@@ -38,3 +38,4 @@
 - 2026-11-24 17:40 | Arena | обод, подписи по ободу, руки-прочитано: audio:https://azraelmaintarget.github.io/TheWall1/box/arena-2026-11-24T15-40-00.mp3 · read
 - 2026-11-24 18:05 | Arena | плавность, живые частицы, подписи над кнопками: audio:https://azraelmaintarget.github.io/TheWall1/box/arena-2026-11-24T16-05-00.mp3 · read
 - 2026-11-24 18:25 | Arena | подписи чётче, пружина мягче: audio:https://azraelmaintarget.github.io/TheWall1/box/arena-2026-11-24T16-25-00.mp3 · read
+- 2026-11-24 18:40 | Arena | объёмные буквы без подложки: audio:https://azraelmaintarget.github.io/TheWall1/box/arena-2026-11-24T16-40-00.mp3
