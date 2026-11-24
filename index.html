@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>That Darkness</title>
+<meta name="td-build" content="portal-box-1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,500;1,300&family=Jost:wght@300;400&family=Monoton&display=swap" rel="stylesheet">
@@ -45,6 +46,25 @@ canvas#c.drag{cursor:grabbing}
 #snd{position:fixed;right:max(16px,env(safe-area-inset-right));bottom:max(16px,env(safe-area-inset-bottom));z-index:6;width:44px;height:44px;border-radius:50%;border:1px solid rgba(58,160,118,.4);background:rgba(8,4,6,.78);color:var(--ink);font-size:17px;cursor:pointer;transition:opacity .4s}
 #snd.m{opacity:.5}
 @media (prefers-reduced-motion:reduce){#panel,#hint{transition:none}#icons button::after{animation:none}#pb.a p,#pb.a li{animation:none}}
+
+  /* ---- встроенный Box внутри панели ---- */
+  #pbox{margin-top:14px;border-top:1px solid rgba(255,255,255,.12);padding-top:12px;}
+  .pbox-head{font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:#9a9cb0;margin-bottom:8px;}
+  #pbox-feed{max-height:150px;overflow-y:auto;margin-bottom:9px;display:flex;flex-direction:column;gap:6px;}
+  #pbox-feed .pm{font-size:12px;line-height:1.4;padding:6px 9px;border-radius:10px;max-width:88%;}
+  #pbox-feed .pm.az{margin-left:auto;background:#5c5ed7;color:#fff;}
+  #pbox-feed .pm.ar{margin-right:auto;background:#40638b;color:#fff;}
+  #pbox-feed .pm .w{font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;opacity:.8;display:block;margin-bottom:2px;}
+  #pbox-feed .empty{font-size:11.5px;color:#8d8fa3;text-align:center;padding:8px;}
+  .pbox-row{display:flex;gap:6px;align-items:center;}
+  #pbox-msg{flex:1;min-height:38px;padding:9px 11px;border-radius:18px;border:1px solid rgba(255,255,255,.14);
+    background:#2b2b37;color:#eef1f7;font-size:14px;font-family:inherit;outline:none;}
+  #pbox-rec,#pbox-send{width:44px;height:38px;border-radius:18px;border:1px solid rgba(255,255,255,.14);
+    background:#2b2b37;color:#eef1f7;font-size:15px;cursor:pointer;flex:0 0 auto;}
+  #pbox-rec{background:#457a66;border-color:transparent;font-weight:700;color:#fff;}
+  #pbox-rec.on{background:#c163b9;animation:pboxpulse 1.1s infinite;}
+  @keyframes pboxpulse{0%,100%{opacity:1}50%{opacity:.55}}
+  .pbox-link{display:inline-block;margin-top:10px;font-size:11px;color:#9ab6d4;text-decoration:none;letter-spacing:.04em;}
 </style>
 </head>
 <body>
@@ -53,7 +73,21 @@ canvas#c.drag{cursor:grabbing}
 <h1 id="title"><span>That</span> <span>Darkness</span></h1>
 <div id="hint">Tap the portal to open it.</div>
 <div id="icons"></div>
-<div id="panel" role="dialog" aria-modal="true" aria-labelledby="ph"><button id="x" aria-label="Close">×</button><h2 id="ph"></h2><div id="pb"></div></div>
+<div id="panel" role="dialog" aria-modal="true" aria-labelledby="ph">
+  <button id="x" aria-label="Close">×</button>
+  <h2 id="ph"></h2>
+  <div id="pb"></div>
+  <div id="pbox" hidden>
+    <div class="pbox-head">Box</div>
+    <div id="pbox-feed"></div>
+    <div class="pbox-row">
+      <button type="button" id="pbox-rec">●</button>
+      <input id="pbox-msg" placeholder="Сообщение…">
+      <button type="button" id="pbox-send">↑</button>
+    </div>
+    <a class="pbox-link" href="box.html">Открыть полный Box →</a>
+  </div>
+</div>
 <button id="snd" aria-label="Mute or unmute music" title="Sound (M)">♪</button>
 
 
@@ -91,10 +125,17 @@ const SECTIONS=[
  {name:'Contacts',svg:ico('<path d="M4 14.5L28 4l-7 24-5.5-9.5z"/><path d="M15.5 18.5L28 4"/>'),
   html:'<p>Partnerships, questions, and custom builds.</p><ul><li>Email<small>your@email.com</small></li><li>Telegram<small>@yourhandle</small></li></ul>'},
  {name:'Support the Project',svg:ico('<path d="M16 28S4 20 4 12a6 6 0 0 1 12-2 6 6 0 0 1 12 2c0 8-12 16-12 16z"/><circle cx="16" cy="4.5" r=".8" fill="currentColor"/>'),
-  html:'<p>Help keep these tools free and growing.</p><ul><li>Donate<small>Add your link here.</small></li><li>Share<small>Tell another founder.</small></li></ul>'}
+  html:'<p>Help keep these tools free and growing.</p><ul><li>Donate<small>Add your link here.</small></li><li>Share<small>Tell another founder.</small></li></ul>'},
+ {name:'Box',svg:ico('<path d="M4 9.5h24M4 9.5v13.5a2.5 2.5 0 0 0 2.5 2.5h19a2.5 2.5 0 0 0 2.5-2.5V9.5"/><path d="M11 9.5V7a5 5 0 0 1 10 0v2.5"/><circle cx="16" cy="17" r="1.4" fill="currentColor"/>'),
+  html:'', box:true}
 ];
 const panel=$('panel'),ph=$('ph'),pb=$('pb'),xb=$('x'),hint=$('hint');let lastFocus;
-function openSec(i){const s=SECTIONS[i];ph.textContent=s.name;pb.innerHTML=s.html;pb.classList.remove('a');void pb.offsetWidth;pb.classList.add('a');
+function openSec(i){const s=SECTIONS[i];ph.textContent=s.name;
+ const bx=document.getElementById('pbox');
+ if(s.box){pb.innerHTML='<p>Голос и ссылки в одном месте. Записал — я заберу и отвечу голосом.</p>';}
+ else {pb.innerHTML=s.html;}
+ if(bx){bx.hidden=!s.box;if(s.box&&window.PORTAL_BOX)window.PORTAL_BOX.load();}
+ pb.classList.remove('a');void pb.offsetWidth;pb.classList.add('a');
  if(!panel.classList.contains('open'))lastFocus=document.activeElement;panel.classList.add('open');xb.focus({preventScroll:true});hint.style.opacity=0}
 function close(){if(!panel.classList.contains('open'))return;panel.classList.remove('open');lastFocus&&lastFocus.focus&&lastFocus.focus({preventScroll:true})}
 xb.onclick=close;addEventListener('keydown',e=>{if(e.key==='Escape')close();if(e.key.toLowerCase()==='m'&&!/INPUT/.test(e.target.tagName))$('snd').click()});
@@ -368,5 +409,6 @@ function loop(){
 }
 loop();
 </script>
+<script src="portal-box.js?v=1"></script>
 </body>
 </html>
