@@ -7,7 +7,7 @@
 <meta name="td-build" content="portal-box-3">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,500;1,300&family=Jost:wght@300;400&family=Monoton&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,500;1,300&family=Jost:wght@300;400&family=Monoton&family=Montserrat:wght@700;800;900&family=Anton&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#081A23;--ink:#F0F0EA;--dim:#5FA69B;--red:#B8CEC6;--glow:rgba(20,123,120,.5);--serif:"Cormorant Garamond",Georgia,serif;--sans:"Jost",system-ui,sans-serif;--ease:cubic-bezier(.22,.8,.24,1)}
 *{box-sizing:border-box}
@@ -15,25 +15,49 @@ html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family
 canvas#c{position:fixed;inset:0;display:block;touch-action:none;cursor:grab}
 canvas#c.drag{cursor:grabbing}
 canvas#edge{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:4;mix-blend-mode:screen;opacity:.9}
-#title{position:fixed;top:max(10px,env(safe-area-inset-top));left:0;right:0;margin:0;text-align:center;z-index:2;pointer-events:none;
-  font:900 clamp(34px,8.6vw,104px)/1 "Montserrat","Jost",system-ui,sans-serif;text-transform:uppercase;letter-spacing:.055em;
-
-  /* лицевая грань: тёмный зелёно-серый металл */
-  background:linear-gradient(180deg,#F0F0EA 0%,#B8CEC6 26%,#8FB6AE 52%,#5FA69B 72%,#74ADA4 100%);
+#title{position:fixed;top:max(6px,env(safe-area-inset-top));left:50%;margin:0;z-index:2;pointer-events:none;
+  transform:translateX(-50%) scale(1.03);transform-origin:50% 40%;
+  font:400 clamp(26px,6.1vw,82px)/1.02 "Anton","Archivo Black",system-ui,sans-serif;text-transform:uppercase;
+  letter-spacing:.015em;white-space:nowrap;
+  /* грань: мятный верх, бирюза к низу */
+  background:linear-gradient(180deg,#FFFFFF 0%,#E8F2EE 15%,#C6DAD4 38%,#9CC5BB 60%,#74B0A5 82%,#5FA69B 100%);
   -webkit-background-clip:text;background-clip:text;color:transparent;
-  filter:drop-shadow(0 2px 0 rgba(6,20,26,.9)) drop-shadow(0 10px 18px rgba(0,0,0,.55))
-         drop-shadow(0 26px 40px rgba(0,0,0,.75)) drop-shadow(0 0 40px rgba(20,123,120,.35));
-  -webkit-text-stroke:.6px rgba(24,38,40,.55);paint-order:stroke fill}
-/* объёмная подложка: выдавленная грань уходит вниз-вправо */
-#title::before{content:attr(data-t);position:absolute;left:0;right:0;top:0;z-index:-1;text-align:center;text-indent:0;
-  color:#5FA69B;-webkit-text-stroke:0;letter-spacing:.075em;
+  /* свет сверху + глубокая тень под буквами */
+  filter:
+    drop-shadow(0 -1px 0 rgba(255,255,255,.95))
+    drop-shadow(0 2px 0 rgba(14,60,58,1))
+    drop-shadow(0 6px 9px rgba(0,0,0,.5))
+    drop-shadow(0 20px 28px rgba(0,0,0,.68))
+    drop-shadow(0 0 40px rgba(20,123,120,.34));
+  -webkit-text-stroke:.9px rgba(9,32,36,.45);paint-order:stroke fill}
+/* выдавка: тридцать ступеней уходят вниз-вправо, к низу почти чёрные */
+#title::before{content:attr(data-t);position:absolute;left:0;top:0;width:100%;z-index:-2;text-align:center;
+  color:#0D2B2C;-webkit-text-stroke:.9px rgba(9,32,36,.45);letter-spacing:.015em;
   text-shadow:
-    1px 1px 0 #589C92,2px 2px 0 #529289,3px 3px 0 #4C8880,4px 4px 0 #467E77,5px 5px 0 #40736E,
-    6px 6px 0 #3A6964,7px 7px 0 #345E5A,8px 8px 0 #2E5450,9px 9px 0 #284946,10px 10px 0 #223F3D,
-    11px 11px 0 #1C3433,12px 12px 0 #162A29,13px 15px 0 #162827,14px 18px 0 #122120,
-    15px 21px 0 #0F1C1B,16px 24px 0 #0C1716,17px 27px 0 #0A1211,18px 30px 0 #080F0E,
-    19px 33px 0 #060C0B,20px 36px 0 #050908,24px 46px 34px rgba(0,0,0,.85),0 60px 60px rgba(0,0,0,.6)}
-@media (max-width:520px){#title{font-size:clamp(26px,8.6vw,52px);letter-spacing:.025em;top:max(8px,env(safe-area-inset-top))}#title::before{letter-spacing:.025em}}@media (max-width:520px){
+    1px 1px 0 #386465,2px 2px 0 #35605F,3px 3px 0 #335C5B,4px 4px 0 #305756,5px 5px 0 #2E5352,
+    6px 6px 0 #2B4F4E,7px 7px 0 #294B4A,8px 8px 0 #264746,9px 9px 0 #244342,10px 10px 0 #213F3E,
+    11px 11px 0 #1F3B3A,12px 12px 0 #1C3736,13px 13px 0 #1A3332,14px 14px 0 #172F2E,15px 15px 0 #152B2A,
+    16px 16px 0 #122726,17px 18px 0 #102322,18px 20px 0 #0D1F1E,19px 22px 0 #0B1B1A,20px 24px 0 #091716,
+    22px 28px 16px rgba(0,0,0,.8),0 34px 34px rgba(0,0,0,.6)}
+/* верхний блик кромки: узкая светлая полоса по верхнему краю букв */
+#title::after{content:attr(data-t);position:absolute;left:0;top:0;width:100%;z-index:-1;text-align:center;letter-spacing:.015em;
+  color:transparent;-webkit-text-stroke:0;
+  background:linear-gradient(180deg,rgba(255,255,255,.95) 0%,rgba(255,255,255,.6) 22%,rgba(255,255,255,0) 46%);
+  -webkit-background-clip:text;background-clip:text;
+  mask-image:linear-gradient(180deg,#000 0%,#000 34%,transparent 46%);
+  -webkit-mask-image:linear-gradient(180deg,#000 0%,#000 34%,transparent 46%)}
+@media (max-width:520px){
+  #title{font-size:clamp(26px,8.8vw,50px);letter-spacing:.005em;transform:translateX(-50%)}
+  #title::before,#title::after{letter-spacing:.005em}
+  #title,#title::before{-webkit-text-stroke:.6px rgba(9,32,36,.4)}
+  /* на телефоне выдавка короче, чтобы не съедала обод */
+  /* выдавка на телефоне идёт вниз, а не вбок — иначе буквы «двоятся» */
+  #title::before{text-shadow:
+    0 1px 0 #3A6867,1px 2px 0 #366260,1px 3px 0 #315D5B,2px 4px 0 #2C5755,2px 5px 0 #275150,
+    3px 6px 0 #224B4A,3px 7px 0 #1D4544,4px 8px 0 #183F3E,4px 9px 0 #143938,5px 10px 0 #103332,
+    5px 11px 0 #0C2D2C,6px 12px 0 #092625,7px 14px 10px rgba(0,0,0,.75),0 18px 18px rgba(0,0,0,.5)}}
+  #title{filter:drop-shadow(0 -1px 0 rgba(255,255,255,.95)) drop-shadow(0 2px 0 rgba(14,60,58,1))
+    drop-shadow(0 5px 8px rgba(0,0,0,.5)) drop-shadow(0 14px 20px rgba(0,0,0,.6)) drop-shadow(0 0 26px rgba(20,123,120,.3))}}}@media (max-width:520px){
   #hint{gap:3px;bottom:max(10px,env(safe-area-inset-bottom));left:0;right:0;opacity:.66}
   #hint .credit-line{font-size:8.2px;letter-spacing:.08em}
   #hint .credit-line:nth-child(2){font-size:7.4px;letter-spacing:.04em}
