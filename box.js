@@ -188,7 +188,14 @@
         const ra = await api('/contents/' + dir);
         if (ra.ok) files = files.concat((await ra.json()).filter(f => /\.(m4a|webm|mp3)$/.test(f.name)));
       }
-      files.sort((a, b) => a.name.localeCompare(b.name)).slice(-8).reverse().forEach(f => {
+      /* сортируем по времени из имени файла, а не по алфавиту:
+         иначе "v-..." и "voice-..." перемешиваются */
+      const stamp = (n) => {
+        const m = n.match(/(\d{4})-(\d{2})-(\d{2})T(\d{2})-(\d{2})/);
+        return m ? m[1] + m[2] + m[3] + m[4] + m[5] : '0';
+      };
+      files.sort((a, b) => stamp(a.name).localeCompare(stamp(b.name)))
+           .slice(-8).reverse().forEach(f => {
         const isArena = /voice-from-arena/.test(f.name);
         let when = 'аудио';
         const dt = f.name.match(/(\d{4})-(\d{2})-(\d{2})T(\d{2})-(\d{2})/);
