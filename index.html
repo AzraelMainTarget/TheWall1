@@ -42,12 +42,19 @@ canvas#edge{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-
   filter:blur(calc(var(--blur,0)*2.6px));opacity:calc(.35 + var(--blur,0)*.65);
   transition:opacity .55s var(--ease);animation:spin 22s linear infinite;animation-play-state:paused}
 #icons button.on{pointer-events:auto}
-#icons svg{width:46%;height:46%;transition:transform .45s var(--ease);stroke:currentColor;fill:none;stroke-width:1.2;stroke-linecap:round;stroke-linejoin:round;
+#icons svg{width:46%;height:46%;transition:transform .45s var(--ease),filter .3s var(--ease),stroke-width .3s;stroke:currentColor;fill:none;stroke-width:1.2;stroke-linecap:round;stroke-linejoin:round;
   filter:drop-shadow(0 1px 0 rgba(0,0,0,.9)) drop-shadow(0 0 6px rgba(58,160,118,.85)) drop-shadow(0 -1px 3px rgba(190,255,225,.35));
   transform:translateZ(1px)}
-/* подписи живут на самом ободе и поворачиваются по часовой стрелке */
-#icons span{font:800 11.5px var(--sans);letter-spacing:.17em;text-transform:uppercase;white-space:nowrap;color:#eafff5;
-  position:absolute;left:50%;top:50%;pointer-events:none;
+/* нажатие/наведение: иконка вспыхивает ярче, ореол вокруг остаётся мягким */
+#icons button.on:hover svg,#icons button:focus-visible svg,#icons button:active svg{
+  stroke-width:1.6;color:#ffffff;
+  filter:drop-shadow(0 0 3px rgba(255,255,255,.95)) drop-shadow(0 0 10px rgba(120,255,205,1))
+         drop-shadow(0 0 22px rgba(58,220,160,.9)) drop-shadow(0 -1px 4px rgba(230,255,245,.6))}
+/* подписи: ровно над кнопкой, все одной ширины */
+#icons span{font:800 10.5px var(--sans);letter-spacing:.13em;text-transform:uppercase;white-space:nowrap;color:#f4fffb;
+  position:absolute;left:50%;bottom:calc(100% + 7px);transform:translateX(-50%);
+  width:98px;text-align:center;pointer-events:none;padding:3px 0 4px;border-radius:8px;
+  background:radial-gradient(ellipse at 50% 55%,rgba(0,10,7,.82),rgba(0,10,7,.42) 62%,rgba(0,10,7,0) 92%);
   -webkit-text-stroke:.4px rgba(0,24,16,.55);
   text-shadow:0 -1.2px 0 rgba(210,255,235,.75),0 1.4px 0 rgba(0,0,0,1),0 2.6px 2px rgba(0,0,0,.95),
               -1px 0 1px rgba(0,0,0,.9),1px 0 1px rgba(0,0,0,.9),
@@ -55,7 +62,7 @@ canvas#edge{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-
   transition:color .3s var(--ease),letter-spacing .5s var(--ease),text-shadow .3s}
 #icons button:hover span,#icons button:focus-visible span{color:#fff;text-shadow:0 -1px 0 #000,0 1px 0 #000,-1px 0 0 #000,1px 0 0 #000,0 0 14px rgba(120,255,200,1),0 0 30px rgba(58,190,140,.8)}
 #icons span b{font-weight:800}
-@media (max-width:560px){#icons span{font-size:9.5px;letter-spacing:.12em}}
+@media (max-width:560px){#icons span{font-size:9px;letter-spacing:.09em;width:78px}}
 #icons button.on:hover,#icons button:focus-visible{border-color:rgba(120,200,165,.55);color:#fff;box-shadow:0 0 28px rgba(58,160,118,.45),inset 0 0 20px rgba(58,160,118,.22);outline:0}
 #icons button.on:hover::after,#icons button:focus-visible::after{opacity:1;animation-play-state:running}
 #icons button.on:hover svg,#icons button:focus-visible svg{transform:scale(1.14)}
@@ -209,13 +216,13 @@ const WATER={clear:.42,blend:.56};                    // clear: water translucen
 /* ---------- SECTIONS ---------- */
 const ico=d=>`<svg viewBox="0 0 32 32">${d}</svg>`;
 const SECTIONS=[
- {name:'Categories',svg:ico('<circle cx="9.5" cy="9.5" r="4"/><circle cx="22.5" cy="9.5" r="4"/><circle cx="9.5" cy="22.5" r="4"/><circle cx="22.5" cy="22.5" r="4"/><circle cx="16" cy="16" r=".8" fill="currentColor"/>'),
+ {name:'Categories',rim:'Catalog',svg:ico('<circle cx="9.5" cy="9.5" r="4"/><circle cx="22.5" cy="9.5" r="4"/><circle cx="9.5" cy="22.5" r="4"/><circle cx="22.5" cy="22.5" r="4"/><circle cx="16" cy="16" r=".8" fill="currentColor"/>'),
   html:'<p>Every build, grouped by what it does for your business.</p><ul><li>Automation<small>Workflows that run without you.</small></li><li>AI tools<small>Assistants, generators, agents.</small></li><li>Startup kits<small>Ready to launch ideas.</small></li></ul>'},
- {name:'Products',svg:ico('<path d="M16 3.5l11 6.2v12.6L16 28.5 5 22.3V9.7z"/><path d="M5 9.7l11 6.3 11-6.3M16 16v12.5"/><circle cx="27.5" cy="4" r=".8" fill="currentColor"/>'),
+ {name:'Products',rim:'Products',svg:ico('<path d="M16 3.5l11 6.2v12.6L16 28.5 5 22.3V9.7z"/><path d="M5 9.7l11 6.3 11-6.3M16 16v12.5"/><circle cx="27.5" cy="4" r=".8" fill="currentColor"/>'),
   html:'<p>Finished products and prototypes, listed as they ship.</p><ul><li>Coming soon<small>Add your first product here.</small></li></ul>'},
- {name:'Ready Solutions',svg:ico('<path d="M18 3L7 18h8l-1.5 11L25 14h-8z"/><circle cx="26" cy="6" r=".9" fill="currentColor"/><circle cx="5" cy="25" r=".9" fill="currentColor"/>'),
+ {name:'Ready Solutions',rim:'Solutions',svg:ico('<path d="M18 3L7 18h8l-1.5 11L25 14h-8z"/><circle cx="26" cy="6" r=".9" fill="currentColor"/><circle cx="5" cy="25" r=".9" fill="currentColor"/>'),
   html:'<p>Plug-in solutions you can deploy today, with setup included.</p><ul><li>Coming soon<small>Add your first solution here.</small></li></ul>'},
- {name:'Contacts',svg:ico('<path d="M4 14.5L28 4l-7 24-5.5-9.5z"/><path d="M15.5 18.5L28 4"/>'),
+ {name:'Contacts',rim:'Contacts',svg:ico('<path d="M4 14.5L28 4l-7 24-5.5-9.5z"/><path d="M15.5 18.5L28 4"/>'),
   html:'<p>Partnerships, questions, and custom builds.</p><ul><li>Email<small>your@email.com</small></li><li>Telegram<small>@yourhandle</small></li></ul>'},
  {name:'Support the Project',rim:'Support',svg:ico('<path d="M16 28S4 20 4 12a6 6 0 0 1 12-2 6 6 0 0 1 12 2c0 8-12 16-12 16z"/><circle cx="16" cy="4.5" r=".8" fill="currentColor"/>'),
   html:'<p>Help keep these tools free and growing.</p><ul><li>Donate<small>Add your link here.</small></li><li>Share<small>Tell another founder.</small></li></ul>'},
@@ -484,7 +491,7 @@ void main(){
  vec3 prev=texture2D(uHist,gl_FragCoord.xy/uRes).rgb;
  gl_FragColor=vec4(mix(prev,col,mix(uBlend,1.,uReset)),1.);}`});
 const bgScene=new THREE.Scene(),bgQuad=new THREE.Mesh(new THREE.PlaneGeometry(2,2),bgMat);bgQuad.frustumCulled=false;bgScene.add(bgQuad);
-let bgS=mobile?.45:.7;const BG_MAX=mobile?.6:.95,BG_MIN=.3;
+let bgS=mobile?.55:.8;const BG_MAX=mobile?.72:1.0,BG_MIN=mobile?.42:.45;
 const mkRT=()=>new THREE.WebGLRenderTarget(2,2,{minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter,depthBuffer:false,stencilBuffer:false,generateMipmaps:false,type:HT});
 let rtA=mkRT(),rtB=mkRT();
 const SU={t:{value:null},px:{value:new THREE.Vector2(1,1)},uT:{value:0}};
@@ -494,7 +501,7 @@ fragmentShader:`uniform sampler2D t;uniform vec2 px;uniform float uT;varying vec
 float hh(vec2 p){return fract(sin(dot(p,vec2(12.9898,78.233)))*43758.5453);}
 void main(){vec3 c=texture2D(t,u).rgb;
  vec3 b=(texture2D(t,u+vec2(px.x,0.)).rgb+texture2D(t,u-vec2(px.x,0.)).rgb+texture2D(t,u+vec2(0.,px.y)).rgb+texture2D(t,u-vec2(0.,px.y)).rgb)*.25;
- c+=clamp(c-b,-.04,.04)*.8;                                    // sharpen the upscale
+ c+=clamp(c-b,-.05,.05)*1.05;                                  // sharpen the upscale
  c+=(hh(gl_FragCoord.xy+fract(uT*7.)*113.)-.5)*(1.6/255.);     // dither: no banding in the dark gradients
  gl_FragColor=vec4(max(c,0.),1.);}`}));
 showQuad.frustumCulled=false;showQuad.renderOrder=-10;scene.add(showQuad);
@@ -527,19 +534,26 @@ void main(){
  float o=clamp((uOpen-aR2*.45)/.55,0.,1.);o=o*o*(3.-2.*o);
  /* пружина: частица слегка «подпрыгивает» и возвращается,
     затухание делает движение упругим, а не синусоидальным */
- float w  = 2.1 + aSize*1.8;                    // своя частота у каждой
- float ph = uTime*w + rn*6.2832 + aR2*3.1;
- float bounce = sin(ph) * exp(-fract(ph/6.2832)*1.35);   // затухающая волна
- float r = r0*(1. + 0.0075*bounce);             // радиальная пружина
- float lift = 0.010*bounce*(0.5+aSize);          // вертикальный подскок
+ /* ---- своя, не повторяющаяся траектория у каждой пылинки ----
+    у каждой частицы три собственные частоты (не кратные друг другу) => общий цикл очень длинный,
+    движение выглядит живым, а не «пульсирующим» */
+ float w1=1.7+aSize*2.3+rn*0.7;
+ float w2=0.62+aR2*0.55;
+ float w3=0.23+rn*0.31;
+ float ph = uTime*w1 + rn*6.2832 + aR2*3.1;
+ float sway = sin(uTime*w2*1.9 + aR2*21.3) * cos(uTime*w3*2.6 + rn*13.7);
+ float bounce = sin(ph + sway*1.9) * exp(-fract(ph/6.2832)*1.15);   // пружина с плавающей фазой
+ float r = r0*(1. + 0.0085*bounce + 0.010*sway);
+ float lift = 0.010*bounce*(0.5+aSize);
  float rr=mix(r,r0*(.2+.62*rn),o*(1.-.5*aK));
- float a=th+uTime*mix(.16+.03*rn,.05+.05*rn,aK)+o*(1.4+rn*1.2);   // dust streams evenly one way, motes drift
+ float a=th+uTime*mix(.16+.03*rn,.05+.05*rn,aK)+o*(1.4+rn*1.2)+sway*.05;
  vec2 p=rr*vec2(cos(a),sin(a));
- p+=vec2(sin(uTime*1.3+rn*40.),cos(uTime*1.1+aR2*57.))*(.0025+.022*aK)*(1.+0.6*bounce);
+ /* три слоя «дыхания» с разными периодами — картинка не повторяется */
+ p+=vec2(sin(uTime*1.27+rn*40.),cos(uTime*1.11+aR2*57.))*(.0022+.020*aK)*(1.+0.6*bounce);
  p.y += lift*uR*.5;
- p+=vec2(sin(uTime*.37+aR2*91.),cos(uTime*.43+rn*77.))*(.004+.045*aK);
- float gust=pow(.5+.5*sin(uTime*.31),3.)+.5*pow(.5+.5*sin(uTime*.83+1.7),4.);   // light breeze
- p+=vec2(cos(uTime*.07),sin(uTime*.07)*.5+.3)*gust*.028*(.3+rn)*(.4+aK);
+ p+=vec2(sin(uTime*.37+aR2*91.)*cos(uTime*.19+rn*7.),cos(uTime*.43+rn*77.)*sin(uTime*.23+aR2*5.))*(.004+.042*aK);
+ float gust=pow(.5+.5*sin(uTime*.31+rn*2.1),3.)+.5*pow(.5+.5*sin(uTime*.83+1.7+aR2*3.),4.);   // порывы у каждой свои
+ p+=vec2(cos(uTime*.07+rn*4.),sin(uTime*.07+rn*3.)*.5+.3)*gust*.026*(.3+rn)*(.4+aK);
  float ho=smoothstep(.1,.9,uOpen);
  for(int k=0;k<${NH};k++){vec2 d=p-uH[k];float dd=length(d);float hr=holeR(d,float(k))*ho*(1.+.08*aR2);
   if(dd<hr){p=mix(p,uH[k]+d/max(dd,.0001)*hr*(1.+.05*rn),o);}}
@@ -557,11 +571,11 @@ void main(){
  p+=dq/dqq*ring*.16*(.4+rn);
  vec3 q=vec3(p,(aR2-.5)*.3)*uR;
  gl_Position=projectionMatrix*modelViewMatrix*vec4(q,1.);
- float sp=pow(max(0.,sin(uTime*(1.+2.*aSize)+rn*80.)),24.);
- gl_PointSize=4.5*uSz*(.7+aSize*.8)*(1.+dm*1.5+sp*.8)*(1.-.3*aK);   // sprite holds a dot + its trail
+ float sp=pow(max(0.,sin(uTime*(1.+2.*aSize)+rn*80.+sway*2.4)),20.);
+ gl_PointSize=5.0*uSz*(.7+aSize*.8)*(1.+dm*1.5+sp*.8)*(1.-.3*aK);   // sprite holds a dot + its trail
  float rim=smoothstep(.45,1.,r0);
  float tw=.65+.35*sin(uTime*(2.+3.*aSize)+rn*50.);
- vA=(mix(.14+.86*rim,.8,o)*tw+dm*.5+sp*.8)*mix(1.,.4,aK)*(.72+.56*aR2);   // far side of the ring sits a little darker
+ vA=(mix(.16+.84*rim,.8,o)*tw+dm*.5+sp*.9)*mix(1.,.42,aK)*(.72+.56*aR2);   // far side of the ring sits a little darker
  vD=vec2(sin(a),-cos(a));                 // direction pointing back along the orbit
  vT=mix(11.,22.,o);                        // trail length (shorter once the portal is open)
 }`,
@@ -569,7 +583,7 @@ fragmentShader:`uniform vec3 uCol;varying float vA,vT;varying vec2 vD;
 void main(){vec2 c=gl_PointCoord-.5;c.y=-c.y;
  float u=dot(c,vD),s=c.x*vD.y-c.y*vD.x;
  float I=exp(-s*s/.0026)*(u<0.?exp(-u*u/.0026):exp(-u*vT)*smoothstep(.5,.36,u));
- I*=smoothstep(.5,.34,max(abs(c.x),abs(c.y)));   /* чёткие концы: после апскейла нет квадратов */
+ I*=smoothstep(.5,.36,max(abs(c.x),abs(c.y)));   /* чёткие концы: после апскейла нет квадратов */
  if(I<.012)discard;
  gl_FragColor=vec4(mix(uCol,vec3(1.),.1),vA*I*1.0);}
 `}));
@@ -581,15 +595,19 @@ fragmentShader:`uniform float uTime,uOpen,uHr,uPulse;uniform vec2 uH[${NH}];unif
 ${HOLEFN}
 float sq(float x){return x*x;}
 void main(){float r=length(vP),a=atan(vP.y,vP.x+.00001);
- /* обод шире: плотное ядро + два мягких ореола, снаружи плавный спад */
- float g=1.05*exp(-sq((r-1.)/.042))+.36*exp(-sq((r-1.)/.10))+.11*exp(-sq((r-1.)/.22))
-        +.05*smoothstep(.55,1.,r)*smoothstep(1.14,.98,r);
- float dl=mod(uTime*1.1-a,6.2832);g+=1.15*exp(-dl*1.2)*smoothstep(0.,.5,dl)*exp(-sq((r-1.)/.038));
+ /* обод не «ободок», а часть структуры: мягкое ядро, широкий рассеянный спад и нити внутрь */
+ float g=.66*exp(-sq((r-1.)/.040))+.26*exp(-sq((r-1.)/.115))+.085*exp(-sq((r-1.)/.26))
+        +.05*smoothstep(.55,1.,r)*smoothstep(1.16,.97,r);
+ float fib=pow(.5+.5*sin(a*37.+uTime*.32)*sin(a*14.-uTime*.23),2.);
+ g+=fib*.16*exp(-sq((r-.90)/.13))*smoothstep(1.0,.58,r);       /* волокна уходят внутрь сферы */
+ g+=fib*.07*exp(-sq((r-1.06)/.10));
+ float dl=mod(uTime*1.1-a,6.2832);g+=.80*exp(-dl*1.2)*smoothstep(0.,.5,dl)*exp(-sq((r-1.)/.05));
  g*=.88+.12*sin(a*11.+uTime*1.7)*sin(a*5.-uTime*.9);
  float ho=smoothstep(.1,.9,uOpen);
  if(ho>.001){float hv=0.;
   for(int k=0;k<${NH};k++){vec2 d=vP-uH[k];float dd=length(d);float hr=holeR(d,float(k))*ho;
-   hv+=exp(-sq((dd-hr)/.011))+.3*exp(-sq((dd-hr)/.05))+.08*(1.-smoothstep(0.,hr+.001,dd));}
+   hv+=.72*exp(-sq((dd-hr)/.020))+.26*exp(-sq((dd-hr)/.085))+.08*(1.-smoothstep(0.,hr+.001,dd))
+      +.14*exp(-sq((dd-hr*1.6)/.13));}                        /* мягкий рассеянный ореол, не пересвечивает */
   g+=hv*smoothstep(0.,.3,ho);}
  /* волна от открытого раздела: кольцо идёт наружу по поверхности */
  float dq=length(vP-uPHole);
@@ -762,8 +780,9 @@ const btnV=btns.map(()=>-1),btnOn=btns.map(()=>false),tw=btns.map(()=>0),ip=btns
 function loop(){
   const dt=Math.min(clock.getDelta(),.05),ts=dt*TS,T=(U.uTime.value+=ts);BU.uTime.value+=ts*2.4;
   /* adaptive resolution of the water: keeps the frame rate steady on any device */
-  fa=fa*.95+dt*.05;if(++fc%40===0){
-    if(fa>.024&&bgS>BG_MIN){bgS=Math.max(BG_MIN,bgS-.07);sizeBg()}else if(fa>.026&&prCur>1){prCur=Math.max(1,prCur-.25);renderer.setPixelRatio(prCur);resize()}else if(fa<.0185&&bgS<BG_MAX){bgS=Math.min(BG_MAX,bgS+.03);sizeBg()}}
+  fa=fa*.97+dt*.03;if(++fc%60===0){
+    if(fa>.030&&bgS>BG_MIN){bgS=Math.max(BG_MIN,bgS-.04);sizeBg()}
+    else if(fa<.0225&&bgS<BG_MAX){bgS=Math.min(BG_MAX,bgS+.02);sizeBg()}}
   /* two chained easings = an S-curve: the portal opens and closes softly, no hard start or stop */
   PU.uPulse.value=Math.max(0,PU.uPulse.value-dt*.75);
   dragFade+=((0)-dragFade)*Math.min(1,dt*6);
@@ -799,16 +818,12 @@ function loop(){
     v.set(holes[i].x*R,holes[i].y*R,0).applyMatrix4(group.matrixWorld).project(camera);
     const e=g*g*(3-2*g),s=1-Math.pow(1-g,3);
     const x=lerp(cx,(v.x*.5+.5)*innerWidth,s),y=lerp(cy,(-v.y*.5+.5)*innerHeight,s)+Math.sin(T*1.1+i*1.7)*1.6*e;
-    /* подпись садится на обод и поворачивается по часовой стрелке по мере вылета */
-    const ang=Math.atan2(y-cy,x-cx);                        /* экранный угол иконки */
+    /* подпись выезжает над кнопкой: мягко, на той же волне, что и сама кнопка */
     const lab=b.querySelector('span');
     if(lab){
-      /* буквы идут по ободу по часовой стрелке, низ всегда к центру */
-      const rot=ang*180/Math.PI+90;                          /* строго по часовой стрелке, без переворота */
-      const icd=Math.hypot(x-cx,y-cy)||1;                    /* расстояние иконки от центра */
-      const off=Math.max(0,ringR*.95-icd);                   /* ставим подпись ровно на обод */
-      lab.style.transform=`rotate(${rot}deg) translate(0,${-off}px)`;
-      lab.style.opacity=Math.max(0,Math.min(1,(g-.15)/.6));
+      const rise=(1-e)*10;
+      lab.style.transform=`translateX(-50%) translateY(${rise.toFixed(1)}px)`;
+      lab.style.opacity=Math.max(0,Math.min(1,(g-.1)/.55));
     }
     b.style.transform=`translate3d(${x}px,${y}px,0) scale(${.35+.65*s})`;
     b.style.opacity=e;btnV[i]=e;
