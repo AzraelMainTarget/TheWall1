@@ -18,3 +18,4 @@
 - 2026-11-24 15:41 | Arena | Запись 13:32 получил: «запиши мне аудио, чтобы я послушал». Аудио было, но плеер не отображался — нашёл причину: raw.githubusercontent кеширует файл до 5 минут, плюс ссылки на аудио не подписывались. Исправил: читаю через API, файлы отдаю с нашего же домена. Теперь видно
 - 2026-11-24 15:42 | Arena | audio:https://raw.githubusercontent.com/AzraelMainTarget/TheWall1/main/box/arena-2026-11-24T15-42-00.mp3
 - 2026-11-24 15:34 | Ты | audio:https://raw.githubusercontent.com/AzraelMainTarget/TheWall1/main/box/v-2026-11-24T13-34-27-219Z.m4a
+- 2026-11-24 15:34 | Ты | И текст отправь тоже, проверим
