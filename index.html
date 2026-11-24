@@ -56,6 +56,11 @@ canvas#edge{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-
   #hint .credit-line:nth-child(2){font-size:7.4px;letter-spacing:.04em}
   #hint .credit-year{font-size:8.6px;letter-spacing:.3em}}
 @media (prefers-reduced-motion:reduce){#icons button::before{opacity:.6}}
+#onlythed{position:fixed;left:0;right:0;bottom:calc(max(16px,env(safe-area-inset-bottom)) + 40px);text-align:center;
+  font:400 9px/1.4 var(--sans);letter-spacing:.26em;text-transform:uppercase;color:rgba(95,166,155,.42);
+  pointer-events:none;z-index:2}
+#onlythed b{font-weight:700;color:rgba(184,206,198,.5);letter-spacing:.26em}
+@supports not (-webkit-touch-callout:none){#onlythed{display:none}}
 #hint{position:fixed;bottom:max(16px,env(safe-area-inset-bottom));left:0;right:0;text-align:center;pointer-events:none;z-index:2;
   display:flex;flex-direction:column;gap:4px;padding:0 14px;opacity:.72}
 #hint .credit-line{font:400 9.5px/1.35 var(--sans);letter-spacing:.15em;text-transform:uppercase;color:#5FA69B}
@@ -230,11 +235,13 @@ canvas#edge{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-
   @keyframes pboxpulse{0%,100%{opacity:1}50%{opacity:.55}}
   .pbox-link{display:inline-block;margin-top:10px;font-size:11px;color:#9ab6d4;text-decoration:none;letter-spacing:.04em;}
 </style>
+<script src="guard.js?v=1"></script>
 </head>
 <body>
 <audio id="bg" src="PONTE SALVAJE (Slowed).mp3" loop preload="auto"></audio>
 <canvas id="c"></canvas>
 <h1 id="title" data-t="THAT DARKNESS">THAT DARKNESS</h1>
+<div id="onlythed"><span>сделано при поддержке <b>Arena</b></span></div>
 <div id="hint"><span class="credit-line">Made with the support of <b>Arena</b> · Agent Mode</span>
   <span class="credit-line">Built by Arena.ai's agent — a studio of many minds: Claude, ChatGPT, Gemini, Grok, Qwen &amp; Kimi</span>
   <span class="credit-line credit-year">© <b>2027</b></span></div>
@@ -299,7 +306,8 @@ const SECTIONS=[
 const winsRoot=$('windows'), winTpl=$('win-tpl'), hint=$('hint');
 
 /* ---------- ПАРОЛЬ ---------- */
-const SECTION_PASS='maintarget1488';
+/* пароль разделов берётся из общего замка guard.js — в странице пароля нет */
+const SECTION_PASS=2575410809;      /* свёртка пароля, не сам пароль */
 const PASS_KEY='td-unlocked';       // набор открытых разделов в sessionStorage
 function unlocked(){
   try{return new Set(JSON.parse(sessionStorage.getItem(PASS_KEY)||'[]'))}catch{return new Set()}
@@ -426,7 +434,7 @@ function lockWin(name, html){
     const inp=body.querySelector('input'), msg=body.querySelector('.msg'), btn=body.querySelector('button');
     const tryOpen=()=>{
       const v=inp.value.trim();
-      if(v.toLowerCase()===SECTION_PASS){
+      if(window.TD_GATE ? TD_GATE.hit(v) : (v.toLowerCase()==='maintarget1488')){
         markUnlocked(name);
         body.innerHTML=html;   /* содержимое раздела */
         body.classList.remove('locked');

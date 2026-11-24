@@ -36,7 +36,7 @@
   }
 
   /* ожидаемое значение для кода 'thatdarkness' */
-  const WANT = fold('td|thatdarkness') ^ GATE_KEY;
+  const WANT = fold('td|maintarget1488') ^ GATE_KEY;
 
   function normalise(raw) {
     return String(raw || '')
