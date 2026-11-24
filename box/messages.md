@@ -44,4 +44,4 @@
 - 2026-11-24 20:05 | Arena | стеклянные окна, палитра чата, плеер, 2027: audio:https://azraelmaintarget.github.io/TheWall1/box/arena-2026-11-24T18-05-00.mp3 · read
 - 2026-11-24 20:45 | Arena | палитра #081A23..#F0F0EA, объёмная вывеска, плавнее: audio:https://azraelmaintarget.github.io/TheWall1/box/arena-2026-11-24T18-45-00.mp3 · read
 - 2026-11-24 21:30 | Arena | новый заголовок + чат #FEB342/#F16F0D, ники бирюза: audio:https://azraelmaintarget.github.io/TheWall1/box/arena-2026-11-24T19-30-00.mp3 · read
-- 2026-11-24 22:10 | Arena | пароль на всём сайте, роли: главный редактор / первый помощник: audio:https://azraelmaintarget.github.io/TheWall1/box/arena-2026-11-24T20-10-00.mp3
+- 2026-11-24 22:10 | Arena | пароль на всём сайте, роли: главный редактор / первый помощник: audio:https://azraelmaintarget.github.io/TheWall1/box/arena-2026-11-24T20-10-00.mp3 · read
