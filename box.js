@@ -56,13 +56,36 @@
       '<span class="who">' + esc(who) + '<span class="when">' + when + '</span></span>' + inner + '</div>';
   };
 
+  /* голосовое сообщение: подпись + плеер, файл через GitHub Pages (тот же домен) */
+  const voiceBubble = (who, when, url) => {
+    const local = url.replace('https://raw.githubusercontent.com/AzraelMainTarget/TheWall1/main/',
+                              'https://azraelmaintarget.github.io/TheWall1/');
+    return bubble(who, when + ' · голос',
+      '<audio controls preload="none" src="' + esc(local) + '"></audio>');
+  };
+
   const AUDIO = /^audio:(.+)$/;
+
+  let feed_dump = '';
 
   async function load() {
     try {
-      const r = await fetch(RAW + FEED + '?t=' + Date.now(), { cache: 'no-store' });
+      /* raw.githubusercontent держит кеш до 5 минут; ?t= этот кеш не обходит,
+         поэтому при живом ключе читаем через API — он всегда свежий */
+      let r = null;
+      if (token()) {
+        r = await api('/contents/' + FEED + '?ref=main&t=' + Date.now());
+        if (r.ok) {
+          const d = await r.json();
+          feed_dump = unb64(d.content);
+        } else r = null;
+      }
+      if (!r) {
+        r = await fetch(RAW + FEED + '?t=' + Date.now(), { cache: 'no-store' });
+        feed_dump = r.ok ? await r.text() : '';
+      }
       if (!r.ok) throw new Error('HTTP ' + r.status);
-      const txt = await r.text();
+      const txt = feed_dump;
       const out = [];
       txt.trim().split('\n').filter(Boolean).forEach(l => {
         const e = parse(l);
@@ -71,8 +94,7 @@
         const when = dd + ' ' + e.time;
         const a = e.text.match(AUDIO);
         if (a) {
-          out.push(bubble(e.who, when + ' · голос',
-            '<audio controls preload="none" src="' + esc(a[1]) + '"></audio>'));
+          out.push(voiceBubble(e.who, when, a[1]));
         } else {
           out.push(bubble(e.who, when, linkify(esc(e.text))));
         }
