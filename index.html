@@ -18,28 +18,28 @@ canvas#edge{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-
 #title{position:fixed;top:max(18px,env(safe-area-inset-top));left:0;right:0;margin:0;text-align:center;z-index:2;pointer-events:none;
   font:900 clamp(30px,7.4vw,86px)/1 "Montserrat","Jost",system-ui,sans-serif;text-transform:uppercase;letter-spacing:.075em;
   /* лицевая грань: тёмный зелёно-серый металл */
-  background:linear-gradient(180deg,#eef5f5 0%,#cfdcde 22%,#a5bcc0 46%,#7d979b 62%,#5d777c 78%,#8ba4a8 100%);
+  background:linear-gradient(180deg,#d9e6e2 0%,#b6c8c4 24%,#93a9a4 50%,#7d968f 70%,#8ba39d 100%);
   -webkit-background-clip:text;background-clip:text;color:transparent;
-  filter:drop-shadow(0 2px 0 rgba(12,20,22,.9)) drop-shadow(0 14px 26px rgba(0,0,0,.75)) drop-shadow(0 0 34px rgba(58,160,118,.20));
+  filter:drop-shadow(0 2px 0 rgba(14,22,20,.85)) drop-shadow(0 12px 24px rgba(0,0,0,.7));
   -webkit-text-stroke:.6px rgba(24,38,40,.55);paint-order:stroke fill}
 /* объёмная подложка: выдавленная грань уходит вниз-вправо */
 #title::before{content:attr(data-t);position:absolute;left:0;right:0;top:0;z-index:-1;text-align:center;
-  color:#556e73;-webkit-text-stroke:0;letter-spacing:.075em;
+  color:#6f8781;-webkit-text-stroke:0;letter-spacing:.075em;
   text-shadow:
-    1px 1px 0 #51696e,2px 2px 0 #4d656a,3px 3px 0 #4a6165,4px 4px 0 #465c60,5px 5px 0 #43585c,
-    6px 6px 0 #3f5357,7px 7px 0 #3c4f53,8px 8px 0 #384a4e,9px 9px 0 #354649,10px 10px 0 #314144,
-    11px 11px 0 #2e3c3f,12px 12px 0 #2a383b,14px 16px 22px rgba(0,0,0,.72)}
+    1px 1px 0 #6a817b,2px 2px 0 #647a74,3px 3px 0 #5f746e,4px 4px 0 #5a6e68,5px 5px 0 #556862,
+    6px 6px 0 #50625c,7px 7px 0 #4b5c57,8px 8px 0 #475651,9px 9px 0 #42514c,10px 10px 0 #3e4c47,
+    11px 11px 0 #3a4742,12px 12px 0 #36423d,14px 16px 22px rgba(0,0,0,.68)}
 @media (max-width:520px){#title{font-size:clamp(26px,8.6vw,52px);letter-spacing:.04em;top:max(14px,env(safe-area-inset-top))}#title::before{letter-spacing:.04em}}@media (max-width:520px){
-  #hint{gap:4px;bottom:max(12px,env(safe-area-inset-bottom))}
-  #hint .credit-line{font-size:9.5px;letter-spacing:.1em}
-  #hint .credit-line:nth-child(2){font-size:8.6px;letter-spacing:.06em}
-  #hint .credit-year{font-size:10px;letter-spacing:.36em}}
+  #hint{gap:3px;bottom:max(10px,env(safe-area-inset-bottom));right:50px;left:0;opacity:.66}
+  #hint .credit-line{font-size:8.2px;letter-spacing:.08em}
+  #hint .credit-line:nth-child(2){font-size:7.4px;letter-spacing:.04em}
+  #hint .credit-year{font-size:8.6px;letter-spacing:.3em}}
 @media (prefers-reduced-motion:reduce){#icons button::before{opacity:.6}}
-#hint{position:fixed;bottom:max(18px,env(safe-area-inset-bottom));left:0;right:0;text-align:center;pointer-events:none;z-index:2;
-  display:flex;flex-direction:column;gap:5px;padding:0 16px}
-#hint .credit-line{font:400 11.5px/1.35 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:#8ba39d}
-#hint .credit-line:nth-child(2){font-size:10.5px;letter-spacing:.11em;color:#6f8781}
-#hint .credit-year{font:400 12px/1 var(--sans);letter-spacing:.42em;color:#7d968f;margin-top:2px}
+#hint{position:fixed;bottom:max(16px,env(safe-area-inset-bottom));left:0;right:56px;text-align:center;pointer-events:none;z-index:2;
+  display:flex;flex-direction:column;gap:4px;padding:0 14px;opacity:.72}
+#hint .credit-line{font:400 9.5px/1.35 var(--sans);letter-spacing:.15em;text-transform:uppercase;color:#8ba39d}
+#hint .credit-line:nth-child(2){font-size:8.5px;letter-spacing:.10em;color:#788f89}
+#hint .credit-year{font:400 10px/1 var(--sans);letter-spacing:.38em;color:#7d968f;margin-top:1px}
 #hint b{font-weight:700;color:#d5ecdf;letter-spacing:.2em;text-shadow:0 0 12px rgba(58,160,118,.6)}
 
 /* access points: thin mint line icons that sit inside the portal openings */
@@ -71,24 +71,22 @@ canvas#edge{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-
   filter:drop-shadow(0 0 3px rgba(255,255,255,.95)) drop-shadow(0 0 10px rgba(120,255,205,1))
          drop-shadow(0 0 22px rgba(58,220,160,.9)) drop-shadow(0 -1px 4px rgba(230,255,245,.6))}
 /* подписи: ровно над кнопкой, все одной ширины */
-#icons span{font:500 11px/1.05 "Jost",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;letter-spacing:.20em;text-transform:uppercase;white-space:nowrap;text-indent:.20em;
+#icons span{font:800 12.5px/1.05 "Montserrat","Jost",system-ui,sans-serif;letter-spacing:.16em;text-transform:uppercase;white-space:nowrap;text-indent:.16em;
   position:absolute;left:50%;bottom:calc(100% + 8px);transform:translateX(-50%);
-  width:106px;text-align:center;pointer-events:none;padding:0;
-  /* объём в самих буквах: светлая грань сверху, тёмная снизу, без подложки */
-  background:linear-gradient(180deg,#ffffff 0%,#eafff6 38%,#a8d9c4 72%,#7fb9a2 100%);
-  -webkit-background-clip:text;background-clip:text;color:transparent;
-  filter:drop-shadow(0 1px 0 rgba(0,0,0,.85)) drop-shadow(0 -1px 0 rgba(255,255,255,.35))
-         drop-shadow(0 0 7px rgba(58,200,150,.55));
+  width:118px;text-align:center;pointer-events:none;padding:0;
+  /* объём в буквах: белая грань сверху, зелёный металл снизу, тёмная подложка-тень */
+  color:#eafff6;
+  text-shadow:0 -1px 0 rgba(255,255,255,.95),0 1px 0 #0d231b,0 2px 0 #0a1c15,0 3px 3px rgba(0,0,0,.9),
+              0 0 2px rgba(0,20,14,.95),0 0 12px rgba(50,210,155,.75),0 0 24px rgba(40,180,135,.45);
   text-shadow:0 0 1px rgba(0,0,0,1),0 0 2px rgba(0,0,0,1),0 1px 0 rgba(0,0,0,.95),0 2px 3px rgba(0,0,0,.9),
               0 0 12px rgba(70,225,170,.95),0 0 26px rgba(58,190,140,.6);
   transition:color .3s var(--ease),letter-spacing .5s var(--ease),text-shadow .3s}
 #icons button:hover span,#icons button:focus-visible span{
-  background:linear-gradient(180deg,#ffffff 0%,#ffffff 42%,#c8f2e0 75%,#93cfb8 100%);
-  -webkit-background-clip:text;background-clip:text;
-  filter:drop-shadow(0 1px 0 rgba(0,0,0,.9)) drop-shadow(0 -1px 0 rgba(255,255,255,.55))
-         drop-shadow(0 0 10px rgba(120,255,205,.9)) drop-shadow(0 0 22px rgba(58,200,150,.7))}
+  color:#ffffff;
+  text-shadow:0 -1px 0 #ffffff,0 1px 0 #0d231b,0 2px 0 #0a1c15,0 3px 4px rgba(0,0,0,.95),
+              0 0 3px rgba(0,20,14,1),0 0 14px rgba(150,255,220,1),0 0 30px rgba(58,200,150,.85)}
 #icons span b{font-weight:800}
-@media (max-width:560px){#icons span{font-size:9.5px;letter-spacing:.14em;width:96px;text-indent:.14em}}
+@media (max-width:560px){#icons span{font-size:10.5px;letter-spacing:.1em;width:100px;text-indent:.1em}}
 #icons button.on:hover,#icons button:focus-visible{border-color:rgba(120,200,165,.55);color:#fff;box-shadow:0 0 28px rgba(58,160,118,.45),inset 0 0 20px rgba(58,160,118,.22);outline:0}
 #icons button.on:hover::after,#icons button:focus-visible::after{opacity:1;animation-play-state:running}
 #icons button.on:hover svg,#icons button:focus-visible svg{transform:scale(1.14)}
@@ -200,7 +198,7 @@ canvas#edge{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-
 <h1 id="title" data-t="THAT DARKNESS">THAT DARKNESS</h1>
 <div id="hint"><span class="credit-line">Made with the support of <b>Arena</b> · Agent Mode</span>
   <span class="credit-line">Built by Arena.ai's agent — a studio of many minds: Claude, ChatGPT, Gemini, Grok, Qwen &amp; Kimi</span>
-  <span class="credit-line credit-year">© <b>1027</b></span></div>
+  <span class="credit-line credit-year">© <b>20:27</b></span></div>
 <div id="icons"></div>
 <div id="windows" aria-live="polite"></div>
 <canvas id="edge" aria-hidden="true"></canvas>
@@ -636,8 +634,8 @@ void main(){float r=length(vP),a=atan(vP.y,vP.x+.00001);
  float ho=smoothstep(.1,.9,uOpen);
  if(ho>.001){float hv=0.;
   for(int k=0;k<${NH};k++){vec2 d=vP-uH[k];float dd=length(d);float hr=holeR(d,float(k))*ho;
-   hv+=.72*exp(-sq((dd-hr)/.020))+.26*exp(-sq((dd-hr)/.085))+.08*(1.-smoothstep(0.,hr+.001,dd))
-      +.14*exp(-sq((dd-hr*1.6)/.13));}                        /* мягкий рассеянный ореол, не пересвечивает */
+   hv+=.60*exp(-sq((dd-hr)/.016))+.16*exp(-sq((dd-hr)/.075))+.05*(1.-smoothstep(0.,hr+.001,dd));}
+   /* никакой «маркости»: узкое чистое кольцо без широкой вуали */
   g+=hv*smoothstep(0.,.3,ho);}
  /* волна от открытого раздела: кольцо идёт наружу по поверхности */
  float dq=length(vP-uPHole);
