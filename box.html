@@ -25,6 +25,7 @@
   .btn:active{transform:translateY(1px);}
   .btn.primary{background:linear-gradient(180deg,rgba(190,220,255,.96),rgba(140,180,240,.92));color:#06101f;border-color:transparent;font-weight:600;}
   .btn.rec.on{background:rgba(60,18,18,.85);border-color:rgba(255,120,110,.55);}
+  .btn.wide{width:100%;min-height:56px;font-size:14px;letter-spacing:.04em;}
   .status{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);min-height:15px;margin-top:10px;}
   h2{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);font-weight:400;margin:22px 0 10px;}
   .item{padding:11px 0;border-bottom:1px solid rgba(150,190,255,.09);font-size:13.5px;line-height:1.5;}
@@ -51,17 +52,14 @@
 <body>
 <div class="wrap">
   <h1>Box</h1>
-  <p class="sub">ссылки и голос · <span id="ver">build 3</span></p>
+  <p class="sub">ссылки и голос · <span id="ver">build 6</span></p>
 
   <div class="card">
     <textarea id="msg" placeholder="Ссылка или сообщение…"></textarea>
     <div class="row">
       <button class="btn primary" id="sendMsg">Отправить</button>
     </div>
-    <div class="row">
-      <button class="btn rec" id="rec">● Записать голос</button>
-      <button class="btn" id="sendAudio" disabled>Отправить запись</button>
-    </div>
+    <button class="btn rec wide" id="rec">● Записать · отправится само</button>
     <div class="status" id="st">готово</div>
   </div>
 
@@ -76,6 +74,6 @@
   </details>
 </div>
 
-<script src="box.js?v=5"></script>
+<script src="box.js?v=6"></script>
 </body>
 </html>
