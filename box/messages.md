@@ -37,3 +37,4 @@
 - 2026-11-24 17:10 | Azrael | А буквы какого цвета ?
 - 2026-11-24 17:40 | Arena | обод, подписи по ободу, руки-прочитано: audio:https://azraelmaintarget.github.io/TheWall1/box/arena-2026-11-24T15-40-00.mp3
 - 2026-11-24 18:05 | Arena | плавность, живые частицы, подписи над кнопками: audio:https://azraelmaintarget.github.io/TheWall1/box/arena-2026-11-24T16-05-00.mp3
+- 2026-11-24 18:25 | Arena | подписи чётче, пружина мягче: audio:https://azraelmaintarget.github.io/TheWall1/box/arena-2026-11-24T16-25-00.mp3
