@@ -20,11 +20,18 @@
 
   const b64b = (s) => Uint8Array.from(atob(s), c => c.charCodeAt(0));
 
+  /* WebCrypto only accepts 'SHA-256' with the hyphen — 'SHA256' throws
+     NotSupportedError, which used to be swallowed and shown as a wrong code. */
+  const hashName = (n) => {
+    const s = String(n).toUpperCase();
+    return s.includes('-') ? s : s.replace(/^SHA(\d+)$/, 'SHA-$1');
+  };
+
   async function check(code) {
     const [, name, iter, salt, want] = GATE_HASH.split('$');
     const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(code), 'PBKDF2', false, ['deriveBits']);
     const bits = await crypto.subtle.deriveBits(
-      { name: 'PBKDF2', salt: b64b(salt), iterations: Number(iter), hash: name.toUpperCase() }, key, 256);
+      { name: 'PBKDF2', salt: b64b(salt), iterations: Number(iter), hash: hashName(name) }, key, 256);
     return btoa(String.fromCharCode(...new Uint8Array(bits))) === want;
   }
 
@@ -33,6 +40,7 @@
     const inp = document.getElementById('gatePass');
     msg.textContent = 'проверяю…';
     msg.className = 'mut';
+    let threw = null;
     const raw = (inp.value || '');
     /* iPhone autocapitalises password fields — the code is lowercase, so we
        try as typed, then lowercased, then without any spaces */
@@ -45,9 +53,18 @@
 
     let ok = false;
     for (const v of variants) {
-      if (await check(v).catch(() => false)) { ok = true; break; }
+      try {
+        if (await check(v)) { ok = true; break; }
+      } catch (e) {
+        threw = e;
+        break;
+      }
     }
     if (ok) { try { localStorage.setItem(SESSION, String(Date.now())); } catch {} open(); }
+    else if (threw) {
+      msg.textContent = 'ошибка проверки: ' + threw.name + ' — ' + threw.message.slice(0, 60);
+      msg.className = 'bad';
+    }
     else {
       msg.textContent = 'неверный код · введено «' + (raw.trim() || '—') + '»';
       msg.className = 'bad';
