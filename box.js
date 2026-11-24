@@ -17,6 +17,17 @@
   const linkify = (t) => t.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
   const show = (t) => { st.textContent = t; };
 
+  /* «трекер»: что происходит прямо сейчас */
+  const tracker = document.getElementById('tracker');
+  let idleTimer = null;
+  function track(text, busy) {
+    if (!tracker) return;
+    tracker.innerHTML = busy ? '<span class="dot"></span>' + text : (text || 'тишина');
+    tracker.classList.toggle('act', !!busy);
+    clearTimeout(idleTimer);
+    if (busy) idleTimer = setTimeout(() => track('тишина', false), 6000);
+  }
+
   /* ---------- локальная очередь: сообщение видно сразу и не пропадает ---------- */
   const readPend = () => { try { return JSON.parse(localStorage.getItem(PEND) || '[]'); } catch { return []; } };
   const writePend = (arr) => { try { localStorage.setItem(PEND, JSON.stringify(arr.slice(-40))); } catch {} };
@@ -50,7 +61,10 @@
   const parse = (l) => {
     const raw = l.replace(/^\s*-\s*/, '').trim();
     let m = raw.match(/^(\d{4}-\d{2}-\d{2})[ T](\d{2}:\d{2})\s*\|\s*([^|]+?)\s*\|\s*(.*)$/);
-    if (m) return { day: m[1], time: m[2], who: m[3].trim(), text: m[4] };
+    if (m) {
+      const read = /\s*·\s*read\s*$/.test(m[4]);
+      return { day: m[1], time: m[2], who: m[3].trim(), text: m[4].replace(READ, ''), read };
+    }
     m = raw.match(/^\*\*([\d.]{4,10}),?\s*(\d{2}:\d{2})\*\*\s*[·|]\s*(.*)$/);
     if (m) {
       const [dd, mm] = m[1].split('.');
@@ -61,23 +75,36 @@
   };
 
   const AUDIO = /^audio:(.+)$/;
+  const READ = /\s*·\s*read\s*$/;
   const localise = (u) => u.replace('https://raw.githubusercontent.com/' + O + '/' + R + '/main/', PAGES);
 
-  const bubbleHtml = (who, when, inner, extra) => {
+  /* галочки: ✓ доставлено, ✓✓ прочитано (две сливаются в «рукопожатие») */
+  const ticksHtml = (state) => {
+    if (state === 'read') return '<span class="ticks read" title="прочитано">✓✓</span>';
+    if (state === 'sent') return '<span class="ticks" title="доставлено">✓</span>';
+    return '<span class="ticks" title="отправляется">○</span>';
+  };
+
+  const bubbleHtml = (who, when, inner, extra, tick) => {
     const arena = /arena/i.test(who);
     return '<div class="m ' + (arena ? 'arena' : 'me') + (extra || '') + '">' +
-      '<span class="who">' + esc(who) + '<span class="when">' + when + '</span></span>' + inner + '</div>';
+      '<span class="who">' + esc(who) + '<span class="when">' + when + '</span>' +
+      (arena ? '' : ticksHtml(tick)) + '</span>' + inner + '</div>';
   };
+
+  /* отметка «прочитано»: я ставлю её, дописывая · read в конце строки */
 
   const itemHtml = (e) => {
     const dd = e.day ? e.day.slice(8) + '.' + e.day.slice(5, 7) : '';
     const when = (dd ? dd + ' ' : '') + (e.time || '');
     const a = (e.text || '').match(AUDIO);
+    const tick = e.pending ? 'none' : (e.read ? 'read' : 'sent');
     if (a) {
       return bubbleHtml(e.who, when + ' · голос',
-        '<audio controls preload="none" src="' + esc(localise(a[1])) + '"></audio>', e.pending ? ' pending' : '');
+        '<audio controls preload="none" src="' + esc(localise(a[1])) + '"></audio>',
+        e.pending ? ' pending' : '', tick);
     }
-    return bubbleHtml(e.who, when, linkify(esc(e.text)), e.pending ? ' pending' : '');
+    return bubbleHtml(e.who, when, linkify(esc(e.text)), e.pending ? ' pending' : '', tick);
   };
 
   let lastSig = '';
@@ -102,6 +129,7 @@
 
   async function load(force) {
     show('загружаю…');
+    track('читаю ленту', true);
     let txt = '';
     try { txt = await readFeed(); } catch {}
 
@@ -126,6 +154,7 @@
       '<div class="empty">пока пусто</div>';
     feed.scrollTop = feed.scrollHeight;
     show(entries.length + ' сообщений');
+    if (!(rec && rec.state === 'recording')) track('тишина', false);
   }
 
   /* ---------- отправка ---------- */
@@ -157,11 +186,13 @@
 
     const item = { day: nowStamp().slice(0, 10), time: nowStamp().slice(11), who: 'Ты', text: v };
     addPend(item);
+    track('отправляю сообщение', true);
     await load(true);
     show('отправлено');
 
     try {
       await push('- ' + nowStamp() + ' | Ты | ' + v.replace(/\n/g, ' '), item);
+      track('доставлено ✓', true);
       show('доставлено');
       setTimeout(() => load(true), 1200);
     } catch (e) {
@@ -213,6 +244,7 @@
       const kb = Math.round(blob.size / 1024);
       const ext = blob.type.includes('mp4') ? 'm4a' : 'webm';
       const name = 'v-' + new Date().toISOString().replace(/[:.]/g, '-') + '.' + ext;
+      track('отправляю голос · ' + kb + ' КБ', true);
       show('отправляю ' + kb + ' КБ…');
 
       const item = { day: nowStamp().slice(0, 10), time: nowStamp().slice(11), who: 'Ты', text: 'audio:' + PAGES + 'box/' + name };
@@ -231,6 +263,7 @@
         });
         if (!up.ok) throw new Error('файл: HTTP ' + up.status);
         await push('- ' + nowStamp() + ' | Ты | audio:' + RAW + 'box/' + name, item);
+        track('голос доставлен ✓', true);
         show(kb + ' КБ доставлено');
         setTimeout(() => load(true), 1200);
       } catch (e) { show('в очереди: ' + e.message); }
@@ -239,10 +272,11 @@
     rec.start(500);
     recBtn.classList.add('on');
     recBtn.textContent = '■';
+    track('● запись 0:00', true);
     t0 = Date.now();
     timer = setInterval(() => {
       const s = Math.floor((Date.now() - t0) / 1000);
-      show('● ' + Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0') + ' — нажми ■, отправится сразу');
+      track('● запись ' + Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'), true);
     }, 200);
   };
 
