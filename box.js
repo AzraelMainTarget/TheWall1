@@ -152,6 +152,11 @@
     return null;
   }
 
+  /* голые ссылки в тексте превращаем в <a> */
+  function linkify(t) {
+    return t.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
+  }
+
   function msgHtml(e) {
     const isArena = /arena/i.test(e.who);
     const dd = e.day.slice(8) + '.' + e.day.slice(5, 7);
@@ -160,7 +165,7 @@
         '<b class="who">' + esc(e.who.trim()) + '</b>' +
         '<span class="when">' + dd + ' · ' + esc(e.time) + '</span>' +
       '</span>' +
-      '<span class="body">' + esc(e.text) + '</span></div>';
+      '<span class="body">' + linkify(esc(e.text)) + '</span></div>';
   }
 
   async function load() {
@@ -202,5 +207,8 @@
 
   document.getElementById('reload').onclick = load;
   if (token()) load();
-  else feed.innerHTML = '<div class="item"><span class="t">—</span>вставь ключ, чтобы увидеть ленту</div>';
+  else feed.innerHTML = '<div class="item"><span class="t">—</span>' +
+    'вставь ключ GitHub в блоке ниже, лента загрузится' +
+    '<div style="margin-top:10px"><button class="btn" onclick="document.querySelector('details').open=true;' +
+    'document.getElementById('tok').focus()">Вставить ключ</button></div></div>';
 })();
