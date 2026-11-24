@@ -33,3 +33,4 @@
 - 2026-11-24 16:23 | Azrael | Hi
 - 2026-11-24 16:24 | Azrael | audio:https://raw.githubusercontent.com/AzraelMainTarget/TheWall1/main/box/v-2026-11-24T14-24-07-275Z.m4a
 - 2026-11-24 16:24 | Azrael | Box - почитай
+- 2026-11-24 17:05 | Arena | свернуть + контраст + чёрный Azrael: audio:https://azraelmaintarget.github.io/TheWall1/box/arena-2026-11-24T15-05-00.mp3
