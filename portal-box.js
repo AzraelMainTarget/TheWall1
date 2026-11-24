@@ -9,12 +9,7 @@
   const PEND = 'box-pending';
   const NAME_ME = 'Azrael', NAME_AI = 'Arena';
 
-  const feedEl = document.getElementById('pbox-feed');
-  const msgEl = document.getElementById('pbox-msg');
-  const recBtn = document.getElementById('pbox-rec');
-  const sendBtn = document.getElementById('pbox-send');
-  const boxEl = document.getElementById('pbox');
-  if (!feedEl || !boxEl) return;
+  let feedEl=null, msgEl=null, recBtn=null, sendBtn=null;
 
   const token = () => { try { return (localStorage.getItem(TS) || '').trim(); } catch { return ''; } };
   const esc = (s) => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -113,6 +108,7 @@
     return true;
   }
 
+  function hook(){
   sendBtn.onclick = async () => {
     const v = msgEl.value.trim();
     if (!v) return;
@@ -172,7 +168,15 @@
     recBtn.textContent = '■';
   };
 
-  /* наружу — чтобы панель могла показать/скрыть и обновить */
-  window.PORTAL_BOX = { load, show() { boxEl.hidden = false; load(); }, hide() { boxEl.hidden = true; } };
-  load();
+  }
+  /* монтируется в окно портала */
+  window.PORTAL_BOX = { mount(root){
+    feedEl=root.querySelector('#pbox-feed');
+    msgEl=root.querySelector('#pbox-msg');
+    recBtn=root.querySelector('#pbox-rec');
+    sendBtn=root.querySelector('#pbox-send');
+    if(!feedEl) return;
+    hook();
+    load();
+  }};
 })();
