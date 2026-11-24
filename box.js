@@ -207,8 +207,17 @@
 
   document.getElementById('reload').onclick = load;
   if (token()) load();
-  else feed.innerHTML = '<div class="item"><span class="t">—</span>' +
-    'вставь ключ GitHub в блоке ниже, лента загрузится' +
-    '<div style="margin-top:10px"><button class="btn" onclick="document.querySelector('details').open=true;' +
-    'document.getElementById('tok').focus()">Вставить ключ</button></div></div>';
+  else {
+    feed.innerHTML = '<div class="item"><span class="t">—</span>' +
+      'вставь ключ GitHub в блоке ниже, лента загрузится</div>';
+    const hint = document.createElement('button');
+    hint.className = 'btn';
+    hint.style.marginTop = '10px';
+    hint.textContent = 'Вставить ключ';
+    hint.onclick = () => {
+      document.querySelector('details').open = true;
+      document.getElementById('tok').focus();
+    };
+    feed.appendChild(hint);
+  }
 })();
