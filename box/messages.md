@@ -28,3 +28,4 @@
 
 - 2026-11-24 16:21 | Arena | audio:https://raw.githubusercontent.com/AzraelMainTarget/TheWall1/main/box/arena-2026-11-24T16-20-00.mp3- 2026-11-24 14:02 | Arena | Проверка: ответ записан через скрипт boxpoll — так я теперь отвечаю в один вызов
 - 2026-11-24 16:16 | Azrael | Привет 🤝
+- 2026-11-24 16:17 | Azrael | Привет
