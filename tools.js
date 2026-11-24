@@ -153,6 +153,60 @@
     };
   };
 
+  document.getElementById('tTok').onclick = () => {
+    secret.style.display = 'block';
+    const saved = (() => { try { return localStorage.getItem('gh-voice-token') || ''; } catch { return ''; } })();
+    secret.innerHTML = `
+      <h2>Ключ GitHub</h2>
+      <div class="panel">
+        <input class="field" id="tokIn" type="password" placeholder="github_pat_..." autocomplete="off" spellcheck="false">
+        <div class="row">
+          <button class="btn primary" id="tokSave">Сохранить</button>
+          <button class="btn" id="tokCheck">Проверить</button>
+          <button class="btn" id="tokClear">Стереть</button>
+        </div>
+        <pre class="out" id="tokOut">ключ нужен для отправки голосовых с voice.html</pre>
+      </div>`;
+    const inp = document.getElementById('tokIn');
+    const out = document.getElementById('tokOut');
+    inp.value = saved;
+    if (saved) out.textContent = 'ключ уже сохранён · длина ' + saved.length;
+
+    document.getElementById('tokSave').onclick = () => {
+      const v = inp.value.trim();
+      if (!v) { out.textContent = 'пусто'; return; }
+      try {
+        localStorage.setItem('gh-voice-token', v);
+        out.textContent = 'сохранён · длина ' + v.length + ' · теперь voice.html использует его';
+      } catch (e) { out.textContent = 'не смог сохранить: ' + e.message; }
+    };
+
+    document.getElementById('tokCheck').onclick = async () => {
+      const v = inp.value.trim();
+      if (!v) { out.textContent = 'вставь ключ'; return; }
+      out.textContent = 'проверяю…';
+      try {
+        const r = await fetch('https://api.github.com/user', {
+          headers: { 'Authorization': 'Bearer ' + v, 'Accept': 'application/vnd.github+json' }
+        });
+        if (r.status === 401) { out.textContent = 'ключ не принят (401) — скопируй заново'; return; }
+        const d = await r.json();
+        const rr = await fetch('https://api.github.com/repos/AzraelMainTarget/TheWall1', {
+          headers: { 'Authorization': 'Bearer ' + v, 'Accept': 'application/vnd.github+json' }
+        });
+        const perms = rr.ok ? (await rr.json()).permissions || {} : {};
+        out.textContent = 'ключ рабочий\nпользователь: ' + d.login +
+          '\nдоступ к TheWall1: ' + (rr.ok ? (perms.push ? 'запись есть' : 'только чтение') : 'нет (HTTP ' + rr.status + ')');
+      } catch (e) { out.textContent = 'ошибка: ' + e.message; }
+    };
+
+    document.getElementById('tokClear').onclick = () => {
+      try { localStorage.removeItem('gh-voice-token'); } catch {}
+      inp.value = '';
+      out.textContent = 'ключ стёрт';
+    };
+  };
+
   document.getElementById('tHook').onclick = () => {
     secret.style.display = 'block';
     secret.innerHTML = `
