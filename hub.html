@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#010104">
+<meta name="robots" content="noindex, nofollow">
+<title>That Darkness — Hub</title>
+<style>
+  :root{--ink:#e8f1ff;--dim:#7d90ab;--line:rgba(150,190,255,.16);--accent:#cfe6ff;--ok:#7ee0a8;--bad:#ff9f96;}
+  *{box-sizing:border-box;}
+  html,body{margin:0;min-height:100%;background:radial-gradient(130% 92% at 50% 0%,#0a111d,#010104 56%);
+    color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%;}
+  .wrap{max-width:600px;margin:0 auto;padding:max(20px,env(safe-area-inset-top)) 18px max(34px,env(safe-area-inset-bottom));}
+
+  .brand{text-align:center;margin:14px 0 6px;}
+  .brand h1{font-size:15px;font-weight:200;letter-spacing:.42em;text-transform:uppercase;color:var(--accent);
+    margin:0;text-shadow:0 0 40px rgba(150,200,255,.5);}
+  .brand p{font-size:9.5px;letter-spacing:.28em;text-transform:uppercase;color:#485768;margin:9px 0 0;}
+
+  .quickbox{margin-top:26px;border:1px solid var(--line);border-radius:18px;background:rgba(10,17,29,.8);padding:14px;}
+  .quickbox textarea{width:100%;min-height:64px;padding:12px;border-radius:12px;border:1px solid var(--line);
+    background:rgba(6,11,20,.92);color:var(--ink);font-size:15px;font-family:inherit;outline:none;resize:vertical;}
+  .quickbox textarea:focus{border-color:rgba(200,230,255,.5);}
+  .qrow{display:flex;gap:9px;margin-top:10px;}
+  .btn{flex:1;min-height:46px;border-radius:12px;border:1px solid var(--line);background:rgba(12,20,34,.9);
+    color:var(--ink);font-family:inherit;font-size:13px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+  .btn:active{transform:translateY(1px);}
+  .btn.primary{background:linear-gradient(180deg,rgba(190,220,255,.96),rgba(140,180,240,.92));color:#06101f;
+    border-color:transparent;font-weight:600;}
+
+  h2{font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--dim);font-weight:400;margin:28px 0 11px;}
+
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  @media(max-width:360px){.grid{grid-template-columns:1fr;}}
+  a.tile{display:flex;flex-direction:column;justify-content:space-between;gap:9px;min-height:96px;padding:15px;
+    border-radius:16px;text-decoration:none;border:1px solid var(--line);background:rgba(10,17,29,.82);
+    color:var(--ink);transition:border-color .2s,background .2s,transform .12s;-webkit-tap-highlight-color:transparent;}
+  a.tile:hover{border-color:rgba(200,230,255,.45);background:rgba(16,26,42,.9);}
+  a.tile:active{transform:translateY(1px);}
+  a.tile .ico{font-size:18px;opacity:.85;}
+  a.tile .nm{font-size:13px;letter-spacing:.03em;}
+  a.tile .hint{font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:var(--dim);}
+
+  .feedbox{border:1px solid var(--line);border-radius:16px;background:rgba(10,17,29,.7);padding:14px;}
+  .msg{padding:9px 0 9px 11px;border-bottom:1px solid rgba(150,190,255,.08);}
+  .msg:last-child{border-bottom:none;}
+  .msg .meta{display:flex;align-items:baseline;gap:9px;margin-bottom:3px;}
+  .msg .meta b{font-family:"SF Mono",ui-monospace,Menlo,monospace;font-size:11px;font-weight:800;
+    letter-spacing:.1em;text-transform:uppercase;}
+  .msg .when{font-size:10px;color:#5b6e86;font-variant-numeric:tabular-nums;}
+  .msg .body{display:block;font-size:13.5px;line-height:1.5;color:#dfeaf8;word-break:break-word;}
+  .from-arena{border-left:3px solid #4fa8e8;} .from-arena .who{color:#7cc4f5;}
+  .from-me{border-left:3px solid #e8a24f;} .from-me .who{color:#f5c27c;}
+  .row-empty{font-size:12.5px;color:#5b6e86;padding:8px 0;}
+  .row-empty a{color:#8fbde8;}
+
+  .status{margin-top:12px;border:1px solid var(--line);border-radius:14px;background:rgba(10,17,29,.6);padding:12px 14px;}
+  .kv{display:flex;justify-content:space-between;font-size:12px;padding:6px 0;}
+  .kv:first-child{padding-top:0;} .kv:last-child{padding-bottom:0;}
+  .kv b{font-weight:500;color:#bed4ee;}
+  .ok{color:var(--ok);} .bad{color:var(--bad);}
+
+  .foot{text-align:center;font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:#39485c;margin-top:30px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="brand">
+    <h1>That Darkness</h1>
+    <p>partner hub</p>
+  </div>
+
+  <div class="quickbox">
+    <textarea id="qmsg" placeholder="Написать в Box…"></textarea>
+    <div class="qrow">
+      <button class="btn primary" id="quick">Отправить</button>
+      <a class="btn" href="box.html" style="display:flex;align-items:center;justify-content:center;text-decoration:none">Открыть Box</a>
+    </div>
+  </div>
+
+  <h2>Последнее</h2>
+  <div class="feedbox" id="feed"><div class="row-empty">загружаю…</div></div>
+
+  <h2>Разделы</h2>
+  <div class="grid">
+    <a class="tile" href="index.html">
+      <span class="ico">◎</span>
+      <span><span class="nm">Портал</span><br><span class="hint">главный сайт</span></span>
+    </a>
+    <a class="tile" href="box.html">
+      <span class="ico">▤</span>
+      <span><span class="nm">Box</span><br><span class="hint">связь и голос</span></span>
+    </a>
+    <a class="tile" href="voice.html">
+      <span class="ico">●</span>
+      <span><span class="nm">Голос</span><br><span class="hint">запись → Arena</span></span>
+    </a>
+    <a class="tile" href="tools.html">
+      <span class="ico">⚙</span>
+      <span><span class="nm">Инструменты</span><br><span class="hint">пароли · вебхук</span></span>
+    </a>
+  </div>
+
+  <h2>Состояние</h2>
+  <div class="status">
+    <div class="kv"><span>Сайт</span><b id="stSite" class="ok">…</b></div>
+    <div class="kv"><span>Последний деплой</span><b id="stDeploy">…</b></div>
+  </div>
+
+  <p class="foot">build 1</p>
+</div>
+<script src="hub.js?v=1"></script>
+</body>
+</html>
