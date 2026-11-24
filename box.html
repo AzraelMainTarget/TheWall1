@@ -30,6 +30,11 @@
   .item{padding:11px 0;border-bottom:1px solid rgba(150,190,255,.09);font-size:13.5px;line-height:1.5;}
   .item:last-child{border-bottom:none;}
   .item .t{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:#4d5f76;display:block;margin-bottom:3px;}
+  .item .meta{display:flex;align-items:baseline;gap:9px;margin-bottom:4px;}
+  .item .meta b{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;font-weight:600;}
+  .who-arena{color:#8fd0ff;} .who-me{color:#ffd08f;}
+  .item .when{font-size:10px;letter-spacing:.1em;color:#54657c;}
+  .item .body{display:block;color:#dbe8f8;word-break:break-word;}
   .item a{color:#a9c8ee;word-break:break-all;}
   .item audio{width:100%;margin-top:6px;height:34px;}
   details{margin-top:20px;}
@@ -66,7 +71,7 @@
 
 <script>
 (() => {
-  const O = 'AzraelMainTarget', R = 'TheWall1', FEED = 'box/messages.md', DIR = 'box';
+  const O = 'AzraelMainTarget', R = 'TheWall1', FEED = 'box/messages.md', DIRS = ['box', 'voice'];
   const TS = 'gh-voice-token';
   const st = document.getElementById('st');
   const feed = document.getElementById('feed');
@@ -131,8 +136,11 @@
     if (!token()) { st.textContent = 'нужен ключ — открой блок ниже'; return; }
     st.textContent = 'отправляю…';
     try {
-      const t = new Date().toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
-      await appendLine('- **' + t + '** · ' + v);
+      const d = new Date();
+      const p = (n) => String(n).padStart(2, '0');
+      const stamp = d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) +
+                    ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+      await appendLine('- ' + stamp + ' | Ты | ' + v.replace(/\n/g, ' '));
       document.getElementById('msg').value = '';
       st.textContent = 'добавлено';
       load();
@@ -183,15 +191,39 @@
       const rm = await api('/contents/' + FEED);
       if (rm.ok) {
         const d = await rm.json();
-        const lines = unb64(d.content).trim().split('\n').filter(Boolean).slice(-14).reverse();
-        lines.forEach(l => out.push('<div class="item">' + l.replace(/^- /, '') + '</div>'));
+        const lines = unb64(d.content).trim().split('\n').filter(Boolean).slice(-16).reverse();
+        lines.forEach(l => {
+          const m = l.replace(/^- /, '').match(/^([\d-]+ [\d:]+) \| ([^|]+) \| (.*)$/);
+          if (!m) { out.push('<div class="item">' + l.replace(/^- /, '') + '</div>'); return; }
+          const [, when, who, text] = m;
+          const isMe = who.trim() === 'Arena';
+          const [day, time] = when.split(' ');
+          const dd = day.slice(8) + '.' + day.slice(5, 7);
+          out.push('<div class="item">' +
+            '<span class="meta">' +
+              '<b class="' + (isMe ? 'who-arena' : 'who-me') + '">' + who.trim() + '</b>' +
+              '<span class="when">' + dd + ' · ' + time + '</span>' +
+            '</span>' +
+            '<span class="body">' + text + '</span></div>');
+        });
       }
-      const ra = await api('/contents/' + DIR);
-      if (ra.ok) {
-        const files = (await ra.json()).filter(f => /\.(m4a|webm|mp3)$/.test(f.name)).slice(-6).reverse();
+      let files = [];
+      for (const dir of DIRS) {
+        const ra = await api('/contents/' + dir);
+        if (ra.ok) files = files.concat((await ra.json())
+          .filter(f => /\.(m4a|webm|mp3)$/.test(f.name))
+          .map(f => ({ ...f, _dir: dir })));
+      }
+      files = files.sort((a, b) => a.name.localeCompare(b.name)).slice(-8).reverse();
+      {
         files.forEach(f => {
-          const t = f.name.replace('v-', '').replace(/\.(m4a|webm|mp3)$/, '').replace(/T/, ' ').slice(0, 16);
-          out.push('<div class="item"><span class="t">аудио · ' + t + '</span>' +
+          const isArena = /voice-from-arena/.test(f.name);
+          const raw = f.name.replace(/^v-/, '').replace(/^voice-/, '').replace(/\.(m4a|webm|mp3)$/, '');
+          const dt = raw.match(/(\d{4})-(\d{2})-(\d{2})T(\d{2})-(\d{2})/);
+          const when = dt ? dt[3] + '.' + dt[2] + ' · ' + dt[4] + ':' + dt[5] : 'аудио';
+          out.push('<div class="item">' +
+            '<span class="meta"><b class="' + (isArena ? 'who-arena' : 'who-me') + '">' +
+              (isArena ? 'Arena' : 'Ты') + '</b><span class="when">' + when + ' · голос</span></span>' +
             '<audio controls preload="none" src="' + f.download_url + '"></audio></div>');
         });
       }
