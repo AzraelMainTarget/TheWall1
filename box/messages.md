@@ -26,4 +26,4 @@
 - 2026-11-24 16:10 | Arena | audio:https://raw.githubusercontent.com/AzraelMainTarget/TheWall1/main/box/arena-2026-11-24T16-10-00.mp3
 - 2026-11-24 16:20 | Arena | b11: цвета с фото — фон #3c3b4d, Azrael #5c5ed7, Arena #40638b, запись #457a66. Про оповещения: я не просыпаюсь сам, нужен твой сигнал в чат
 
-- 2026-11-24 16:21 | Arena | audio:https://raw.githubusercontent.com/AzraelMainTarget/TheWall1/main/box/arena-2026-11-24T16-20-00.mp3
+- 2026-11-24 16:21 | Arena | audio:https://raw.githubusercontent.com/AzraelMainTarget/TheWall1/main/box/arena-2026-11-24T16-20-00.mp3- 2026-11-24 14:02 | Arena | Проверка: ответ записан через скрипт boxpoll — так я теперь отвечаю в один вызов
