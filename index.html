@@ -51,18 +51,16 @@ canvas#edge{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-
   filter:drop-shadow(0 0 3px rgba(255,255,255,.95)) drop-shadow(0 0 10px rgba(120,255,205,1))
          drop-shadow(0 0 22px rgba(58,220,160,.9)) drop-shadow(0 -1px 4px rgba(230,255,245,.6))}
 /* подписи: ровно над кнопкой, все одной ширины */
-#icons span{font:800 10.5px var(--sans);letter-spacing:.13em;text-transform:uppercase;white-space:nowrap;color:#f4fffb;
+#icons span{font:600 10.5px/1 "Jost",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;letter-spacing:.28em;text-transform:uppercase;white-space:nowrap;color:#ffffff;text-indent:.28em;
   position:absolute;left:50%;bottom:calc(100% + 7px);transform:translateX(-50%);
   width:98px;text-align:center;pointer-events:none;padding:3px 0 4px;border-radius:8px;
   background:radial-gradient(ellipse at 50% 55%,rgba(0,10,7,.82),rgba(0,10,7,.42) 62%,rgba(0,10,7,0) 92%);
-  -webkit-text-stroke:.4px rgba(0,24,16,.55);
-  text-shadow:0 -1.2px 0 rgba(210,255,235,.75),0 1.4px 0 rgba(0,0,0,1),0 2.6px 2px rgba(0,0,0,.95),
-              -1px 0 1px rgba(0,0,0,.9),1px 0 1px rgba(0,0,0,.9),
-              0 0 10px rgba(70,220,165,1),0 0 22px rgba(58,190,140,.7),0 0 36px rgba(58,190,140,.4);
+  text-shadow:0 0 1px rgba(0,0,0,1),0 0 2px rgba(0,0,0,1),0 1px 0 rgba(0,0,0,.95),0 2px 3px rgba(0,0,0,.9),
+              0 0 12px rgba(70,225,170,.95),0 0 26px rgba(58,190,140,.6);
   transition:color .3s var(--ease),letter-spacing .5s var(--ease),text-shadow .3s}
 #icons button:hover span,#icons button:focus-visible span{color:#fff;text-shadow:0 -1px 0 #000,0 1px 0 #000,-1px 0 0 #000,1px 0 0 #000,0 0 14px rgba(120,255,200,1),0 0 30px rgba(58,190,140,.8)}
 #icons span b{font-weight:800}
-@media (max-width:560px){#icons span{font-size:9px;letter-spacing:.09em;width:78px}}
+@media (max-width:560px){#icons span{font-size:9px;letter-spacing:.2em;width:92px;text-indent:.2em}}
 #icons button.on:hover,#icons button:focus-visible{border-color:rgba(120,200,165,.55);color:#fff;box-shadow:0 0 28px rgba(58,160,118,.45),inset 0 0 20px rgba(58,160,118,.22);outline:0}
 #icons button.on:hover::after,#icons button:focus-visible::after{opacity:1;animation-play-state:running}
 #icons button.on:hover svg,#icons button:focus-visible svg{transform:scale(1.14)}
@@ -542,9 +540,11 @@ void main(){
  float w3=0.23+rn*0.31;
  float ph = uTime*w1 + rn*6.2832 + aR2*3.1;
  float sway = sin(uTime*w2*1.9 + aR2*21.3) * cos(uTime*w3*2.6 + rn*13.7);
- float bounce = sin(ph + sway*1.9) * exp(-fract(ph/6.2832)*1.15);   // пружина с плавающей фазой
- float r = r0*(1. + 0.0085*bounce + 0.010*sway);
- float lift = 0.010*bounce*(0.5+aSize);
+ /* мягкая упругость без «подскока»: сглаженная огибающая вместо резкой затухающей волны */
+ float env = exp(-fract(ph/6.2832)*1.9);
+ float bounce = sin(ph + sway*1.5) * env * env;
+ float r = r0*(1. + 0.0052*bounce + 0.0075*sway);
+ float lift = 0.0042*bounce*(0.5+aSize);
  float rr=mix(r,r0*(.2+.62*rn),o*(1.-.5*aK));
  float a=th+uTime*mix(.16+.03*rn,.05+.05*rn,aK)+o*(1.4+rn*1.2)+sway*.05;
  vec2 p=rr*vec2(cos(a),sin(a));
@@ -553,7 +553,7 @@ void main(){
  p.y += lift*uR*.5;
  p+=vec2(sin(uTime*.37+aR2*91.)*cos(uTime*.19+rn*7.),cos(uTime*.43+rn*77.)*sin(uTime*.23+aR2*5.))*(.004+.042*aK);
  float gust=pow(.5+.5*sin(uTime*.31+rn*2.1),3.)+.5*pow(.5+.5*sin(uTime*.83+1.7+aR2*3.),4.);   // порывы у каждой свои
- p+=vec2(cos(uTime*.07+rn*4.),sin(uTime*.07+rn*3.)*.5+.3)*gust*.026*(.3+rn)*(.4+aK);
+ p+=vec2(cos(uTime*.07+rn*4.),sin(uTime*.07+rn*3.)*.5+.3)*gust*.015*(.3+rn)*(.4+aK);
  float ho=smoothstep(.1,.9,uOpen);
  for(int k=0;k<${NH};k++){vec2 d=p-uH[k];float dd=length(d);float hr=holeR(d,float(k))*ho*(1.+.08*aR2);
   if(dd<hr){p=mix(p,uH[k]+d/max(dd,.0001)*hr*(1.+.05*rn),o);}}
@@ -572,7 +572,7 @@ void main(){
  vec3 q=vec3(p,(aR2-.5)*.3)*uR;
  gl_Position=projectionMatrix*modelViewMatrix*vec4(q,1.);
  float sp=pow(max(0.,sin(uTime*(1.+2.*aSize)+rn*80.+sway*2.4)),20.);
- gl_PointSize=5.0*uSz*(.7+aSize*.8)*(1.+dm*1.5+sp*.8)*(1.-.3*aK);   // sprite holds a dot + its trail
+ gl_PointSize=5.0*uSz*(.7+aSize*.8)*(1.+dm*1.5+sp*.35)*(1.-.3*aK);   // спрайт: точка + след
  float rim=smoothstep(.45,1.,r0);
  float tw=.65+.35*sin(uTime*(2.+3.*aSize)+rn*50.);
  vA=(mix(.16+.84*rim,.8,o)*tw+dm*.5+sp*.9)*mix(1.,.42,aK)*(.72+.56*aR2);   // far side of the ring sits a little darker
@@ -787,7 +787,7 @@ function loop(){
   PU.uPulse.value=Math.max(0,PU.uPulse.value-dt*.75);
   dragFade+=((0)-dragFade)*Math.min(1,dt*6);
   PU.uDrag.value.z=Math.max(0,PU.uDrag.value.z-dt*2.2);
-  const k1=1-Math.pow(.0015,dt),k2=1-Math.pow(.04,dt);
+  const k1=1-Math.pow(.0009,dt),k2=1-Math.pow(.035,dt);
   openA=lerp(openA,openT,k1);openV=lerp(openV,openA,k1);PU.uOpen.value=openV;
   reach=lerp(reach,hoverI>=0?1:reachT,1-Math.pow(.003,dt));
   const gs=1+.05*openV+.006*Math.sin(T*.9);                    // slight swell on open + a faint breath
