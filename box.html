@@ -6,6 +6,11 @@
 <meta name="theme-color" content="#010104">
 <meta name="robots" content="noindex, nofollow">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Box">
+<link rel="manifest" href="box.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
 <title>Box</title>
 <style>
   :root{
@@ -123,6 +128,11 @@
     <button id="saveTok">Сохранить</button>
   </details>
 </div>
+<script>
+if ('serviceWorker' in navigator) {
+  addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
+</script>
 <script src="box.js?v=11"></script>
 </body>
 </html>
