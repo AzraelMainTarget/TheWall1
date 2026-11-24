@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#010104">
+<meta name="robots" content="noindex, nofollow">
+<title>Box — обмен</title>
+<style>
+  :root{--ink:#e8f1ff;--dim:#7d90ab;--line:rgba(150,190,255,.16);--accent:#cfe6ff;--ok:#7ee0a8;--bad:#ff9f96;}
+  *{box-sizing:border-box;}
+  html,body{margin:0;min-height:100%;background:radial-gradient(130% 90% at 50% 0%,#0a111d,#010104 58%);
+    color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%;}
+  .wrap{max-width:560px;margin:0 auto;padding:max(16px,env(safe-area-inset-top)) 16px max(28px,env(safe-area-inset-bottom));}
+  h1{font-size:13px;font-weight:300;letter-spacing:.3em;text-transform:uppercase;color:var(--accent);margin:6px 0 4px;text-shadow:0 0 30px rgba(150,200,255,.4);}
+  .sub{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);margin:0 0 18px;}
+  .card{border:1px solid var(--line);border-radius:16px;background:rgba(10,17,29,.78);padding:14px;margin-bottom:12px;}
+  textarea,input.f{width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);
+    background:rgba(6,11,20,.92);color:var(--ink);font-size:15px;font-family:inherit;outline:none;}
+  textarea{min-height:74px;resize:vertical;}
+  textarea:focus,input.f:focus{border-color:rgba(200,230,255,.5);}
+  .row{display:flex;gap:9px;margin-top:10px;flex-wrap:wrap;}
+  .btn{flex:1 1 100px;min-height:46px;border-radius:12px;border:1px solid var(--line);
+    background:rgba(12,20,34,.9);color:var(--ink);font-family:inherit;font-size:13px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+  .btn:active{transform:translateY(1px);}
+  .btn.primary{background:linear-gradient(180deg,rgba(190,220,255,.96),rgba(140,180,240,.92));color:#06101f;border-color:transparent;font-weight:600;}
+  .btn.rec.on{background:rgba(60,18,18,.85);border-color:rgba(255,120,110,.55);}
+  .status{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);min-height:15px;margin-top:10px;}
+  h2{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);font-weight:400;margin:22px 0 10px;}
+  .item{padding:11px 0;border-bottom:1px solid rgba(150,190,255,.09);font-size:13.5px;line-height:1.5;}
+  .item:last-child{border-bottom:none;}
+  .item .t{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:#4d5f76;display:block;margin-bottom:3px;}
+  .item a{color:#a9c8ee;word-break:break-all;}
+  .item audio{width:100%;margin-top:6px;height:34px;}
+  details{margin-top:20px;}
+  summary{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#485768;cursor:pointer;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Box</h1>
+  <p class="sub">ссылки и голос — в одну сторону и обратно</p>
+
+  <div class="card">
+    <textarea id="msg" placeholder="Ссылка или сообщение…"></textarea>
+    <div class="row">
+      <button class="btn primary" id="sendMsg">Отправить</button>
+    </div>
+    <div class="row">
+      <button class="btn rec" id="rec">● Записать голос</button>
+      <button class="btn" id="sendAudio" disabled>Отправить запись</button>
+    </div>
+    <div class="status" id="st">готово</div>
+  </div>
+
+  <h2>Лента</h2>
+  <div class="card" id="feed"><div class="item"><span class="t">—</span>пусто</div></div>
+  <div class="row"><button class="btn" id="reload">Обновить</button></div>
+
+  <details>
+    <summary>Ключ GitHub</summary>
+    <input class="f" id="tok" type="password" placeholder="github_pat_..." autocomplete="off" spellcheck="false" style="margin-top:10px">
+    <div class="row"><button class="btn" id="saveTok">Сохранить</button></div>
+  </details>
+</div>
+
+<script>
+(() => {
+  const O = 'AzraelMainTarget', R = 'TheWall1', FEED = 'box/messages.md', DIR = 'box';
+  const TS = 'gh-voice-token';
+  const st = document.getElementById('st');
+  const feed = document.getElementById('feed');
+  const tok = document.getElementById('tok');
+
+  const token = () => { try { return (localStorage.getItem(TS) || '').trim(); } catch { return ''; } };
+  tok.value = token();
+
+  document.getElementById('saveTok').onclick = () => {
+    try { localStorage.setItem(TS, tok.value.trim()); st.textContent = 'ключ сохранён'; }
+    catch { st.textContent = 'не сохранилось'; }
+  };
+
+  const api = (p, opt = {}) => fetch('https://api.github.com/repos/' + O + '/' + R + p, {
+    ...opt,
+    headers: {
+      'Authorization': 'Bearer ' + token(),
+      'Accept': 'application/vnd.github+json',
+      'Content-Type': 'application/json',
+      ...(opt.headers || {})
+    }
+  });
+
+  const b64 = (s) => btoa(unescape(encodeURIComponent(s)));
+  const unb64 = (s) => decodeURIComponent(escape(atob(s.replace(/\n/g, ''))));
+
+  async function appendLine(line) {
+    let sha = null, body = '';
+    const r = await api('/contents/' + FEED);
+    if (r.ok) { const d = await r.json(); sha = d.sha; body = unb64(d.content); }
+    else if (r.status !== 404) throw new Error('чтение: HTTP ' + r.status);
+    body += line + '\n';
+    const put = await api('/contents/' + FEED, {
+      method: 'PUT',
+      body: JSON.stringify({ message: 'box: add entry', content: b64(body), ...(sha ? { sha } : {}) })
+    });
+    if (!put.ok) {
+      const e = await put.json().catch(() => ({}));
+      throw new Error(e.message || ('HTTP ' + put.status));
+    }
+  }
+
+  async function upload(name, buf, type) {
+    const fr = new FileReader();
+    const b = await new Promise((res, rej) => {
+      fr.onload = () => res(String(fr.result).split(',')[1]);
+      fr.onerror = rej;
+      fr.readAsDataURL(new Blob([buf], { type }));
+    });
+    const put = await api('/contents/' + DIR + '/' + name, {
+      method: 'PUT', body: JSON.stringify({ message: 'box: ' + name, content: b })
+    });
+    if (!put.ok) {
+      const e = await put.json().catch(() => ({}));
+      throw new Error(e.message || ('HTTP ' + put.status));
+    }
+  }
+
+  document.getElementById('sendMsg').onclick = async () => {
+    const v = document.getElementById('msg').value.trim();
+    if (!v) { st.textContent = 'пусто'; return; }
+    if (!token()) { st.textContent = 'нужен ключ — открой блок ниже'; return; }
+    st.textContent = 'отправляю…';
+    try {
+      const t = new Date().toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+      await appendLine('- **' + t + '** · ' + v);
+      document.getElementById('msg').value = '';
+      st.textContent = 'добавлено';
+      load();
+    } catch (e) { st.textContent = 'ошибка: ' + e.message; }
+  };
+
+  let rec = null, chunks = [], blob = null, media = null;
+  document.getElementById('rec').onclick = async () => {
+    if (rec && rec.state === 'recording') { rec.stop(); return; }
+    try {
+      media = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch { st.textContent = 'нет доступа к микрофону'; return; }
+    const t = ['audio/mp4', 'audio/webm'].find(x => MediaRecorder.isTypeSupported(x)) || '';
+    chunks = [];
+    rec = t ? new MediaRecorder(media, { mimeType: t }) : new MediaRecorder(media);
+    rec.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
+    rec.onstop = () => {
+      media.getTracks().forEach(x => x.stop());
+      blob = new Blob(chunks, { type: rec.mimeType || 'audio/webm' });
+      document.getElementById('rec').classList.remove('on');
+      document.getElementById('rec').textContent = '● Записать голос';
+      document.getElementById('sendAudio').disabled = false;
+      st.textContent = 'записано · ' + (blob.size / 1024).toFixed(0) + ' КБ';
+    };
+    rec.start();
+    document.getElementById('rec').classList.add('on');
+    document.getElementById('rec').textContent = '■ Стоп';
+    st.textContent = 'запись…';
+  };
+
+  document.getElementById('sendAudio').onclick = async () => {
+    if (!blob) return;
+    if (!token()) { st.textContent = 'нужен ключ'; return; }
+    st.textContent = 'загружаю…';
+    try {
+      const ext = blob.type.includes('mp4') ? 'm4a' : 'webm';
+      const name = 'v-' + new Date().toISOString().replace(/[:.]/g, '-') + '.' + ext;
+      await upload(name, await blob.arrayBuffer(), blob.type);
+      st.textContent = 'в Box · скажи в чате «слушай голос»';
+      document.getElementById('sendAudio').disabled = true;
+    } catch (e) { st.textContent = 'ошибка: ' + e.message; }
+  };
+
+  async function load() {
+    feed.innerHTML = '<div class="item"><span class="t">—</span>загружаю…</div>';
+    try {
+      const out = [];
+      const rm = await api('/contents/' + FEED);
+      if (rm.ok) {
+        const d = await rm.json();
+        const lines = unb64(d.content).trim().split('\n').filter(Boolean).slice(-14).reverse();
+        lines.forEach(l => out.push('<div class="item">' + l.replace(/^- /, '') + '</div>'));
+      }
+      const ra = await api('/contents/' + DIR);
+      if (ra.ok) {
+        const files = (await ra.json()).filter(f => /\.(m4a|webm|mp3)$/.test(f.name)).slice(-6).reverse();
+        files.forEach(f => {
+          const t = f.name.replace('v-', '').replace(/\.(m4a|webm|mp3)$/, '').replace(/T/, ' ').slice(0, 16);
+          out.push('<div class="item"><span class="t">аудио · ' + t + '</span>' +
+            '<audio controls preload="none" src="' + f.download_url + '"></audio></div>');
+        });
+      }
+      feed.innerHTML = out.length ? out.join('') : '<div class="item"><span class="t">—</span>пусто</div>';
+    } catch (e) {
+      feed.innerHTML = '<div class="item"><span class="t">ошибка</span>' + e.message + '</div>';
+    }
+  }
+  document.getElementById('reload').onclick = load;
+  if (token()) load();
+  else feed.innerHTML = '<div class="item"><span class="t">—</span>вставь ключ, чтобы увидеть ленту</div>';
+})();
+</script>
+</body>
+</html>
