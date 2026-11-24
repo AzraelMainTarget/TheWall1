@@ -1,40 +1,40 @@
-- 2026-11-24 14:47 | Arena | Box запущен: сюда пишем ссылки, аудио кидаем кнопкой ниже
+- 2026-11-24 14:47 | Arena | Box запущен: сюда пишем ссылки, аудио кидаем кнопкой ниже · read
 - 2026-11-24 14:53 | Azrael | А ну напиши сюда голос · read
-- 2026-11-24 14:56 | Arena | Голос от меня → box/voice-from-arena-01.mp3
-- 2026-11-24 15:02 | Arena | Голосовые из voice/ добавлены в ленту ниже
+- 2026-11-24 14:56 | Arena | Голос от меня → box/voice-from-arena-01.mp3 · read
+- 2026-11-24 15:02 | Arena | Голосовые из voice/ добавлены в ленту ниже · read
 - 2026-11-24 15:01 | Azrael | Выдели ники разными цветами и пожирнее, можно другим шрифтом · read
 - 2026-11-24 15:05 | Azrael | Всё равно осталось как было :( · read
 - 2026-11-24 15:20 | Azrael | Супер, всё работает. Теперь наладим общение и соберём всё воедино · read
-- 2026-11-24 15:21 | Arena | Собираю: главная страница-хаб со всеми входами
+- 2026-11-24 15:21 | Arena | Собираю: главная страница-хаб со всеми входами · read
 - 2026-11-24 15:16 | Azrael | Ты получил аудио ? · read
-- 2026-11-24 15:24 | Arena | Да, все три записи из voice/ получил и расшифровал: 12:33 про ссылку из Make, 12:45 «не торопись», 12:48 про окно для ссылок. На все три ответил. Если писал что-то после 12:48 — файла нет, запиши заново прямо в Box
-- 2026-11-24 15:28 | Arena | Запись получил: 3.9 с, «Да, есть ключ гитхаб». Значит отправка работает. Поправил ленту — новые записи теперь сверху, а не снизу
-- 2026-11-24 15:32 | Arena | Запись 13:23 получил: «оптимизировать страницу, чтобы был быстрый отклик». Сделал: одна кнопка записи с автоотправкой, чтение через raw-кеш без лимитов, оптимистичный показ сообщения, лента обновляется по кнопке
+- 2026-11-24 15:24 | Arena | Да, все три записи из voice/ получил и расшифровал: 12:33 про ссылку из Make, 12:45 «не торопись», 12:48 про окно для ссылок. На все три ответил. Если писал что-то после 12:48 — файла нет, запиши заново прямо в Box · read
+- 2026-11-24 15:28 | Arena | Запись получил: 3.9 с, «Да, есть ключ гитхаб». Значит отправка работает. Поправил ленту — новые записи теперь сверху, а не снизу · read
+- 2026-11-24 15:32 | Arena | Запись 13:23 получил: «оптимизировать страницу, чтобы был быстрый отклик». Сделал: одна кнопка записи с автоотправкой, чтение через raw-кеш без лимитов, оптимистичный показ сообщения, лента обновляется по кнопке · read
 - 2026-11-24 15:28 | Azrael | Слушай · read
 - 2026-11-24 15:16 | Azrael | audio:https://raw.githubusercontent.com/AzraelMainTarget/TheWall1/main/box/v-2026-11-24T13-27-17-536Z.m4a · read
 - 2026-11-24 15:29 | Azrael | audio:https://raw.githubusercontent.com/AzraelMainTarget/TheWall1/main/box/v-2026-11-24T13-28-27-517Z.m4a · read
-- 2026-11-24 15:35 | Arena | audio:https://raw.githubusercontent.com/AzraelMainTarget/TheWall1/main/box/arena-2026-11-24T15-35-00.mp3
+- 2026-11-24 15:35 | Arena | audio:https://raw.githubusercontent.com/AzraelMainTarget/TheWall1/main/box/arena-2026-11-24T15-35-00.mp3 · read
 - 2026-11-24 15:32 | Azrael | audio:https://raw.githubusercontent.com/AzraelMainTarget/TheWall1/main/box/v-2026-11-24T13-32-23-823Z.m4a · read
-- 2026-11-24 15:41 | Arena | Запись 13:32 получил: «запиши мне аудио, чтобы я послушал». Аудио было, но плеер не отображался — нашёл причину: raw.githubusercontent кеширует файл до 5 минут, плюс ссылки на аудио не подписывались. Исправил: читаю через API, файлы отдаю с нашего же домена. Теперь видно
-- 2026-11-24 15:42 | Arena | audio:https://raw.githubusercontent.com/AzraelMainTarget/TheWall1/main/box/arena-2026-11-24T15-42-00.mp3
+- 2026-11-24 15:41 | Arena | Запись 13:32 получил: «запиши мне аудио, чтобы я послушал». Аудио было, но плеер не отображался — нашёл причину: raw.githubusercontent кеширует файл до 5 минут, плюс ссылки на аудио не подписывались. Исправил: читаю через API, файлы отдаю с нашего же домена. Теперь видно · read
+- 2026-11-24 15:42 | Arena | audio:https://raw.githubusercontent.com/AzraelMainTarget/TheWall1/main/box/arena-2026-11-24T15-42-00.mp3 · read
 - 2026-11-24 15:34 | Azrael | audio:https://raw.githubusercontent.com/AzraelMainTarget/TheWall1/main/box/v-2026-11-24T13-34-27-219Z.m4a · read
 - 2026-11-24 15:34 | Azrael | И текст отправь тоже, проверим · read
-- 2026-11-24 15:48 | Arena | Запись 13:34 получил: «запиши мне сообщение, могу ли я теперь безошибочно общаться». Отвечаю голосом ниже. Исправил пропажу сообщений и кнопку записи
-- 2026-11-24 15:50 | Arena | audio:https://raw.githubusercontent.com/AzraelMainTarget/TheWall1/main/box/arena-2026-11-24T15-50-00.mp3
-- 2026-11-24 15:58 | Arena | b9: темнее тема, галочки доставки и «прочитано», трекер активности сверху
-- 2026-11-24 16:00 | Arena | audio:https://raw.githubusercontent.com/AzraelMainTarget/TheWall1/main/box/arena-2026-11-24T16-00-00.mp3
-- 2026-11-24 16:10 | Arena | audio:https://raw.githubusercontent.com/AzraelMainTarget/TheWall1/main/box/arena-2026-11-24T16-10-00.mp3
-- 2026-11-24 16:20 | Arena | b11: цвета с фото — фон #3c3b4d, Azrael #5c5ed7, Arena #40638b, запись #457a66. Про оповещения: я не просыпаюсь сам, нужен твой сигнал в чат
+- 2026-11-24 15:48 | Arena | Запись 13:34 получил: «запиши мне сообщение, могу ли я теперь безошибочно общаться». Отвечаю голосом ниже. Исправил пропажу сообщений и кнопку записи · read
+- 2026-11-24 15:50 | Arena | audio:https://raw.githubusercontent.com/AzraelMainTarget/TheWall1/main/box/arena-2026-11-24T15-50-00.mp3 · read
+- 2026-11-24 15:58 | Arena | b9: темнее тема, галочки доставки и «прочитано», трекер активности сверху · read
+- 2026-11-24 16:00 | Arena | audio:https://raw.githubusercontent.com/AzraelMainTarget/TheWall1/main/box/arena-2026-11-24T16-00-00.mp3 · read
+- 2026-11-24 16:10 | Arena | audio:https://raw.githubusercontent.com/AzraelMainTarget/TheWall1/main/box/arena-2026-11-24T16-10-00.mp3 · read
+- 2026-11-24 16:20 | Arena | b11: цвета с фото — фон #3c3b4d, Azrael #5c5ed7, Arena #40638b, запись #457a66. Про оповещения: я не просыпаюсь сам, нужен твой сигнал в чат · read
 
-- 2026-11-24 16:21 | Arena | audio:https://raw.githubusercontent.com/AzraelMainTarget/TheWall1/main/box/arena-2026-11-24T16-20-00.mp3- 2026-11-24 14:02 | Arena | Проверка: ответ записан через скрипт boxpoll — так я теперь отвечаю в один вызов
+- 2026-11-24 16:21 | Arena | audio:https://raw.githubusercontent.com/AzraelMainTarget/TheWall1/main/box/arena-2026-11-24T16-20-00.mp3- 2026-11-24 14:02 | Arena | Проверка: ответ записан через скрипт boxpoll — так я теперь отвечаю в один вызов · read
 - 2026-11-24 16:16 | Azrael | Привет 🤝
 - 2026-11-24 16:17 | Azrael | Привет
-- 2026-11-24 16:22 | Arena | windows + password gate live: audio:https://azraelmaintarget.github.io/TheWall1/box/arena-2026-11-24T14-22-36.mp3
+- 2026-11-24 16:22 | Arena | windows + password gate live: audio:https://azraelmaintarget.github.io/TheWall1/box/arena-2026-11-24T14-22-36.mp3 · read
 - 2026-11-24 16:23 | Azrael | Hi
 - 2026-11-24 16:24 | Azrael | audio:https://raw.githubusercontent.com/AzraelMainTarget/TheWall1/main/box/v-2026-11-24T14-24-07-275Z.m4a
 - 2026-11-24 16:24 | Azrael | Box - почитай
-- 2026-11-24 17:05 | Arena | свернуть + контраст + чёрный Azrael: audio:https://azraelmaintarget.github.io/TheWall1/box/arena-2026-11-24T15-05-00.mp3
+- 2026-11-24 17:05 | Arena | свернуть + контраст + чёрный Azrael: audio:https://azraelmaintarget.github.io/TheWall1/box/arena-2026-11-24T15-05-00.mp3 · read
 - 2026-11-24 17:10 | Azrael | А буквы какого цвета ?
-- 2026-11-24 17:40 | Arena | обод, подписи по ободу, руки-прочитано: audio:https://azraelmaintarget.github.io/TheWall1/box/arena-2026-11-24T15-40-00.mp3
-- 2026-11-24 18:05 | Arena | плавность, живые частицы, подписи над кнопками: audio:https://azraelmaintarget.github.io/TheWall1/box/arena-2026-11-24T16-05-00.mp3
-- 2026-11-24 18:25 | Arena | подписи чётче, пружина мягче: audio:https://azraelmaintarget.github.io/TheWall1/box/arena-2026-11-24T16-25-00.mp3
+- 2026-11-24 17:40 | Arena | обод, подписи по ободу, руки-прочитано: audio:https://azraelmaintarget.github.io/TheWall1/box/arena-2026-11-24T15-40-00.mp3 · read
+- 2026-11-24 18:05 | Arena | плавность, живые частицы, подписи над кнопками: audio:https://azraelmaintarget.github.io/TheWall1/box/arena-2026-11-24T16-05-00.mp3 · read
+- 2026-11-24 18:25 | Arena | подписи чётче, пружина мягче: audio:https://azraelmaintarget.github.io/TheWall1/box/arena-2026-11-24T16-25-00.mp3 · read
