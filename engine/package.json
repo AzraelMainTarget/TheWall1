@@ -1,0 +1,3 @@
+{ "name": "ragnell-engine", "type": "module", "version": "0.1.0",
+  "description": "Ragnell video engine — queue, tiers, storage. Author: NeWerMoRe",
+  "scripts": { "mock": "node mock-server.js" } }
