@@ -261,8 +261,6 @@ body.tp-out .win:not(.prodwin){animation:winSuck .7s ease-in forwards}
 @keyframes rise{from{opacity:0;transform:translateY(8px)}}
 #x{position:absolute;top:2px;right:6px;width:44px;height:44px;border:0;background:none;color:var(--red);font-size:28px;cursor:pointer;transition:transform .4s var(--ease)}
 #x:hover{transform:rotate(90deg)}
-#snd{position:fixed;right:max(14px,env(safe-area-inset-right));bottom:max(96px,calc(env(safe-area-inset-bottom) + 86px));z-index:6;width:34px;height:34px;font-size:14px;border-radius:50%;border:1px solid rgba(95,166,155,.5);background:rgba(8,26,35,.8);color:#B8CEC6;cursor:pointer;transition:opacity .4s}
-#snd.m{opacity:.5}
 @media (prefers-reduced-motion:reduce){#panel,#hint{transition:none}#icons button::after{animation:none}#pb.a p,#pb.a li{animation:none}}
 
   /* ---- встроенный Box внутри панели ---- */
@@ -312,7 +310,6 @@ body.tp-out .win:not(.prodwin){animation:winSuck .7s ease-in forwards}
 <script src="guard.js?v=2"></script>
 </head>
 <body>
-<audio id="bg" src="PONTE SALVAJE (Slowed).mp3" loop preload="none"></audio>
 <canvas id="c"></canvas>
 <h1 id="title" data-t="THAT DARKNESS">THAT DARKNESS</h1>
 <div id="hint"><span class="credit-line">Made with the support of <b>Arena</b> · Agent Mode</span>
@@ -340,19 +337,7 @@ body.tp-out .win:not(.prodwin){animation:winSuck .7s ease-in forwards}
     <div class="win-body"></div>
   </div>
 </template>
-<button id="snd" aria-label="Mute or unmute music" title="Sound (M)">♪</button>
 
-
-<script>
-const audio=document.getElementById('bg'),snd=document.getElementById('snd');
-let muted=false;try{muted=localStorage.getItem('td-muted')==='1'}catch{}
-audio.muted=muted;snd.classList.toggle('m',muted);
-snd.onclick=()=>{muted=!muted;audio.muted=muted;snd.classList.toggle('m',muted);try{localStorage.setItem('td-muted',muted?'1':'0')}catch{};if(!muted&&audio.paused)audio.play().catch(()=>{})};
-/* browsers only allow sound after a tap: start the music on the first one */
-const startAudio=()=>{if(!muted&&audio.paused)audio.play().catch(()=>{})};
-['pointerdown','pointerup','touchend','keydown'].forEach(ev=>addEventListener(ev,startAudio,{passive:true}));   // keeps retrying until it actually plays
-audio.addEventListener('error',()=>{snd.textContent='✕';snd.title='Music file not found: PONTE SALVAJE (Slowed).mp3'});
-</script>
 
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script>
 <script type="module">
@@ -1089,21 +1074,5 @@ loop();
 <script src="portal-box.js?v=4"></script>
 <script src="credits.js"></script>
 
-<script>
-/* Музыка: качается только когда человек сам включил. Не тормозит вход. */
-(function(){
-  var bg = document.getElementById('bg');
-  if(!bg) return;
-  var started = false;
-  function arm(){
-    if(started) return;
-    started = true;
-    try { bg.preload = 'auto'; bg.load(); } catch(e){}
-  }
-  ['pointerdown','touchstart','keydown'].forEach(function(ev){
-    window.addEventListener(ev, arm, { once:true, passive:true });
-  });
-})();
-</script>
 </body>
 </html>
