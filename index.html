@@ -7,7 +7,8 @@
 <meta name="td-build" content="portal-box-3">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,500;1,300&family=Jost:wght@300;400&family=Monoton&family=Montserrat:wght@700;800;900&family=Baloo+2:wght@800&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500&family=Jost:wght@400&family=Montserrat:wght@800&family=Baloo+2:wght@800&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#081A23;--ink:#F0F0EA;--dim:#5FA69B;--red:#B8CEC6;--glow:rgba(20,123,120,.5);--serif:"Cormorant Garamond",Georgia,serif;--sans:"Jost",system-ui,sans-serif;--ease:cubic-bezier(.22,.8,.24,1)}
 *{box-sizing:border-box}
@@ -311,7 +312,7 @@ body.tp-out .win:not(.prodwin){animation:winSuck .7s ease-in forwards}
 <script src="guard.js?v=2"></script>
 </head>
 <body>
-<audio id="bg" src="PONTE SALVAJE (Slowed).mp3" loop preload="auto"></audio>
+<audio id="bg" src="PONTE SALVAJE (Slowed).mp3" loop preload="none"></audio>
 <canvas id="c"></canvas>
 <h1 id="title" data-t="THAT DARKNESS">THAT DARKNESS</h1>
 <div id="hint"><span class="credit-line">Made with the support of <b>Arena</b> · Agent Mode</span>
@@ -1087,5 +1088,22 @@ loop();
 <script src="core-box.js"></script>
 <script src="portal-box.js?v=4"></script>
 <script src="credits.js"></script>
+
+<script>
+/* Музыка: качается только когда человек сам включил. Не тормозит вход. */
+(function(){
+  var bg = document.getElementById('bg');
+  if(!bg) return;
+  var started = false;
+  function arm(){
+    if(started) return;
+    started = true;
+    try { bg.preload = 'auto'; bg.load(); } catch(e){}
+  }
+  ['pointerdown','touchstart','keydown'].forEach(function(ev){
+    window.addEventListener(ev, arm, { once:true, passive:true });
+  });
+})();
+</script>
 </body>
 </html>
