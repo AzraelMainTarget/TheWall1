@@ -52,26 +52,7 @@ canvas#edge{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-
     0 0 1px rgba(6,20,26,.9),
     1px 1px 0 #E4EEE9,2px 2px 0 #D6E4DE,3px 3px 0 #C8D9D2,4px 4px 0 #BAD0C7,
     5px 5px 0 #ACC6BC,6px 6px 0 #9EBCB1,7px 7px 0 #90B2A6,9px 10px 8px rgba(0,0,0,.45),0 18px 20px rgba(0,0,0,.4)}}
-/* Тень логотипа: отблик на воде. Видна только на вспышке молнии.
-   Садим низко, на тёмную воду — там контраст есть, под порталом его нет. */
-#tdshadow{position:fixed;left:0;right:0;top:73vh;z-index:3;pointer-events:none;
-  text-align:center;opacity:0;will-change:opacity,transform;
-  font:800 clamp(28px,7.1vw,78px)/1 "Baloo 2",system-ui,sans-serif;
-  text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;
-  color:rgba(196,244,236,.95);
-  transform:scaleY(.82) scaleX(1.02);transform-origin:50% 0;
-  filter:blur(1.6px);
-  text-shadow:0 0 14px rgba(140,235,220,.95),0 0 34px rgba(90,190,180,.7)}
-#tdshadow.strike{animation:tds 1.4s ease-out}
-@keyframes tds{
-  0%{opacity:0;transform:scaleY(.72) scaleX(1.02) translateY(-3px)}
-  8%{opacity:.95;transform:scaleY(.84) scaleX(1.03) translateY(0)}
-  16%{opacity:.3}
-  26%{opacity:.9;transform:scaleY(.82) scaleX(1.02)}
-  42%{opacity:.42}
-  70%{opacity:.15}
-  100%{opacity:0;transform:scaleY(.88) scaleX(1.04) translateY(2px)}}
-@media (prefers-reduced-motion:reduce){#tdshadow.strike{animation-duration:1.9s}}
+
 </style>@media (max-width:520px){
   #hint{gap:3px;bottom:max(10px,env(safe-area-inset-bottom));left:0;right:0;opacity:.66}
   #hint .credit-line{font-size:8.2px;letter-spacing:.08em}
@@ -332,7 +313,6 @@ body.tp-out .win:not(.prodwin){animation:winSuck .7s ease-in forwards}
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="tdshadow" aria-hidden="true">That Darkness</div>
 <div id="hint"><span class="credit-line">Made with the support of <b>Arena</b> · Agent Mode</span>
   <span class="credit-line">Built by <b>NeWerMoRe</b> (Author) — First Assistant of the Creator</span>
   <span class="credit-line credit-year">Project Gate · © <b>2027</b></span></div>
@@ -660,19 +640,38 @@ renderer.debug.onShaderError=(gl,pr,vs,fs)=>fail('Shader: '+(gl.getShaderInfoLog
 const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(55,1,.1,700);camera.position.set(0,0,15);
 const U={uTime:{value:0},uPix:{value:renderer.getPixelRatio()}};
 
+/* Форма слова для тени в небе: рисуем в маленький canvas и отдаём шейдеру текстурой.
+   Белым по прозрачному — дальше шейдер сам решает, где затемнить. */
+const WORD=(()=>{
+  const c=document.createElement('canvas'); c.width=1024; c.height=192;
+  const x=c.getContext('2d');
+  x.clearRect(0,0,c.width,c.height);
+  x.fillStyle='#fff'; x.textAlign='center'; x.textBaseline='middle';
+  var word='THAT DARKNESS', size=140, pad=28;
+  for(; size>20; size-=2){
+    x.font='800 '+size+'px "Baloo 2", system-ui, sans-serif';
+    if(x.measureText(word).width <= c.width-pad*2) break;
+  }
+  x.fillText(word, c.width/2, c.height/2);
+  const t=new THREE.CanvasTexture(c);
+  t.minFilter=THREE.LinearFilter; t.magFilter=THREE.LinearFilter; t.generateMipmaps=false;
+  return t;
+})();
+
 /* Background: procedural night storm over a translucent, dark sea.
    Rendered at reduced resolution with sub-pixel jitter + temporal accumulation, then upscaled with a light
    sharpen and dither (the same idea as DLSS-style temporal upscaling, built for WebGL: much smoother, far cheaper). */
 const hf=renderer.extensions.has('EXT_color_buffer_float')||renderer.extensions.has('EXT_color_buffer_half_float');
 const HT=hf?THREE.HalfFloatType:THREE.UnsignedByteType;
-const BU={uTime:{value:0},uRes:{value:new THREE.Vector2(1,1)},uHor:{value:.4},uJit:{value:new THREE.Vector2()},uHist:{value:null},uReset:{value:1},uBlend:{value:hf?WATER.blend:Math.max(.55,WATER.blend)},uClr:{value:WATER.clear},uPc:{value:new THREE.Vector2(.5,.5)},uPr:{value:.4},uPI:{value:1}};
+const BU={uTime:{value:0},uRes:{value:new THREE.Vector2(1,1)},uHor:{value:.4},uJit:{value:new THREE.Vector2()},uHist:{value:null},uReset:{value:1},uBlend:{value:hf?WATER.blend:Math.max(.55,WATER.blend)},uClr:{value:WATER.clear},uPc:{value:new THREE.Vector2(.5,.5)},uPr:{value:.4},uPI:{value:1},
+  uWord:{value:WORD},uWordAmt:{value:0},uFlashRate:{value:3.0}};
 const bgMat=new THREE.ShaderMaterial({uniforms:BU,depthTest:false,depthWrite:false,
 vertexShader:`void main(){gl_Position=vec4(position.xy,0.,1.);}`,
-fragmentShader:`precision highp float;uniform float uTime,uHor,uReset,uBlend,uClr,uPr,uPI;uniform vec2 uRes,uJit,uPc;uniform vec3 uPcol;uniform sampler2D uHist;
+fragmentShader:`precision highp float;uniform float uTime,uHor,uReset,uBlend,uClr,uPr,uPI,uWordAmt,uFlashRate;uniform vec2 uRes,uJit,uPc;uniform vec3 uPcol;uniform sampler2D uHist,uWord;
 float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
 float n(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h(i),h(i+vec2(1,0)),f.x),mix(h(i+vec2(0,1)),h(i+vec2(1,1)),f.x),f.y);}
 float fbm(vec2 p){float v=0.,a=.5;for(int i=0;i<4;i++){v+=a*n(p);p=p*2.03+vec2(7.1,3.7);a*=.5;}return v;}
-float flash(float t){float k=floor(t/3.0),r=h(vec2(k,1.7));float ph=fract(t/3.0)*3.0-r*2.5;
+float flash(float t){float P=uFlashRate;float k=floor(t/P),r=h(vec2(k,1.7));float ph=fract(t/P)*P-r*2.5*(P/3.0);
  return step(.25,r)*(exp(-abs(ph)*9.)*(.6+.4*sin(ph*60.))+.5*exp(-abs(ph-.35)*7.));}
 float ocean(vec2 p,float t){p.y-=t*.5;float a=1.,s=0.;mat2 m=mat2(.8,.6,-.6,.8);
  for(int i=0;i<4;i++){float w=1.-abs(sin(p.x+t*(.9+float(i)*.25)+n(p*.8+t*.1)*3.));s+=a*w*w;p=m*p*1.85;a*=.5;}
@@ -686,7 +685,7 @@ vec3 sky(vec3 d,float fl,float lx,float t){
  return s+vec3(.25,.32,.7)*nr*fl*(.25+1.4*c);}
 void main(){
  vec2 uv=(gl_FragCoord.xy+uJit)/uRes;float asp=uRes.x/uRes.y,t=uTime;
- float k=floor(t/3.0),lx=(h(vec2(k,4.2))-.5)*1.4,fl=max(flash(t),0.);
+ float k=floor(t/uFlashRate),lx=(h(vec2(k,4.2))-.5)*1.4,fl=max(flash(t),0.);
  vec3 rd=normalize(vec3((uv.x-.5)*asp*1.25,(uv.y-uHor)*1.25,-1.));
  vec3 col;
  if(rd.y>=0.){col=sky(rd,fl,lx,t);}
@@ -722,12 +721,20 @@ void main(){
   col+=vec3(.5,.6,.72)*foam*(.22+.9*fl);
   col=mix(col,skyL(vec3(rd.x,0.,rd.z),fl,lx),1.-exp(-tt*.012));
  }
+ /* Тень слова за тучами: видна только на вспышке, гаснет вместе с ней. */
+ vec2 wuv=vec2((uv.x-.5)/.90+.5,(uv.y-.850)/.105);
+ if(wuv.x>0.&&wuv.x<1.&&wuv.y>0.&&wuv.y<1.){
+   float w=texture2D(uWord,wuv).a;
+   float lit=fl*(.55+.45*sin(uTime*.7));
+   col*=1.-w*uWordAmt*lit;
+ }
  vec2 pd=(uv-uPc)*vec2(asp,1.);col+=uPcol*.05*uPI*exp(-length(pd)/(uPr*2.2));   // soft light in the air around the portal
  col=mix(vec3(dot(col,vec3(.3,.5,.2))),col,.78)*.62;                    // gloomier: desaturate + darken
  col*=1.-.3*pow(length(uv-.5)*1.2,2.);
  col=pow(max(col,0.),vec3(.92));
  vec3 prev=texture2D(uHist,gl_FragCoord.xy/uRes).rgb;
  gl_FragColor=vec4(mix(prev,col,mix(uBlend,1.,uReset)),1.);}`});
+window.__BU=BU;  /* тень в небе управляется снаружи */
 const bgScene=new THREE.Scene(),bgQuad=new THREE.Mesh(new THREE.PlaneGeometry(2,2),bgMat);bgQuad.frustumCulled=false;bgScene.add(bgQuad);
 let bgS=mobile?.55:.8;const BG_MAX=mobile?.72:1.0,BG_MIN=mobile?.42:.45;
 const mkRT=()=>new THREE.WebGLRenderTarget(2,2,{minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter,depthBuffer:false,stencilBuffer:false,generateMipmaps:false,type:HT});
@@ -1122,6 +1129,20 @@ loop();
   }
   // первая тень — через секунду после входа, чтобы сразу было видно, что она есть
   setTimeout(strike, 1200);
+})();
+</script>
+<script>
+/* Тень в небе: амплитуда включается сразу, молнии идут реже, чтобы тень
+   проступала как событие, а не как мерцание. */
+(function(){
+  function arm(){
+    if(!window.__BU || !window.__BU.uWordAmt){ return false; }
+    window.__BU.uWordAmt.value = 1;
+    window.__BU.uFlashRate.value = 4.2;
+    return true;
+  }
+  var tries=0;
+  var iv=setInterval(function(){ if(arm() || ++tries>60) clearInterval(iv); }, 250);
 })();
 </script>
 </body>
