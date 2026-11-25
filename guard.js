@@ -24,7 +24,30 @@
       .replace(/[\s\u00A0\u2000-\u200F\uFEFF]/g, '')
       .toLowerCase();
   }
-  const hit = (raw) => norm(raw) && (fold('td|' + norm(raw)) ^ 0x5f3a91c7) >>> 0 === PASS;
+  const hitPass = (raw) => !!(norm(raw) && (fold('td|' + norm(raw)) ^ 0x5f3a91c7) >>> 0 === PASS);
+
+  /* Часовой код: 8 цифр, меняется каждый час. Секрет вводится один раз
+     и живёт только в этом браузере. */
+  function hitTotp(raw) {
+    const digits = String(raw || '').replace(/\s+/g, '');
+    if (!/^\d{8}$/.test(digits)) return false;
+    if (!window.TOTP) return false;
+    let secret = null;
+    try { secret = localStorage.getItem('td-totp-secret'); } catch {}
+    if (!secret) return false;
+    for (const shift of [-1, 0, 1]) {           // окно ±1 час
+      const now = () => Date.now() + shift * 3600 * 1000;
+      try {
+        if (window.TOTP.same(TOTP.totp(secret, { step: 3600, digits: 8, now }), digits)) return true;
+      } catch {}
+    }
+    return false;
+  }
+
+  /* Аварийный ключ: работает офлайн, даже если всё остальное сломано. */
+  const hitRescue = (raw) => !!(window.RESCUE && RESCUE.hit(raw));
+
+  const hit = (raw) => hitRescue(raw) || hitPass(raw) || hitTotp(raw);
 
   const ls = {
     get: (k) => { try { return localStorage.getItem(k); } catch { return null; } },
@@ -86,7 +109,7 @@
       <h1>That Darkness</h1>
       <p class="sub">закрытая территория</p>
       <input id="td-pass" type="password" inputmode="text" autocomplete="off" autocapitalize="off"
-             spellcheck="false" placeholder="пароль">
+             spellcheck="false" placeholder="пароль · код · ключ">
       <button type="button" id="td-go">Войти</button>
       <div class="msg" id="td-msg"></div>
       <p class="foot">доступ по паролю</p>
@@ -111,7 +134,7 @@
     setTimeout(() => inp.focus(), 120);
   }
 
-  window.TD_GATE = { hit, fold, norm, KEY, ROLE, ls };
+  window.TD_GATE = { hit, hitPass, hitTotp, hitRescue, fold, norm, KEY, ROLE, ls, open, v: 2 };
 
   if (!allowed) return;               // локально и в песочнице замок не мешает работе
   if (ls.get(KEY) && !forced) { open(); return; }

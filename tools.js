@@ -36,7 +36,8 @@
   }
 
   /* ожидаемое значение для кода 'thatdarkness' */
-  const WANT = fold('td|maintarget1488') ^ GATE_KEY;
+  /* только свёртка: сам пароль нигде не хранится */
+  const WANT = 2575410809;
 
   function normalise(raw) {
     return String(raw || '')

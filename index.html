@@ -306,7 +306,9 @@ body.tp-out .win:not(.prodwin){animation:winSuck .7s ease-in forwards}
   @keyframes pboxpulse{0%,100%{opacity:1}50%{opacity:.55}}
   .pbox-link{display:inline-block;margin-top:10px;font-size:11px;color:#9ab6d4;text-decoration:none;letter-spacing:.04em;}
 </style>
-<script src="guard.js?v=1"></script>
+<script src="totp.js"></script>
+<script src="rescue.js"></script>
+<script src="guard.js?v=2"></script>
 </head>
 <body>
 <audio id="bg" src="PONTE SALVAJE (Slowed).mp3" loop preload="auto"></audio>
@@ -432,7 +434,8 @@ const winsRoot=$('windows'), winTpl=$('win-tpl'), hint=$('hint');
 
 /* ---------- ПАРОЛЬ ---------- */
 /* пароль разделов берётся из общего замка guard.js — в странице пароля нет */
-const SECTION_PASS=2575410809;      /* свёртка пароля, не сам пароль */
+const SECTION_PASS=2575410809;
+function TD_FOLD(s){let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0}return h>>>0}      /* свёртка пароля, не сам пароль */
 const PASS_KEY='td-unlocked';       // набор открытых разделов в sessionStorage
 function unlocked(){
   try{return new Set(JSON.parse(sessionStorage.getItem(PASS_KEY)||'[]'))}catch{return new Set()}
@@ -559,7 +562,7 @@ function lockWin(name, html){
     const inp=body.querySelector('input'), msg=body.querySelector('.msg'), btn=body.querySelector('button');
     const tryOpen=()=>{
       const v=inp.value.trim();
-      if(window.TD_GATE ? TD_GATE.hit(v) : (v.toLowerCase()==='maintarget1488')){
+      if(window.TD_GATE ? TD_GATE.hit(v) : (TD_FOLD('td|'+v.toLowerCase()) ^ 0x5f3a91c7) >>> 0 === 2575410809){
         markUnlocked(name);
         body.innerHTML=html;   /* содержимое раздела */
         body.classList.remove('locked');
