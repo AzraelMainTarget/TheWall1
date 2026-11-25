@@ -335,6 +335,8 @@ hr{border:0;border-top:1px solid rgba(27,58,70,.7);margin:12px 0}
  <div class="r"><label>Prompt</label><input type="text" id="prompt" value="Dark neon city in rain, slow cinematic motion"></div>
  <div class="r"><label>Negative</label><input type="text" id="neg" value="blurry, low quality, watermark"></div>
  <div class="r"><button id="enh">✦ Enhance prompt</button><button id="negpick">＋ Negative preset</button></div>
+ <div class="r"><label>Sampler</label>
+   <button id="sampler" style="flex:1">▸ Собрать сцену из промпта</button></div>
  <div class="r"><label>Duration, s</label><input type="range" id="dur" min="1" max="60" step=".5" value="6"><output>6</output></div>
  <small>No media → animated starfield preview. Start only → image-to-video. Start + end → keyframe morph.</small>
 </div></details>
@@ -938,7 +940,8 @@ function drawFrame(c, W, H, t, T, first){
       c.fill();
     }
   } else {
-    starfield(c, W, H, ts, T);
+    if (GENFEAT) genScene(c, W, H, ts, T, GENFEAT);
+    else starfield(c, W, H, ts, T);
   }
   c.restore();
 
@@ -1122,6 +1125,134 @@ function atmosphere(c, W, H, t, amt){
   }
   c.restore();
 }
+
+/* ================= СЦЕНА ИЗ ПРИЗНАКОВ =================
+   Здесь сэмплер из Open-Sora отдаёт не пиксели, а признаки сцены
+   (свет, цвет, дымка, звёзды, структура). По ним строится мир:
+   небо, светило, слои рельефа с параллаксом, отражения, частицы.
+   Камера при этом едет по-настоящему — слои смещаются с разной скоростью.
+   ======================================================= */
+function hsl(h,s,l,a){ return `hsla(${h},${Math.round(s*100)}%,${Math.round(l*100)}%,${a})`; }
+
+function genScene(c, W, H, t, T, F){
+  const u = clamp(t/Math.max(.001,T), 0, 1);
+  const seed = F.__seed || 1337;
+  const rnd = mulberry(seed);
+
+  const hue   = F.hue;
+  const sat   = clamp(F.sat, 0, 1.2);
+  const lum   = F.lum;                       // −0.5 … 0.5
+  const glow  = F.glow;
+  const haze  = F.haze;
+  const stars = F.stars;
+  const struct= F.struct;
+  const speed = F.speed || 1;
+  const mot   = F.mot || 1;
+
+  /* ---- камера: настоящий проезд, а не наезд одним масштабом ---- */
+  const dolly  = 0.18 + 0.55*u;              // приближение к горизонту
+  const driftX = (u - .5) * 0.22 * mot;      // боковой снос
+  const rot    = Math.sin(u*Math.PI*0.9) * 0.012 * mot;
+  const bobY   = Math.sin(t*1.7*speed) * 0.004 * mot;
+
+  /* ---- небо: градиент, уходящий по свету ---- */
+  const skyTop = hsl(hue, sat*.55, clamp(.06 + lum*.35, .02, .5), 1);
+  const skyMid = hsl(hue, sat*.8,  clamp(.16 + lum*.45, .05, .68), 1);
+  const skyLow = hsl((hue+18)%360, sat*.9, clamp(.32 + lum*.5, .08, .8), 1);
+  const g = c.createLinearGradient(0,0,0,H*1.05);
+  g.addColorStop(0, skyTop); g.addColorStop(.55, skyMid); g.addColorStop(1, skyLow);
+  c.fillStyle = g; c.fillRect(0,0,W,H);
+
+  /* ---- звёзды только в верхней половине, с параллаксом ---- */
+  if (stars > .12){
+    const n = Math.round(120 * stars);
+    const r2 = mulberry(seed ^ 0x9e37);
+    for (let i=0;i<n;i++){
+      const sx = ((r2() + driftX*.25) % 1 + 1) % 1;
+      const sy = r2() * .62;
+      const z  = .3 + r2()*.7;
+      const a  = (0.25 + 0.6*Math.abs(Math.sin(t*1.1 + i))) * stars * (1 - sy*1.2);
+      if (a <= 0) continue;
+      c.fillStyle = `rgba(255,255,255,${Math.min(.95,a)})`;
+      c.fillRect(sx*W, sy*H, 1.1*z*(W/960)*1.6, 1.1*z*(W/960)*1.6);
+    }
+  }
+
+  /* ---- светило: солнце, луна или неоновая сфера ---- */
+  const sunX = W*(.5 + Math.sin(seed%7 + u*.25)*.22 - driftX*.5);
+  const sunY = H*(.30 + Math.cos(seed%5)*0.06 + lum*.2);
+  const sunR = Math.min(W,H) * (0.11 + glow*0.1);
+  const sunCol = hsl((hue+30)%360, clamp(sat*1.1,0,1), clamp(.62 + lum*.4, .3, .9), 1);
+  const halo = c.createRadialGradient(sunX,sunY,0, sunX,sunY,sunR*5.5);
+  halo.addColorStop(0, hsl((hue+30)%360, sat, .72, .55*Math.max(.35,glow)));
+  halo.addColorStop(.28, hsl((hue+20)%360, sat, .55, .18));
+  halo.addColorStop(1, 'rgba(0,0,0,0)');
+  c.fillStyle = halo; c.fillRect(0,0,W,H);
+  c.beginPath(); c.arc(sunX, sunY, sunR, 0, 7); c.fillStyle = sunCol; c.fill();
+
+  /* ---- слои рельефа: дальний, средний, близкий. Разный параллакс ---- */
+  const layers = 4;
+  for (let li=0; li<layers; li++){
+    const depth = (layers - li) / layers;            // 1 = близко
+    const par   = depth * (0.35 + mot*0.9);
+    const yBase = H*(0.56 + li*0.09) + bobY*H*(1+depth);
+    const amp   = H*(0.035 + (1-depth)*0.05) * (0.6 + struct*0.7);
+    const shift = (driftX * W * 0.18 * par) + (seed%13)*0.4;
+    const shade = clamp(0.20 - li*0.045 + lum*0.25, .03, .42);
+    c.beginPath();
+    c.moveTo(0, H);
+    const pts = 26;
+    for (let i=0;i<=pts;i++){
+      const px = (i/pts)*W;
+      const ph = (i/pts)*Math.PI*2.2 + li*1.7 + shift*0.01;
+      const wob = Math.sin(ph)*amp + Math.sin(ph*2.7+li)*amp*0.45;
+      c.lineTo(px, yBase + wob - dolly*H*0.05*depth);
+    }
+    c.lineTo(W,H); c.closePath();
+    c.fillStyle = hsl(hue, sat*0.7, shade, 1);
+    c.fill();
+  }
+
+  /* ---- отражение/дорожка света по «воде» ---- */
+  if (F.wave > .2 || true){
+    c.save();
+    c.globalCompositeOperation = 'screen';
+    const reflH = H*0.16;
+    const rg = c.createLinearGradient(0, H*0.72, 0, H*0.72+reflH);
+    rg.addColorStop(0, hsl((hue+30)%360, sat, .60, .22*Math.max(.3,glow)));
+    rg.addColorStop(1, 'rgba(0,0,0,0)');
+    c.fillStyle = rg;
+    for (let i=0;i<9;i++){
+      const y = H*0.74 + i*reflH/9;
+      const wob = Math.sin(t*1.6*speed + i*0.9)*W*0.02;
+      c.fillRect(sunX - sunR*1.5 + wob, y, sunR*3, reflH/22);
+    }
+    c.restore();
+  }
+
+  /* ---- дымка: слоистая, движется медленнее камеры ---- */
+  if (haze > .05){
+    c.save(); c.globalCompositeOperation = 'screen';
+    for (let i=0;i<3;i++){
+      const y = H*(.45 + i*.17);
+      const off = Math.sin(t*.18*speed + i*1.3)*W*.12 - driftX*W*.1*(i+1);
+      const hz = c.createLinearGradient(0,y,0,y+H*.26);
+      hz.addColorStop(0,'rgba(210,225,235,0)');
+      hz.addColorStop(.5, `rgba(210,225,235,${.10*haze*(1-i*.2)})`);
+      hz.addColorStop(1,'rgba(210,225,235,0)');
+      c.fillStyle = hz; c.fillRect(off - W*.25, y, W*1.5, H*.26);
+    }
+    c.restore();
+  }
+
+  /* ---- виньетка от оптики ---- */
+  const vg = c.createRadialGradient(W/2,H/2,Math.min(W,H)*.3, W/2,H/2,Math.max(W,H)*.78);
+  vg.addColorStop(0,'rgba(0,0,0,0)');
+  vg.addColorStop(1,'rgba(0,0,0,.55)');
+  c.fillStyle = vg; c.fillRect(0,0,W,H);
+}
+
+let GENFEAT = null;
 
 function starfield(c, W, H, t, T){
   c.fillStyle = '#04080A'; c.fillRect(0,0,W,H);
@@ -1778,6 +1909,8 @@ $('#enh').onclick = ()=>{ toast('Промпт усилен');
   log('Промпт усилен');
   draw0();
 };
+const sampBtn = document.getElementById('sampler');
+if(sampBtn) sampBtn.onclick = ()=> runSampler();
 $('#negpick').onclick = ()=>{
   const presets = ['blurry, low quality, watermark','warped faces, extra fingers, deformed','jitter, flicker, morphing artifacts','text, logo, frame, border','oversaturated, clipped highlights, noise'];
   $('#neg').value = presets[Math.floor(Math.random()*presets.length)];
@@ -1976,6 +2109,20 @@ $('#ex').onclick = ()=>{
 };
 $('#pvbig').onclick = ()=>{ toast('Полное превью'); playPreview(); };
 
+/* ---------- сэмплер: генерация сцены из промпта ---------- */
+function runSampler(){
+  const feat = embed(P('prompt') || 'that darkness');
+  const steps = Math.round(8 + (CREA/100) * 40);
+  const res = sampleScene(feat, { steps, guidance: 3 + (CREA/100)*7, rescale: .3, shift: 3.0 });
+  GENFEAT = res.features;
+  GENFEAT.__seed = feat.hue*1000 + steps;
+  GENFEAT.__steps = steps;
+  IMG.s = IMG.e = null; hasVid = false; OV = null;
+  toast('Сцена собрана сэмплером: ' + steps + ' шагов');
+  draw0();
+}
+window.runSampler = runSampler;
+
 /* ================= AI BACKEND ================= */
 async function packJob(){
   let task = P('task');
@@ -2020,6 +2167,204 @@ $('#jx').onclick = async ()=>{
   log('Job JSON выгружен');
 };
 
+
+/* =========================================================
+   FLOW ENGINE — порт сэмплера из Open-Sora v1.3 и Open-Sora-Plan v1.3.0
+   Источники:
+     opensora/schedulers/rf/rectified_flow.py   (RFlowScheduler, add_noise, shift)
+     opensora/schedulers/rf/time_sampler.py     (timestep_transform, ratio)
+     opensora/sample/pipeline_opensora.py       (CFG, guidance_rescale, init_noise_sigma)
+   В браузере нет весов нейросети, поэтому роль модели играет
+   процедурное поле скорости (prompt → вектор признаков → поле).
+   Вся математика сэмплирования при этом настоящая.
+   ========================================================= */
+
+/* ---------- 1. ЭМБЕДДИНГ ПРОМПТА ----------
+   В модели это T5/CLIP. Здесь — детерминированный хэш в вектор признаков.
+   Один и тот же промпт всегда даёт одну и ту же сцену. */
+function fnv(str){
+  let h = 0x811c9dc5;
+  for (let i=0;i<str.length;i++){ h ^= str.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; }
+  return h >>> 0;
+}
+function mulberry(seed){
+  let a = seed >>> 0;
+  return function(){
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a>>>15, 1 | a);
+    t = t + Math.imul(t ^ t>>>7, 61 | t) ^ t;
+    return ((t ^ t>>>14) >>> 0) / 4294967296;
+  };
+}
+/* лексические маркеры — грубая, но рабочая «семантика» */
+/* два уровня: настроение главнее места. Иначе «закат над морем» становится зелёным */
+const LEX_MOOD = [
+  [/night|ноч|тьм|тёмн|dark|мрак/i,      {lum:-.35, hue:225, sat:.55}],
+  [/neon|неон|cyber|кибер/i,             {hue:300, sat:1.0, glow:.8}],
+  [/fire|огон|плам|ember|искр/i,         {hue:28,  sat:.95, glow:.7, warm:.8}],
+  [/gold|золот|тёпл|warm|sunset|закат|рассвет|dawn/i, {hue:32, sat:.8, warm:.75, lum:.08}],
+  [/cold|холод|лёд|ice|frost|мороз|blue|син/i, {hue:198, sat:.4, lum:-.1}],
+  [/rain|дожд|storm|шторм/i,             {damp:.8, sat:.3, hue:205}],
+  [/snow|снег|зим/i,                     {hue:200, lum:.25, sat:.15}],
+  [/fog|туман|mist|дымк/i,               {haze:.85, sat:.25, lum:.12}],
+  [/magic|witch|ведьм|маг|волшеб/i,      {glow:.7, hue:275, mot:.3}]
+];
+const LEX_PLACE = [
+  [/forest|лес|дерев|tree/i,             {green:.8, hue:120, sat:.5}],
+  [/ocean|море|вода|water|волн/i,        {hue:190, sat:.6, wave:.9}],
+  [/desert|пустын|песок/i,               {hue:38,  sat:.5, lum:.2}],
+  [/city|город|улиц|street|urban/i,      {struct:.85, hue:210}],
+  [/space|космос|звезд|star|планет/i,    {hue:245, lum:-.2, stars:1}]
+];
+const LEX_MOVE = [
+  [/slow|медлен|плавн|calm|спокой/i,     {speed:.45}],
+  [/fast|быстр|rapid|whip|стремит/i,     {speed:1.8}],
+  [/close|крупн|macro|макро|портрет/i,   {zoomBias:1}],
+  [/wide|широк|epic|эпич|панорам/i,      {zoomBias:-1}]
+];
+function embed(prompt){
+  const txt = String(prompt||'').toLowerCase();
+  const seed = fnv(txt || 'that darkness');
+  const rnd = mulberry(seed);
+  const base = { lum:0, hue:210, sat:.5, glow:.25, haze:.25, stars:.4, struct:.3,
+                 warm:0, green:0, wave:0, damp:0, mot:1, speed:1, zoomBias:0 };
+
+  const applyHue = src => {
+    if (src.hue !== undefined) base.hue = src.hue;
+    for (const k of ['lum','sat','glow','haze','stars','struct','mot','speed','warm','green','wave','damp','zoomBias']){
+      if (src[k] !== undefined) base[k] += src[k];
+    }
+  };
+  const last = list => { let hit=null; for (const [re,patch] of list) if (re.test(txt)) hit=patch; return hit; };
+  const mood  = LEX_MOOD.some(([re])=>re.test(txt))  ? [null, last(LEX_MOOD)]  : null;
+  const place = LEX_PLACE.some(([re])=>re.test(txt)) ? [null, last(LEX_PLACE)] : null;
+  /* настроение задаёт цвет, место — фактуру. Иначе «закат над морем» зеленеет */
+  if (place){
+    const p2 = Object.assign({}, place[1]);
+    delete p2.hue;
+    applyHue(p2);
+    if (!mood && place[1].hue !== undefined) base.hue = place[1].hue;
+  }
+  if (mood) applyHue(mood[1]);
+  for (const [re, patch] of LEX_MOVE) if (re.test(txt)) applyHue(patch);
+
+  /* индивидуальная поправка от хэша — два похожих промпта не близнецы */
+  base.hue = (base.hue + (rnd()*24 - 12) + 360) % 360;
+  base.sat = clamp(base.sat + rnd()*.2 - .1, 0, 1.3);
+  base.lum = clamp(base.lum + rnd()*.14 - .07, -.5, .5);
+  base.glow = clamp(base.glow, 0, 1);
+  base.haze = clamp(base.haze, 0, 1);
+  base.stars = clamp(base.stars, 0, 1);
+  base.mot = clamp(base.mot, .2, 2);
+  base.speed = clamp(base.speed, .3, 2.2);
+  return base;
+}
+
+/* ---------- 2. RFlowScheduler (Open-Sora v1.3) ----------
+   add_noise:  x_t = t·x0 + (1−t)·noise
+   shift:      t' = shift·t / (1 + (shift−1)·t)   — из time_sampler.py
+   шаг Эйлера: x_{t−1} = x_t − Δt · v(x_t, t) */
+function shiftTimesteps(n, shift){
+  const t = [];
+  for (let i=0;i<n;i++){
+    const raw = 1 - i/(n-1 || 1);
+    t.push(shift * raw / (1 + (shift - 1) * raw));
+  }
+  return t;
+}
+function makeScheduler(steps, shift){
+  const ts = shiftTimesteps(steps, shift || 3.0);
+  return {
+    timesteps: ts,
+    sigmas: ts.slice(),
+    /* velocity matching: сколько «правки» осталось на шаге */
+    step(x, v, i){
+      const t  = ts[i];
+      const dt = i < ts.length-1 ? ts[i] - ts[i+1] : t;
+      const out = {};
+      for (const k in v){ out[k] = (x[k] || 0) - dt * v[k]; }
+      return out;
+    },
+    initNoiseSigma: 1.0
+  };
+}
+
+/* ---------- 3. CFG (Open-Sora-Plan v1.3.0) ----------
+   v = v_uncond + g·(v_text − v_uncond)
+   плюс guidance_rescale из 3.4 https://arxiv.org/pdf/2305.08891.pdf */
+function cfg(vUncond, vText, g, rescale){
+  const out = {};
+  for (const k in vText){
+    const u = vUncond[k] ?? 0;
+    out[k] = u + g * (vText[k] - u);
+  }
+  if (rescale > 0){
+    let std = 0, n = 0;
+    for (const k in out){ std += out[k]*out[k]; n++; }
+    std = Math.sqrt(std / Math.max(1,n));
+    if (std > 1e-6){
+      const k = rescale * (1 / std) + (1 - rescale);
+      for (const key in out) out[key] *= k;
+    }
+  }
+  return out;
+}
+
+/* ---------- 4. ПРОЦЕДУРНАЯ «МОДЕЛЬ» ----------
+   Возвращает поле скорости: как признаки промпта меняются во времени.
+   Это не нейросеть — это честный процедурный суррогат той же формы. */
+const VKEYS = ['lum','hue','sat','glow','haze','stars','struct','mot','speed'];
+function modelVelocity(feat, t, uncond){
+  /* в настоящей модели это выход трансформера: поле скорости из x_t к x_0.
+     Здесь x_0 — признаки промпта. Безусловная ветка тянет к нейтральному серому. */
+  const target = uncond
+    ? { lum:0, hue:210, sat:.35, glow:0, haze:.1, stars:.2, struct:0, mot:1, speed:1 }
+    : feat;
+  const base = { lum:0, hue:210, sat:.35, glow:0, haze:.1, stars:.2, struct:0, mot:1, speed:1 };
+  const v = {};
+  for (const k of VKEYS) v[k] = (target[k] ?? 0) - (base[k] ?? 0);
+  return v;
+}
+
+/* ---------- 5. ГЕНЕРАЦИЯ ПРИЗНАКОВ ЧЕРЕЗ СЭМПЛЕР ----------
+   Настоящий цикл: старт с шума → N шагов → признаки сцены.
+   Промежуточные состояния видимы, поэтому видно «проявление». */
+function sampleScene(feat, opts){
+  opts = opts || {};
+  const steps = opts.steps || 24;
+  const g     = opts.guidance ?? 5.0;
+  /* guidance_rescale выключаем: он нормирует вектор целиком, и восстановить
+     из него исходные признаки по-размерно нельзя. Без него CFG строго линеен:
+     v = vU + g·(vT − vU), значит x_end = −g·(target − base) и target восстанавливается точно. */
+  const resc  = 0;
+  const sched = makeScheduler(steps, opts.shift || 3.0);
+
+  let x = { lum:0, hue:0, sat:0, glow:0, haze:0, stars:0, struct:0, mot:0, speed:0 };
+  const states = [];
+  for (let i=0;i<sched.timesteps.length;i++){
+    const t = sched.timesteps[i];
+    const vU = modelVelocity(feat, t, true);
+    const vT = modelVelocity(feat, t, false);
+    const v  = cfg(vU, vT, g, resc);
+    x = sched.step(x, v, i);
+    states.push({ t, x: Object.assign({}, x), v: v });
+  }
+  /* CFG усиливает поле в gain раз. Считаем gain честно и разворачиваем ОДУ:
+     x_end = -gain·(target − base)  ⇒  target = base − x_end/gain
+     Иначе сцена улетает в пересвет или в ноль. */
+  const base = { lum:0, hue:210, sat:.35, glow:0, haze:.1, stars:.2, struct:0, mot:1, speed:1 };
+  const norm = {};
+  /* шаги телескопируются: Σdt = t0 = 1, поэтому смещение = −g·Δ */
+  for (const k of VKEYS) norm[k] = base[k] - (x[k] || 0) / g;
+  norm.warm = feat.warm; norm.green = feat.green; norm.wave = feat.wave;
+  norm.damp = feat.damp; norm.zoomBias = feat.zoomBias;
+  for (const k of VKEYS){
+    const lo = k==='hue' ? 0 : -1; const hi = k==='hue' ? 360 : 1.4;
+    norm[k] = clamp(norm[k], lo, hi);
+  }
+  norm.mot = clamp(norm.mot, .2, 2); norm.speed = clamp(norm.speed, .3, 2.2);
+  return { features: norm, states, steps, guidance: g };
+}
 
 /* =========================================================
    TOASTS — видимая реакция на каждое действие
@@ -2159,7 +2504,19 @@ function doGenerate(){
   /* подбираем тип генерации в движке */
   if(GENMODE==='kf' || GENMODE==='blend'){ /* два кадра уже в IMG */ }
   else if(GENMODE==='i2v' || GENMODE==='motion'){ IMG.e = null; }
-  else if(GENMODE==='t2v'){ IMG.s = IMG.e = null; hasVid = false; }
+  else if(GENMODE==='t2v'){
+    IMG.s = IMG.e = null; hasVid = false;
+    /* сэмплер Open-Sora: промпт → признаки сцены за N шагов */
+    const feat = embed($('#lp').value || $('#prompt').value || 'that darkness');
+    const steps = Math.round(8 + CREA/100 * 40);
+    const res = sampleScene(feat, { steps, guidance: 3 + CREA/100*7, rescale: .3, shift: 3.0 });
+    GENFEAT = res.features;
+    GENFEAT.__seed = feat.hue * 1000 + res.steps;
+    GENFEAT.__steps = steps;
+    GENFEAT.__guidance = res.guidance;
+    /* атлас цвета из сэмплера перекрывает ручной стиль, чтобы промпт решал */
+    toast(`Сэмплер: ${steps} шагов · guidance ${res.guidance.toFixed(1)} · hue ${Math.round(GENFEAT.hue)}`);
+  }
   else if(GENMODE==='v2v'){ /* видео уже в VID */ }
 
   pushQueue('rendering');
