@@ -10,6 +10,9 @@
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500&family=Jost:wght@400&family=Montserrat:wght@800&family=Baloo+2:wght@800&display=swap" rel="stylesheet">
 <style>
+/* Готический шрифт для тени в небе. Лежит локально — без обращений наружу. */
+@font-face{font-family:'TDFraktur';src:url('fonts/unifraktur-cook-700.woff2') format('woff2');
+  font-weight:700;font-style:normal;font-display:swap;unicode-range:U+0000-00FF,U+2000-206F}
 :root{--bg:#081A23;--ink:#F0F0EA;--dim:#5FA69B;--red:#B8CEC6;--glow:rgba(20,123,120,.5);--serif:"Cormorant Garamond",Georgia,serif;--sans:"Jost",system-ui,sans-serif;--ease:cubic-bezier(.22,.8,.24,1)}
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:var(--sans);overflow:hidden;-webkit-tap-highlight-color:transparent}
@@ -643,20 +646,30 @@ const U={uTime:{value:0},uPix:{value:renderer.getPixelRatio()}};
 /* Форма слова для тени в небе: рисуем в маленький canvas и отдаём шейдеру текстурой.
    Белым по прозрачному — дальше шейдер сам решает, где затемнить. */
 const WORD=(()=>{
-  const c=document.createElement('canvas'); c.width=1024; c.height=192;
+  const c=document.createElement('canvas'); c.width=1024; c.height=256;
   const x=c.getContext('2d');
-  x.clearRect(0,0,c.width,c.height);
-  x.fillStyle='#fff'; x.textAlign='center'; x.textBaseline='middle';
-  var word='THAT DARKNESS', size=140, pad=28;
-  for(; size>20; size-=2){
-    x.font='800 '+size+'px "Baloo 2", system-ui, sans-serif';
-    if(x.measureText(word).width <= c.width-pad*2) break;
+  function draw(){
+    x.clearRect(0,0,c.width,c.height);
+    x.fillStyle='#fff'; x.textAlign='center'; x.textBaseline='middle';
+    const word='That Darkness', pad=40;
+    let size=150;
+    for(; size>24; size-=2){                       // кегль под ширину: слово влезает целиком
+      x.font='700 '+size+'px TDFraktur, "UnifrakturCook", serif';
+      if(x.measureText(word).width <= c.width-pad*2) break;
+    }
+    x.fillText(word, c.width/2, c.height/2);
   }
-  x.fillText(word, c.width/2, c.height/2);
+  draw();
   const t=new THREE.CanvasTexture(c);
   t.minFilter=THREE.LinearFilter; t.magFilter=THREE.LinearFilter; t.generateMipmaps=false;
+  t.userData={redraw(){ draw(); t.needsUpdate=true; }};
   return t;
 })();
+/* Шрифт грузится отдельно: как только готов — перерисовываем текстуру. */
+if(document.fonts && document.fonts.load){
+  document.fonts.load('700 150px "TDFraktur"').then(()=>{ WORD.userData.redraw(); }).catch(()=>{});
+  document.fonts.ready.then(()=>{ WORD.userData.redraw(); });
+}
 
 /* Background: procedural night storm over a translucent, dark sea.
    Rendered at reduced resolution with sub-pixel jitter + temporal accumulation, then upscaled with a light
@@ -672,7 +685,9 @@ float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
 float n(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h(i),h(i+vec2(1,0)),f.x),mix(h(i+vec2(0,1)),h(i+vec2(1,1)),f.x),f.y);}
 float fbm(vec2 p){float v=0.,a=.5;for(int i=0;i<4;i++){v+=a*n(p);p=p*2.03+vec2(7.1,3.7);a*=.5;}return v;}
 float flash(float t){float P=uFlashRate;float k=floor(t/P),r=h(vec2(k,1.7));float ph=fract(t/P)*P-r*2.5*(P/3.0);
- return step(.25,r)*(exp(-abs(ph)*9.)*(.6+.4*sin(ph*60.))+.5*exp(-abs(ph-.35)*7.));}
+ // медленное затухание + послесвечение: вспышка живёт дольше, но не залипает
+ return step(.25,r)*(exp(-abs(ph)*5.5)*(.6+.4*sin(ph*60.))+.55*exp(-abs(ph-.35)*5.)
+        +.30*exp(-abs(ph-1.1)*2.4));}
 float ocean(vec2 p,float t){p.y-=t*.5;float a=1.,s=0.;mat2 m=mat2(.8,.6,-.6,.8);
  for(int i=0;i<4;i++){float w=1.-abs(sin(p.x+t*(.9+float(i)*.25)+n(p*.8+t*.1)*3.));s+=a*w*w;p=m*p*1.85;a*=.5;}
  return s*.5;}
@@ -725,7 +740,7 @@ void main(){
  vec2 wuv=vec2((uv.x-.5)/.90+.5,(uv.y-.850)/.105);
  if(wuv.x>0.&&wuv.x<1.&&wuv.y>0.&&wuv.y<1.){
    float w=texture2D(uWord,wuv).a;
-   float lit=fl*(.55+.45*sin(uTime*.7));
+   float lit=fl;
    col*=1.-w*uWordAmt*lit;
  }
  vec2 pd=(uv-uPc)*vec2(asp,1.);col+=uPcol*.05*uPI*exp(-length(pd)/(uPr*2.2));   // soft light in the air around the portal
