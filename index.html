@@ -637,7 +637,7 @@ const renderer=new THREE.WebGLRenderer({canvas,antialias:false,alpha:false,stenc
 renderer.toneMapping=THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure=1.08;
 renderer.autoClear=false;                           // every frame is fully overdrawn by the background pass
-let prCur=Math.min(devicePixelRatio,mobile?1.5:2);renderer.setPixelRatio(prCur);
+let prCur=Math.min(devicePixelRatio,mobile?2.5:2);renderer.setPixelRatio(prCur);
 const eb=document.createElement('div');eb.style.cssText='position:fixed;left:8px;right:8px;bottom:8px;z-index:50;padding:8px 10px;font:12px monospace;color:#ffd0c8;background:rgba(60,10,10,.85);border-radius:6px;display:none;word-break:break-all';document.body.appendChild(eb);
 const fail=m=>{eb.textContent='Error: '+m;eb.style.display='block'};
 addEventListener('error',e=>fail(e.message));addEventListener('unhandledrejection',e=>fail((e.reason&&e.reason.message)||e.reason));
@@ -742,15 +742,15 @@ void main(){
   float sway=sin(t*.42)*.016+sin(t*.27+1.7)*.011;          // медленное колыхание
   float breathe=sin(t*.63+.9)*.011;                         // дыхание по высоте
   float ripple=sin(uv.x*7.5+t*.85)*.0045+sin(uv.x*3.1-t*.55)*.0035; // волна по полотнищу
-  vec2 wuv=vec2((uv.x-.5)/.90+.5+sway,(uv.y-.845-breathe+ripple)/.115);
+  vec2 wuv=vec2((uv.x-.5)/.78+.5+sway,(uv.y-.840-breathe+ripple)/.105);
   if(wuv.x>0.&&wuv.x<1.&&wuv.y>0.&&wuv.y<1.){
     float w=texture2D(uWord,wuv).a;
     float cl=fbm(vec2(uv.x*5.+t*.07,uv.y*7.-t*.05));        // клочья туч по краю силуэта
     w*=smoothstep(.30,.95,cl+.35);
     float lit=1.-clamp(fl*1.35,0.,1.);                      // вспышка съедает тень
     float a=w*uWordAmt*lit;
-    col*=1.-a*.55;                                          // буквы чуть темнее неба
-    col+=vec3(.10,.155,.245)*a*1.15;                        // и холодно светятся изнутри: так силуэт читается на чёрном
+    col*=1.-a*.45;                                          // буквы чуть темнее неба
+    col+=vec3(.150,.225,.330)*a*1.45;                        // и холодно светятся изнутри: так силуэт читается на тёмном небе
   }
  }
  vec2 pd=(uv-uPc)*vec2(asp,1.);col+=uPcol*.05*uPI*exp(-length(pd)/(uPr*2.2));   // soft light in the air around the portal
@@ -761,7 +761,7 @@ void main(){
  gl_FragColor=vec4(mix(prev,col,mix(uBlend,1.,uReset)),1.);}`});
 window.__BU=BU;  /* тень в небе управляется снаружи */
 const bgScene=new THREE.Scene(),bgQuad=new THREE.Mesh(new THREE.PlaneGeometry(2,2),bgMat);bgQuad.frustumCulled=false;bgScene.add(bgQuad);
-let bgS=mobile?.55:.8;const BG_MAX=mobile?.72:1.0,BG_MIN=mobile?.42:.45;
+let bgS=mobile?.68:.92;const BG_MAX=mobile?1.0:1.15,BG_MIN=mobile?.46:.5;
 const mkRT=()=>new THREE.WebGLRenderTarget(2,2,{minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter,depthBuffer:false,stencilBuffer:false,generateMipmaps:false,type:HT});
 let rtA=mkRT(),rtB=mkRT();
 const SU={t:{value:null},px:{value:new THREE.Vector2(1,1)},uT:{value:0}};
@@ -771,7 +771,7 @@ fragmentShader:`uniform sampler2D t;uniform vec2 px;uniform float uT;varying vec
 float hh(vec2 p){return fract(sin(dot(p,vec2(12.9898,78.233)))*43758.5453);}
 void main(){vec3 c=texture2D(t,u).rgb;
  vec3 b=(texture2D(t,u+vec2(px.x,0.)).rgb+texture2D(t,u-vec2(px.x,0.)).rgb+texture2D(t,u+vec2(0.,px.y)).rgb+texture2D(t,u-vec2(0.,px.y)).rgb)*.25;
- c+=clamp(c-b,-.05,.05)*1.05;                                  // sharpen the upscale
+ c+=clamp(c-b,-.055,.055)*1.30;                                // crisper upscale: detail without halos
  c+=(hh(gl_FragCoord.xy+fract(uT*7.)*113.)-.5)*(1.6/255.);     // dither: no banding in the dark gradients
  gl_FragColor=vec4(max(c,0.),1.);}`}));
 showQuad.frustumCulled=false;showQuad.renderOrder=-10;scene.add(showQuad);
@@ -785,7 +785,7 @@ const R=3.2,NH=SECTIONS.length,HR=.205,HRING=.60;
 const holes=SECTIONS.map((s,i)=>{const a=Math.PI/2-i*2*Math.PI/NH,rr=HRING*(1+.06*Math.sin(i*2.1+.5));return new THREE.Vector2(Math.cos(a)*rr,Math.sin(a)*rr)});
 /* shared opening shape (same maths in the dust, the glow and the disc, so the edges match exactly) */
 const HOLEFN=`float holeR(vec2 d,float k){return uHr*(1.+.025*sin(uTime*.8+k*1.9));}`;
-const SN=mobile?15000:32000,pg=new THREE.BufferGeometry(),pp=new Float32Array(SN*3),pr2=new Float32Array(SN),ps=new Float32Array(SN),pk=new Float32Array(SN);
+const SN=mobile?24000:48000,pg=new THREE.BufferGeometry(),pp=new Float32Array(SN*3),pr2=new Float32Array(SN),ps=new Float32Array(SN),pk=new Float32Array(SN);
 for(let i=0;i<SN;i++){
   const mote=Math.random()<.08;pk[i]=mote?1:0;
   /* треть пыли садится ровно на обод — острые искры перекрывают мягкий ореол */
@@ -1035,7 +1035,7 @@ function drawEdge(t,cx,cy){
 
 let camBase=15,rsz=0;
 function resize(){camera.aspect=innerWidth/innerHeight;camera.fov=innerWidth<innerHeight?72:55;camera.updateProjectionMatrix();
- const cap=mobile?1.6:2;prCur=Math.min(cap,Math.max(1,prCur||cap));renderer.setPixelRatio(prCur);
+ prCur=Math.min(devicePixelRatio,mobile?2.5:2);renderer.setPixelRatio(prCur);
  const edpr=Math.min(devicePixelRatio,2);
  ecv.width=Math.round(innerWidth*edpr);ecv.height=Math.round(innerHeight*edpr);
  ECTX.setTransform(ecv.width/innerWidth,0,0,ecv.height/innerHeight,0,0);
@@ -1054,7 +1054,11 @@ function loop(){
   /* adaptive resolution of the water: keeps the frame rate steady on any device */
   fa=fa*.97+dt*.03;if(++fc%60===0){
     if(fa>.030&&bgS>BG_MIN){bgS=Math.max(BG_MIN,bgS-.04);sizeBg()}
-    else if(fa<.0225&&bgS<BG_MAX){bgS=Math.min(BG_MAX,bgS+.02);sizeBg()}}
+    else if(fa<.0225&&bgS<BG_MAX){bgS=Math.min(BG_MAX,bgS+.02);sizeBg()}
+    /* резкость: сначала теряем плотность пикселей, только потом — разрешение неба */
+    const prCap=Math.min(devicePixelRatio,mobile?2.5:2);
+    if(fa>.030&&prCur>1){prCur=Math.max(1,prCur-.25);renderer.setPixelRatio(prCur)}
+    else if(fa<.0195&&prCur<prCap){prCur=Math.min(prCap,prCur+.25);renderer.setPixelRatio(prCur)}}
   /* two chained easings = an S-curve: the portal opens and closes softly, no hard start or stop */
   PU.uPulse.value=Math.max(0,PU.uPulse.value-dt*.75);
   dragFade+=((0)-dragFade)*Math.min(1,dt*6);
@@ -1162,7 +1166,7 @@ loop();
 (function(){
   function arm(){
     if(!window.__BU || !window.__BU.uWordAmt){ return false; }
-    window.__BU.uWordAmt.value = .50;   // небольшой контраст: тень скорее чудится
+    window.__BU.uWordAmt.value = .40;   // небольшой контраст: тень скорее чудится
     window.__BU.uFlashRate.value = 3.0; // молния в исходном темпе
     return true;
   }
