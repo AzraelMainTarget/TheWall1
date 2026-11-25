@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#010104">
+<meta name="robots" content="noindex, nofollow">
+<title>Voice → Arena</title>
+<style>
+  :root { --ink:#e8f1ff; --dim:#7d90ab; --line:rgba(150,190,255,.16); --accent:#cfe6ff; }
+  * { box-sizing:border-box; }
+  html,body{margin:0;min-height:100%;background:radial-gradient(120% 80% at 50% 0%,#0b1220,#010104 62%);
+    color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%;}
+  .wrap{max-width:560px;margin:0 auto;padding:max(18px,env(safe-area-inset-top)) 18px max(26px,env(safe-area-inset-bottom));}
+  h1{font-size:14px;font-weight:300;letter-spacing:.3em;text-transform:uppercase;color:var(--accent);
+     margin:10px 0 6px;text-shadow:0 0 30px rgba(150,200,255,.45);}
+  .sub{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);margin:0 0 26px;}
+  #rec{width:100%;min-height:82px;border-radius:20px;border:1px solid var(--line);
+    background:rgba(12,20,34,.9);color:var(--ink);font-family:inherit;font-size:15px;letter-spacing:.06em;
+    cursor:pointer;-webkit-tap-highlight-color:transparent;transition:border-color .2s,background .2s;}
+  #rec:active{transform:translateY(1px);}
+  #rec.on{border-color:rgba(255,120,110,.55);background:rgba(60,18,18,.85);}
+  #rec.on::after{content:"";display:inline-block;width:10px;height:10px;border-radius:50%;
+    background:#ff6b62;margin-left:10px;animation:pulse 1s infinite;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+  #timer{text-align:center;font-variant-numeric:tabular-nums;font-size:34px;font-weight:200;
+    letter-spacing:.04em;margin:22px 0 4px;color:#bcd4f0;}
+  #status{text-align:center;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);
+    min-height:16px;margin-bottom:18px;}
+  .row{display:flex;gap:10px;margin-top:12px;}
+  button.act{flex:1;min-height:52px;border-radius:14px;border:1px solid var(--line);
+    background:rgba(12,20,34,.9);color:var(--ink);font-family:inherit;font-size:13.5px;letter-spacing:.05em;cursor:pointer;}
+  button.act:disabled{opacity:.35;cursor:default;}
+  button.act.primary{background:linear-gradient(180deg,rgba(190,220,255,.96),rgba(140,180,240,.92));
+    color:#06101f;border-color:transparent;font-weight:600;}
+  audio{width:100%;margin-top:16px;filter:invert(.92) hue-rotate(180deg);}
+  details{margin-top:26px;border-top:1px solid var(--line);padding-top:16px;}
+  summary{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);cursor:pointer;}
+  input[type=password]{width:100%;margin-top:12px;padding:13px;border-radius:12px;
+    border:1px solid var(--line);background:rgba(8,14,26,.9);color:var(--ink);font-size:14px;outline:none;}
+  .hint{font-size:11.5px;line-height:1.6;color:#56677f;margin-top:10px;}
+</style>
+<script src="totp.js"></script>
+<script src="rescue.js"></script>
+<script src="guard.js?v=2"></script>
+</head>
+<body>
+<div class="wrap">
+  <h1>Voice → Arena</h1>
+  <p class="sub">Нажми, говори, отправь</p>
+
+  <button id="rec">● Записать</button>
+  <div id="timer">0:00</div>
+  <div id="status">готово к записи</div>
+
+  <div class="row">
+    <button class="act primary" id="send" disabled>Отправить в Arena</button>
+    <button class="act" id="dl" disabled>Скачать</button>
+  </div>
+
+  <audio id="play" controls hidden></audio>
+
+  <details>
+    <summary>Ключ GitHub (нужен один раз)</summary>
+    <input type="password" id="tok" placeholder="github_pat_..." autocomplete="off" spellcheck="false">
+    <p class="hint">
+      Хранится только в этом браузере (localStorage), никуда не отправляется кроме api.github.com.
+      Нужны права Contents: Read and write на репозиторий TheWall1.
+    </p>
+    <div class="row"><button class="act" id="saveTok">Сохранить ключ</button></div>
+  </details>
+</div>
+
+<script>
+(() => {
+  const OWNER = 'AzraelMainTarget';
+  const REPO  = 'TheWall1';
+  const DIR   = 'voice';
+  const KEY   = 'gh-voice-token';
+
+  const recBtn = document.getElementById('rec');
+  const timer  = document.getElementById('timer');
+  const status = document.getElementById('status');
+  const sendBtn= document.getElementById('send');
+  const dlBtn  = document.getElementById('dl');
+  const play   = document.getElementById('play');
+  const tokIn  = document.getElementById('tok');
+
+  let media = null, chunks = [], recorder = null, blob = null;
+  let startedAt = 0, tick = null;
+
+  try { tokIn.value = localStorage.getItem(KEY) || ''; } catch {}
+
+  document.getElementById('saveTok').onclick = () => {
+    try { localStorage.setItem(KEY, tokIn.value.trim()); status.textContent = 'ключ сохранён'; }
+    catch { status.textContent = 'не смог сохранить'; }
+  };
+
+  const fmt = (ms) => {
+    const s = Math.floor(ms / 1000);
+    return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+  };
+
+  function pickMime() {
+    const opts = ['audio/mp4', 'audio/webm;codecs=opus', 'audio/webm', 'audio/ogg'];
+    for (const t of opts) if (window.MediaRecorder && MediaRecorder.isTypeSupported(t)) return t;
+    return '';
+  }
+
+  recBtn.onclick = async () => {
+    if (recorder && recorder.state === 'recording') {
+      recorder.stop();
+      return;
+    }
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      status.textContent = 'микрофон недоступен — нужен https';
+      return;
+    }
+    try {
+      media = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+      });
+    } catch (e) {
+      status.textContent = 'нет доступа к микрофону';
+      return;
+    }
+
+    const mime = pickMime();
+    chunks = [];
+    recorder = mime ? new MediaRecorder(media, { mimeType: mime }) : new MediaRecorder(media);
+    recorder.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
+    recorder.onstop = () => {
+      clearInterval(tick);
+      media.getTracks().forEach(t => t.stop());
+      blob = new Blob(chunks, { type: recorder.mimeType || 'audio/webm' });
+      recBtn.classList.remove('on');
+      recBtn.textContent = '● Записать';
+      play.hidden = false;
+      play.src = URL.createObjectURL(blob);
+      sendBtn.disabled = false;
+      dlBtn.disabled = false;
+      status.textContent = `записано · ${(blob.size / 1024).toFixed(0)} КБ`;
+    };
+
+    recorder.start();
+    recBtn.classList.add('on');
+    recBtn.textContent = '■ Стоп';
+    status.textContent = 'запись…';
+    startedAt = Date.now();
+    tick = setInterval(() => { timer.textContent = fmt(Date.now() - startedAt); }, 200);
+  };
+
+  const extFor = (type) => type.includes('mp4') ? 'm4a' : type.includes('ogg') ? 'ogg' : 'webm';
+
+  const toB64 = (buf) => new Promise((res, rej) => {
+    const fr = new FileReader();
+    fr.onload = () => res(String(fr.result).split(',')[1]);
+    fr.onerror = rej;
+    fr.readAsDataURL(new Blob([buf]));
+  });
+
+  sendBtn.onclick = async () => {
+    const token = (tokIn.value || '').trim();
+    if (!token) { status.textContent = 'нужен ключ GitHub — открой блок ниже'; return; }
+    if (!blob) return;
+
+    sendBtn.disabled = true;
+    status.textContent = 'отправляю…';
+    const name = `voice-${new Date().toISOString().replace(/[:.]/g, '-')}.${extFor(blob.type)}`;
+    const path = `${DIR}/${name}`;
+
+    try {
+      const b64 = await toB64(await blob.arrayBuffer());
+      const r = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${path}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/vnd.github+json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ message: `voice ${name}`, content: b64 })
+      });
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({}));
+        throw new Error(err.message || ('HTTP ' + r.status));
+      }
+      status.textContent = 'отправлено — напиши в чат «слушай голос»';
+      timer.textContent = '✓';
+    } catch (e) {
+      status.textContent = 'ошибка: ' + e.message;
+    } finally {
+      sendBtn.disabled = false;
+    }
+  };
+
+  dlBtn.onclick = () => {
+    if (!blob) return;
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `voice-${Date.now()}.${extFor(blob.type)}`;
+    a.click();
+  };
+})();
+</script>
+<script src="credits.js"></script>
+</body>
+</html>

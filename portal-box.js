@@ -1,19 +1,20 @@
 /* Встроенный Box внутри панели портала.
    Открывается по кнопке «Box» на сфере — без перехода на другую страницу. */
 (() => {
-  const O = 'AzraelMainTarget', R = 'TheWall1';
-  const FEED = 'box/messages.md';
-  const RAW = 'https://raw.githubusercontent.com/' + O + '/' + R + '/main/';
-  const PAGES = 'https://azraelmaintarget.github.io/' + R + '/';
-  const TS = 'gh-voice-token';
-  const PEND = 'box-pending';
+  const C = window.BOXCORE;
+  const O = C.O, R = C.R;
+  const FEED = C.FEED;
+  const RAW = C.RAW;
+  const PAGES = C.PAGES;
+  const TS = C.TS;
+  const PEND = C.PEND;
   const NAME_ME = 'Azrael', NAME_AI = 'Arena';
 
   let feedEl=null, msgEl=null, recBtn=null, sendBtn=null;
 
-  const token = () => { try { return (localStorage.getItem(TS) || '').trim(); } catch { return ''; } };
-  const esc = (s) => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-  const b64 = (s) => btoa(unescape(encodeURIComponent(s)));
+  const token = C.token;
+  const esc = C.esc;
+  const b64 = C.b64;
   const unb64 = (s) => decodeURIComponent(escape(atob(s.replace(/\n/g, ''))));
   const nowStamp = () => {
     const d = new Date(), p = (n) => String(n).padStart(2, '0');
@@ -43,7 +44,7 @@
              text: m[4].replace(READ, ''), read };
   };
 
-  const localise = (u) => u.replace('https://raw.githubusercontent.com/' + O + '/' + R + '/main/', PAGES);
+  const localise = C.localise;
 
   const bubble = (m, pending) => {
     const mine = m.who === NAME_ME;
@@ -85,7 +86,7 @@
     }catch{}
   }
 
-  const readPend = () => { try { return JSON.parse(localStorage.getItem(PEND) || '[]'); } catch { return []; } };
+  const readPend = C.readPend;
   const addPend = (i) => { const a = readPend(); a.push(i); try { localStorage.setItem(PEND, JSON.stringify(a.slice(-40))); } catch {} };
   const dropPend = (i) => {
     const a = readPend().filter(x => !(x.who === i.who && x.text === i.text));

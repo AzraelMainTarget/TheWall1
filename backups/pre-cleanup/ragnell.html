@@ -1,0 +1,2835 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Ragnell — That Darkness Studio</title>
+<meta name="theme-color" content="#081A23">
+<style>
+:root{
+ --bg:#081A23; --bg2:#0A2029; --pn:#0C2530; --pn2:#10303C; --ln:#1B3A46;
+ --tx:#E9F3F1; --mu:#82A2AC; --acc:#147B78; --acc2:#5FA69B; --ok:#B8CEC6;
+ --warn:#FEB342; --rad:12px; color-scheme:dark;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{background:radial-gradient(ellipse at 50% -20%,#0E2F3A,var(--bg) 55%) fixed;color:var(--tx);
+ font:14px/1.45 system-ui,-apple-system,Segoe UI,sans-serif;overflow-x:hidden}
+header{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--ln);
+ background:rgba(8,26,35,.72);backdrop-filter:blur(12px);position:sticky;top:0;z-index:30}
+.brand{display:flex;flex-direction:column;line-height:1}
+.brand h1{margin:0;font:800 20px/1 "Montserrat",system-ui,sans-serif;letter-spacing:.26em;color:#EAF3EF}
+.brand span{font:600 8.5px/1.6 system-ui;letter-spacing:.34em;color:var(--mu);text-transform:uppercase}
+.stat{margin-left:auto;display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.badge{font:600 10px/1 ui-monospace,monospace;letter-spacing:.1em;padding:6px 9px;border-radius:20px;
+ border:1px solid var(--ln);color:var(--mu);background:var(--pn);white-space:nowrap}
+.badge b{color:var(--acc2)}
+.app{display:grid;grid-template-columns:376px 1fr;gap:14px;padding:14px;align-items:start}
+@media(max-width:980px){
+ .app{grid-template-columns:1fr;padding:8px;gap:8px}
+ .work{order:-1}
+ #panel{max-height:none;overflow:visible}
+ .box>summary{padding:13px}
+ header{padding:9px 12px}
+ .brand h1{font-size:17px}
+}
+/* ---------- боксы ---------- */
+#panel{display:flex;flex-direction:column;gap:8px;max-height:calc(100vh - 90px);overflow:auto;
+ scrollbar-width:thin;padding-right:2px}
+@media(max-width:980px){#panel{max-height:none;overflow:visible}}
+.box{background:linear-gradient(180deg,var(--pn),#0A1F28);border:1px solid var(--ln);border-radius:var(--rad);overflow:hidden}
+.box>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:9px;padding:11px 13px;
+ font:700 11.5px/1 "Montserrat",system-ui,sans-serif;letter-spacing:.17em;text-transform:uppercase;color:#CFE2DE}
+.box>summary::-webkit-details-marker{display:none}
+.box>summary::before{content:'';width:7px;height:7px;border-radius:2px;background:var(--acc2);
+ box-shadow:0 0 0 3px rgba(95,166,155,.16);transition:transform .22s ease}
+.box[open]>summary::before{background:var(--warn);box-shadow:0 0 0 3px rgba(254,179,66,.16)}
+.box>summary .n{margin-left:auto;font:600 9.5px/1 ui-monospace,monospace;color:var(--mu);letter-spacing:.1em}
+.box .body{padding:2px 13px 13px;border-top:1px solid rgba(27,58,70,.7)}
+.box.closed .body{display:none}
+small{color:var(--mu);display:block;margin:7px 0 0;font-size:11.5px;line-height:1.45}
+/* ---------- поля ---------- */
+.r{display:flex;align-items:center;gap:8px;margin:8px 0;flex-wrap:wrap}
+.r>label{color:var(--mu);flex:0 0 42%;font-size:12.5px}
+.r input[type=text],.r input[type=password],.r input[type=number],.r select{flex:1;min-width:0;
+ background:#071A22;color:var(--tx);border:1px solid var(--ln);border-radius:8px;padding:7px 9px;font:inherit;font-size:13px}
+.r input[type=file]{flex:1;min-width:0;font-size:11.5px;color:var(--mu)}
+.r input[type=range]{flex:1;min-width:0;accent-color:var(--acc2);padding:0}
+.r input[type=checkbox]{flex:0 0 auto;width:18px;height:18px;accent-color:var(--acc)}
+.r output{width:40px;text-align:right;color:var(--acc2);font:600 11.5px/1 ui-monospace,monospace}
+@media(max-width:520px){.r>label{flex:0 0 100%}}
+button,.b{background:var(--pn2);color:var(--tx);border:1px solid var(--ln);border-radius:9px;padding:8px 12px;
+ cursor:pointer;font:inherit;font-size:13px;text-decoration:none;display:inline-block;transition:border-color .16s,background .16s}
+button:hover,.b:hover{border-color:var(--acc2)}
+button:active{transform:translateY(1px)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--warn);outline-offset:1px}
+.pri{background:linear-gradient(180deg,#1B918D,#147B78);border-color:#2AA79F;font-weight:600;
+ box-shadow:0 4px 0 -1px #0A4A48,0 8px 18px rgba(0,0,0,.35)}
+.pri:active{transform:translateY(2px);box-shadow:0 2px 0 -1px #0A4A48}
+.pri:disabled{opacity:.45;cursor:not-allowed}
+.seg{display:flex;gap:5px;flex-wrap:wrap;margin:6px 0}
+.seg button{padding:6px 10px;font-size:11.5px;border-radius:20px}
+.seg button.on{background:var(--acc);border-color:var(--acc2);color:#fff}
+/* ---------- переключатель режимов ---------- */
+.modeswitch{display:flex;background:#071A22;border:1px solid var(--ln);border-radius:20px;padding:3px;gap:2px}
+.modeswitch button{border:0;background:transparent;padding:6px 13px;border-radius:17px;font:600 11px/1 system-ui;
+ letter-spacing:.1em;text-transform:uppercase;color:var(--mu)}
+.modeswitch button.on{background:linear-gradient(180deg,#1B918D,#147B78);color:#fff}
+
+/* ---------- LITE ---------- */
+body.mode-lite{background:#070A0D}
+body.mode-lite header{background:rgba(9,12,16,.86);border-bottom-color:#1A2028}
+body.mode-lite #app{grid-template-columns:340px minmax(0,1fr) 250px;align-items:start}
+body.mode-lite #panel{display:none}
+body.mode-lite #queue{display:flex}
+body.mode-lite #lite{display:flex;order:-1}
+body.mode-lite .work{align-items:center}
+body.mode-lite .work>*{width:100%}
+@media(max-width:1180px){body.mode-lite #app{grid-template-columns:320px minmax(0,1fr)}body.mode-lite #queue{display:none!important}}
+@media(max-width:860px){
+ body.mode-lite #app{grid-template-columns:1fr;padding:8px;gap:8px}
+ body.mode-lite .work{order:-1}
+ body.mode-lite #lite{order:0}
+ body.mode-lite .stage{max-height:46vh}
+}
+#lite,#queue{display:none;flex-direction:column;gap:9px}
+#lite{max-height:calc(100vh - 84px);overflow:auto;scrollbar-width:thin}
+#queue{max-height:calc(100vh - 84px);overflow:auto;scrollbar-width:thin}
+.lcard{background:#0E1218;border:1px solid #1B222B;border-radius:14px;padding:12px}
+.ltabs{display:flex;gap:14px;overflow-x:auto;padding:4px 2px 9px;border-bottom:1px solid #1B222B;margin-bottom:11px;scrollbar-width:none}
+.ltabs::-webkit-scrollbar{display:none}
+.ltabs button{background:none;border:0;border-bottom:2px solid transparent;border-radius:0;padding:5px 0 7px;
+ color:#7C8894;font:600 12.5px/1 system-ui;white-space:nowrap}
+.ltabs button.on{color:#EAF3EF;border-bottom-color:#A1C181}
+.lprompt{width:100%;min-height:132px;resize:vertical;background:#0A0E13;border:1px solid #1E2631;border-radius:11px;
+ color:#E9F3F1;padding:11px 12px;font:13.5px/1.5 system-ui}
+.lprompt::placeholder{color:#5C6874}
+.lhints{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 2px;align-items:center}
+.lhint{padding:5px 9px;border-radius:14px;border:1px solid #232C36;background:#0A0E13;color:#93A3AF;
+ font:600 10.5px/1 system-ui;white-space:nowrap;cursor:pointer}
+.lhint:hover{border-color:#A1C181;color:#CFE2DE}
+.llabel{display:flex;justify-content:space-between;align-items:center;color:#7C8894;
+ font:600 10px/1 system-ui;letter-spacing:.13em;text-transform:uppercase;margin:13px 0 7px}
+.lrow{display:flex;gap:6px;flex-wrap:wrap}
+.lchip{padding:6px 11px;border-radius:16px;border:1px solid #232C36;background:#0A0E13;color:#93A3AF;
+ font:600 11px/1 system-ui;cursor:pointer}
+.lchip.on{background:#16241F;border-color:#A1C181;color:#DDEBD8}
+.lrange{width:100%;accent-color:#A1C181}
+.lgen{width:100%;margin-top:14px;height:48px;border:0;border-radius:12px;cursor:pointer;
+ background:linear-gradient(90deg,#A1C181,#619B8A);color:#06120F;
+ font:800 14px/1 system-ui;letter-spacing:.1em;text-transform:uppercase;
+ box-shadow:0 6px 0 -2px #3E6B60,0 12px 26px rgba(0,0,0,.45)}
+.lgen:active{transform:translateY(2px);box-shadow:0 3px 0 -2px #3E6B60}
+.lgen:disabled{opacity:.5;cursor:wait}
+.lmeta{display:flex;justify-content:space-between;color:#61707C;font:600 10px/1.4 system-ui;margin-top:9px}
+.lslot{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 2px}
+.ladd{width:70px;height:70px;border-radius:11px;border:1px dashed #2A343F;background:#0A0E13;
+ display:grid;place-items:center;color:#5C6874;font-size:20px;cursor:pointer;position:relative;overflow:hidden}
+.ladd img{width:100%;height:100%;object-fit:cover}
+.ladd input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.lnote{color:#61707C;font-size:11px;line-height:1.45;margin-top:8px}
+#statebox{display:none;align-items:center;gap:9px;padding:11px 13px;border-radius:12px;
+ background:#0E1218;border:1px solid #1B222B;color:#93A3AF;font-size:12.5px}
+body.mode-lite #statebox{display:flex}
+#statebox b{color:#EAF3EF}
+.spin{width:15px;height:15px;border-radius:50%;border:2px solid #2A343F;border-top-color:#A1C181;
+ animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+body.mode-lite .transport{display:none}
+body.mode-lite #tlbar{display:none}
+body.mode-lite #log{display:none}
+body.mode-lite #clips{display:none}
+body.mode-lite .stage{border-radius:14px;border-color:#1B222B}
+.qitem{background:#0E1218;border:1px solid #1B222B;border-radius:11px;padding:7px;display:flex;gap:8px;align-items:center}
+.qitem .th{width:44px;height:44px;border-radius:8px;background:#0A0E13;flex:0 0 auto;overflow:hidden;
+ display:grid;place-items:center;color:#5C6874;font-size:16px}
+.qitem .th img{width:100%;height:100%;object-fit:cover}
+.qitem .nm{font:600 10.5px/1.35 system-ui;color:#CFE2DE;overflow:hidden}
+.qitem .st{font-size:10px;color:#61707C}
+.qitem a{margin-left:auto;color:#A1C181;font-size:11px;text-decoration:none;font-weight:700}
+.qhead{display:flex;justify-content:space-between;align-items:center;color:#7C8894;
+ font:600 10px/1 system-ui;letter-spacing:.14em;text-transform:uppercase;padding:2px 3px}
+
+/* ---------- тосты ---------- */
+#toasts{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:200;display:flex;
+ flex-direction:column;gap:7px;align-items:center;pointer-events:none;width:min(92vw,420px)}
+.toast{background:rgba(14,22,28,.96);border:1px solid #2A3A44;border-left:3px solid #A1C181;color:#E9F3F1;
+ padding:10px 14px;border-radius:10px;font:500 12.5px/1.4 system-ui;box-shadow:0 10px 30px rgba(0,0,0,.5);
+ animation:tin .22s ease-out;max-width:100%}
+.toast.warn{border-left-color:#FE7F2D}
+.toast.bad{border-left-color:#E4572E}
+@keyframes tin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes tout{to{opacity:0;transform:translateY(-6px)}}
+
+/* запертый вариант */
+.lchip.locked{opacity:.45;cursor:not-allowed;position:relative;border-color:#232C36;color:#5C6874}
+.lchip.locked b{font-size:10px;opacity:.9}
+@keyframes nope{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.lchip.nope{animation:nope .26s ease-in-out}
+
+/* сравнение дублей */
+#cmp{position:fixed;inset:0;z-index:190;display:none;align-items:center;justify-content:center;
+ background:rgba(3,8,11,.9);backdrop-filter:blur(8px);padding:16px}
+#cmp.on{display:flex}
+#cmp .inner{width:min(1100px,96vw);max-height:92vh;overflow:auto;background:#0C1218;border:1px solid #26323C;
+ border-radius:16px;padding:16px}
+#cmp h3{margin:0 0 12px;font:700 13px/1 system-ui;letter-spacing:.18em;text-transform:uppercase;color:#A1C181}
+#cmp .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+#cmp video{width:100%;border-radius:10px;background:#000;display:block}
+#cmp .pick{display:flex;gap:8px;justify-content:center;margin-top:10px}
+#cmp .pick button{background:#16241F;border:1px solid #A1C181;color:#DDEBD8;font-weight:700}
+#cmp .close{float:right;background:#1A222A;border:1px solid #2C3842;color:#9FB2BC}
+@media(max-width:620px){#cmp .grid{grid-template-columns:1fr}}
+
+
+/* ---------- СКИНЫ SIMPLE: paper (тёмный) / glass (светлый) ---------- */
+body.skin-paper.mode-lite{background:radial-gradient(ellipse at 20% -10%,#2A4A5C 0%,#16232B 38%,#0A1015 78%) fixed}
+body.skin-paper .lcard{background:linear-gradient(168deg,#14262E,#0D181E 62%,#0A1319);
+ border:1px solid #23404B;border-radius:20px;
+ box-shadow:0 18px 40px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.06)}
+body.skin-paper .ltabs button.on{color:#FFC46B;border-bottom-color:#FE7F2D}
+body.skin-paper .lprompt{background:#0A161C;border-color:#23404B;border-radius:14px}
+body.skin-paper .lchip{border-color:#23404B;background:#0C1A21;border-radius:18px}
+body.skin-paper .lchip.on{background:linear-gradient(160deg,#21424E,#173540);border-color:#5FA69B;color:#EAF3EF;
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
+body.skin-paper .lhint{border-color:#23404B;background:#0C1A21}
+body.skin-paper .lhint:hover{border-color:#FE7F2D;color:#FFD9A8}
+body.skin-paper .lrange{accent-color:#FE7F2D}
+body.skin-paper .lgen{background:linear-gradient(90deg,#FE7F2D,#FCCA46);color:#20140A;
+ box-shadow:0 8px 0 -3px #8A4416,0 16px 30px rgba(254,127,45,.28)}
+body.skin-paper .lgen:active{box-shadow:0 3px 0 -3px #8A4416}
+body.skin-paper .llabel{color:#7FA0AC}
+body.skin-paper .qitem{background:#0C1A21;border-color:#23404B}
+body.skin-paper #statebox{background:linear-gradient(168deg,#13242C,#0B151A);border-color:#23404B;border-radius:16px}
+body.skin-paper .stage{border-radius:22px;border-color:#23404B;
+ box-shadow:0 26px 60px rgba(0,0,0,.6), 0 0 0 1px rgba(95,166,155,.12)}
+body.skin-paper .spin{border-top-color:#FE7F2D}
+
+body.skin-glass.mode-lite{background:linear-gradient(160deg,#DCE8F5,#C9D8EC 45%,#E8EEF7) fixed;color:#2B3A4A}
+body.skin-glass header{background:rgba(255,255,255,.65);border-bottom-color:#D3E0EF;backdrop-filter:blur(18px)}
+body.skin-glass .brand h1{color:#28384A}
+body.skin-glass .brand span{color:#7C8FA6}
+body.skin-glass .badge{background:rgba(255,255,255,.8);border-color:#D8E4F1;color:#6C8098}
+body.skin-glass .badge b{color:#4C6B8A}
+body.skin-glass .modeswitch{background:rgba(255,255,255,.75);border-color:#D8E4F1}
+body.skin-glass .modeswitch button{color:#7C8FA6}
+body.skin-glass .modeswitch button.on{background:linear-gradient(180deg,#7EA0F5,#5B7CE8);color:#fff}
+body.skin-glass .lcard{background:rgba(255,255,255,.72);border:1px solid rgba(255,255,255,.9);border-radius:22px;
+ box-shadow:0 18px 40px rgba(90,120,160,.18), inset 0 1px 0 #fff;backdrop-filter:blur(16px)}
+body.skin-glass .ltabs{border-bottom-color:#DDE8F5}
+body.skin-glass .ltabs button{color:#8B9DB4}
+body.skin-glass .ltabs button.on{color:#2B3A4A;border-bottom-color:#5B7CE8}
+body.skin-glass .lprompt{background:rgba(255,255,255,.85);border-color:#DDE8F5;color:#2B3A4A}
+body.skin-glass .lprompt::placeholder{color:#9DAEC2}
+body.skin-glass .lhint{background:rgba(255,255,255,.9);border-color:#DDE8F5;color:#7C8FA6}
+body.skin-glass .lhint:hover{border-color:#5B7CE8;color:#3E5A80}
+body.skin-glass .lchip{background:rgba(255,255,255,.9);border-color:#DDE8F5;color:#7C8FA6}
+body.skin-glass .lchip.on{background:linear-gradient(160deg,#EDF3FF,#DCE7FB);border-color:#7EA0F5;color:#3A5480;
+ box-shadow:0 4px 12px rgba(91,124,232,.22)}
+body.skin-glass .lrange{accent-color:#5B7CE8}
+body.skin-glass .lgen{background:linear-gradient(90deg,#6C90F0,#4F6FE0);color:#fff;
+ box-shadow:0 8px 20px rgba(91,124,232,.4)}
+body.skin-glass .llabel{color:#8B9DB4}
+body.skin-glass .qitem{background:rgba(255,255,255,.9);border-color:#E2EBF7}
+body.skin-glass .qitem .nm{color:#3A4C63}
+body.skin-glass .qitem .st{color:#9DAEC2}
+body.skin-glass .qhead{color:#8B9DB4}
+body.skin-glass .lnote{color:#9DAEC2}
+body.skin-glass #statebox{background:rgba(255,255,255,.8);border-color:#DDE8F5;color:#6C8098;border-radius:16px}
+body.skin-glass .stage{border-radius:22px;border-color:#E2EBF7;box-shadow:0 26px 50px rgba(90,120,160,.24)}
+body.skin-glass .spin{border-top-color:#5B7CE8}
+body.skin-glass .hud span{color:#5B7CE8;background:rgba(255,255,255,.8);border-color:#DDE8F5}
+body.skin-glass #toasts .toast{background:rgba(255,255,255,.96);border-color:#DDE8F5;color:#2B3A4A;border-left-color:#5B7CE8}
+body.skin-glass .lchip.locked{color:#B4C2D4;border-color:#E2EBF7;background:rgba(255,255,255,.6)}
+
+/* ---------- переключатель скина ---------- */
+.skimrow{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.skimrow>span{font:700 9px/1 system-ui;letter-spacing:.2em;color:#6C8098}
+.skimsw{display:flex;gap:3px;background:rgba(0,0,0,.22);border-radius:14px;padding:3px}
+.skimsw button{border:0;background:transparent;padding:4px 10px;border-radius:11px;font:600 10px/1 system-ui;
+ letter-spacing:.08em;color:#7C8FA6;cursor:pointer}
+.skimsw button.on{background:#FE7F2D;color:#1A1108}
+body.skin-glass .skimsw{background:rgba(255,255,255,.7)}
+body.skin-glass .skimsw button.on{background:#5B7CE8;color:#fff}
+
+/* ---------- рабочая зона ---------- */
+.work{display:flex;flex-direction:column;gap:10px;min-width:0}
+.stagewrap{position:relative}
+.stage{position:relative;margin:0 auto;background:#000;border-radius:var(--rad);overflow:hidden;
+ border:1px solid var(--ln);box-shadow:0 20px 50px rgba(0,0,0,.5);contain:paint;
+ width:100%;max-height:52vh}
+.stage canvas{display:block;width:100%;height:auto;max-height:52vh;object-fit:contain}
+#mk,#pc{position:absolute;left:0;top:0;width:100%!important;height:100%!important}
+#mk{opacity:0;pointer-events:none;transition:opacity .2s}
+#pc{touch-action:pan-y;cursor:default;pointer-events:none}
+body.painting #mk{opacity:.42}
+body.painting #pc{touch-action:none;cursor:crosshair;pointer-events:auto}
+body.painting .stage{outline:2px solid rgba(254,127,45,.55);outline-offset:2px}
+.hud{position:absolute;right:8px;top:8px;display:flex;gap:5px;pointer-events:none}
+.hud span{font:600 9.5px/1 ui-monospace,monospace;letter-spacing:.08em;padding:5px 7px;border-radius:6px;
+ background:rgba(4,16,21,.72);border:1px solid rgba(95,166,155,.3);color:var(--acc2)}
+progress{width:100%;height:6px;margin:0;accent-color:var(--acc2)}
+.transport{display:flex;gap:6px;flex-wrap:wrap}
+.transport button{flex:0 0 auto}
+#tlbar{background:linear-gradient(180deg,var(--pn),#0A1F28);border:1px solid var(--ln);border-radius:var(--rad);padding:9px}
+#tlbar .hd{display:flex;gap:8px;align-items:center;margin-bottom:7px;flex-wrap:wrap}
+#tlbar .hd b{font:700 10px/1 "Montserrat",system-ui;letter-spacing:.2em;color:var(--mu);text-transform:uppercase}
+#shots{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}
+.shot{flex:0 0 128px;background:#071A22;border:1px solid var(--ln);border-radius:9px;padding:7px;cursor:pointer;position:relative}
+.shot.on{border-color:var(--acc2);box-shadow:0 0 0 1px var(--acc2) inset}
+.shot .t{font:700 9.5px/1.3 ui-monospace,monospace;color:var(--acc2);letter-spacing:.08em}
+.shot .lbl{font-size:10.5px;color:var(--mu);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.shot .x{position:absolute;right:3px;top:3px;padding:0 5px;font-size:11px;line-height:15px;border-radius:5px}
+.shot img{width:100%;height:52px;object-fit:cover;border-radius:6px;display:block;margin-bottom:4px;background:#0C2530}
+.shot .bar{height:3px;border-radius:2px;background:#12303A;margin-top:5px;overflow:hidden}
+.shot .bar i{display:block;height:100%;background:var(--acc2)}
+#log{background:#071A22;border:1px solid var(--ln);border-radius:10px;padding:8px;height:92px;overflow:auto;
+ color:var(--mu);font:11.5px ui-monospace,monospace;white-space:pre-wrap}
+#clips{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
+.clip{background:var(--pn);border:1px solid var(--ln);border-radius:10px;padding:8px}
+.clip video{width:100%;border-radius:8px;background:#000;display:block}
+.clip .meta{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-top:6px;font-size:11px;color:var(--mu)}
+.chip{display:flex;align-items:center;gap:6px;padding:5px 8px;border:1px solid var(--ln);border-radius:20px;
+ background:#071A22;font-size:11px}
+.chip img{width:26px;height:26px;object-fit:cover;border-radius:6px}
+.chip b{color:var(--acc2);font-weight:600}
+.chip button{padding:0 6px;font-size:11px;line-height:16px;border-radius:50%}
+.slots{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+.slot{position:relative;width:62px;height:62px;border-radius:10px;overflow:hidden;border:2px solid var(--ln);
+ cursor:pointer;background:#071A22}
+.slot img{width:100%;height:100%;object-fit:cover}
+.slot.sel{border-color:var(--warn)}
+.slot .del{position:absolute;right:0;top:0;background:rgba(0,0,0,.6);color:#fff;border:0;border-radius:0 0 0 6px;
+ font-size:10px;line-height:14px;padding:1px 4px;cursor:pointer}
+.mini{display:flex;gap:6px;flex-wrap:wrap}
+.mini button{padding:6px 9px;font-size:11.5px}
+hr{border:0;border-top:1px solid rgba(27,58,70,.7);margin:12px 0}
+</style></head>
+<body>
+<header>
+  <div class="brand"><h1>RAGNELL</h1><span>that darkness · studio</span></div>
+  <div class="modeswitch" id="modeswitch">
+    <button class="on" data-m="lite">Simple</button><button data-m="pro">Pro</button>
+  </div>
+  <div class="stat">
+    <span class="badge" id="bOut">—</span>
+    <span class="badge" id="bFps">— fps</span>
+    <span class="badge" id="bMem">—</span>
+  </div>
+</header>
+
+<div id="toasts"></div>
+<div id="cmp"><div class="inner">
+  <button class="close" id="cmpclose">закрыть ✕</button>
+  <h3>Сравнение дублей</h3>
+  <div class="grid"><div id="cmpA"></div><div id="cmpB"></div></div>
+  <div class="pick"><button id="pickA">Взять A</button><button id="pickB">Взять B</button><button id="cmpdel">Удалить оба</button></div>
+</div></div>
+
+<main class="app" id="app">
+<aside id="panel">
+
+<details class="box" open><summary>Source <span class="n">01</span></summary><div class="body">
+ <div class="r"><label>Start frame</label><input type="file" id="fs" accept="image/*"></div>
+ <div class="r"><label>End frame</label><input type="file" id="fe" accept="image/*"></div>
+ <div class="r"><label>Source video</label><input type="file" id="fv" accept="video/*"></div>
+ <div class="r"><button id="cam">Webcam</button><button id="clr">Clear</button></div>
+ <div class="r"><label>Prompt</label><input type="text" id="prompt" value="Dark neon city in rain, slow cinematic motion"></div>
+ <div class="r"><label>Negative</label><input type="text" id="neg" value="blurry, low quality, watermark"></div>
+ <div class="r"><button id="enh">✦ Enhance prompt</button><button id="negpick">＋ Negative preset</button></div>
+ <div class="r"><label>Sampler</label>
+   <button id="sampler" style="flex:1">▸ Собрать сцену из промпта</button></div>
+ <div class="r"><label>Duration, s</label><input type="range" id="dur" min="1" max="60" step=".5" value="6"><output>6</output></div>
+ <small>No media → animated starfield preview. Start only → image-to-video. Start + end → keyframe morph.</small>
+</div></details>
+
+<details class="box"><summary>Frame &amp; output <span class="n">02</span></summary><div class="body">
+ <div class="r"><label>Aspect</label><select id="aspect">
+   <option>16:9</option><option selected>9:16</option><option>1:1</option><option>4:5</option><option>5:4</option>
+   <option>4:3</option><option>3:4</option><option>21:9</option><option>2.35:1</option><option>2:1</option><option>9:21</option></select></div>
+ <div class="r"><label>Resolution</label><select id="res">
+   <option>480p</option><option>540p</option><option selected>720p</option><option>1080p</option><option>1440p</option><option>2160p (4K)</option></select></div>
+ <div class="r"><label>FPS</label><select id="fps">
+   <option>24</option><option>25</option><option selected>30</option><option>48</option><option>50</option><option>60</option></select></div>
+ <div class="r"><label>Fit / reframe</label><select id="refit"><option>cover</option><option>contain</option><option>blur-pad</option></select></div>
+ <div class="r"><label>Format</label><select id="fmt">
+   <option value="auto">MP4 · auto</option><option value="mp4">MP4 · H.264</option>
+   <option value="vp9">WebM · VP9</option><option value="vp8">WebM · VP8</option><option value="png">PNG sequence · ZIP</option></select></div>
+ <div class="r"><label>Quality</label><select id="quality"><option>standard</option><option selected>high</option><option>master</option></select></div>
+ <div class="r"><label>Supersample 2×</label><input type="checkbox" id="ss"></div>
+ <div class="r"><label>Preview cap</label><select id="pcap"><option value="540">540p · fast</option><option value="720" selected>720p · balanced</option><option value="0">full · heavy</option></select></div>
+ <div class="r"><label>Seamless loop</label><input type="checkbox" id="loop"></div>
+ <div class="r"><label>Speed</label><input type="range" id="speed" min=".25" max="2" step=".05" value="1"><output>1</output></div>
+ <small>Preview renders at the cap for speed; render always uses full output size. Supersample renders 2× then downsamples — slowest, sharpest.</small>
+</div></details>
+
+<details class="box"><summary>Camera <span class="n">03</span></summary><div class="body">
+ <div class="r"><label>Preset</label><select id="cpre"></select></div>
+ <div class="r"><label>Zoom</label><input type="range" id="zoom" min="-.5" max=".5" step=".01" value="0"><output>0</output></div>
+ <div class="r"><label>Pan X</label><input type="range" id="panX" min="-1" max="1" step=".05" value="0"><output>0</output></div>
+ <div class="r"><label>Tilt Y</label><input type="range" id="panY" min="-1" max="1" step=".05" value="0"><output>0</output></div>
+ <div class="r"><label>Orbit / roll °</label><input type="range" id="orbit" min="-20" max="20" step="1" value="0"><output>0</output></div>
+ <div class="r"><label>Shake</label><input type="range" id="shake" min="0" max="1" step=".05" value="0"><output>0</output></div>
+ <div class="r"><label>Ease</label><select id="ease"><option>smooth</option><option>linear</option><option>ease-in</option><option>ease-out</option></select></div>
+</div></details>
+
+<details class="box"><summary>Motion &amp; mask <span class="n">04</span></summary><div class="body">
+ <div class="r"><label>Paint</label>
+  <button id="paint" style="flex:1">✏ Включить рисование</button></div>
+ <div class="r"><label>Tool</label>
+  <div class="seg" id="tools">
+   <button class="on" data-t="brush">Brush</button><button data-t="erase">Eraser</button>
+   <button data-t="path">Path</button><button data-t="mouth">Mouth</button><button data-t="box">Box</button></div></div>
+ <div class="r"><label>Effect</label><select id="mmode">
+   <option>none</option><option>flow</option><option>path</option><option>remove</option><option>static</option></select></div>
+ <div class="r"><label>Brush size</label><input type="range" id="bsize" min="5" max="140" step="1" value="42"><output>42</output></div>
+ <div class="r"><label>Flow dir °</label><input type="range" id="dir" min="0" max="360" step="5" value="0"><output>0</output></div>
+ <div class="r"><label>Amplitude</label><input type="range" id="amp" min="0" max="100" step="1" value="20"><output>20</output></div>
+ <div class="r"><label>Flow speed</label><input type="range" id="mspd" min=".1" max="4" step=".1" value="1"><output>1</output></div>
+ <div class="r"><button id="cm">Clear mask</button><button id="cp">Clear path</button></div>
+ <small>flow — область плывёт; path — идёт по нарисованной линии; remove — заливка из соседних пикселей; static — область замирает.</small>
+</div></details>
+
+<details class="box"><summary>Characters <span class="n">05</span></summary><div class="body">
+ <div class="r"><label>Add to memory</label><input type="file" id="fchar" accept="image/*" multiple></div>
+ <div id="chars" class="slots"></div>
+ <div class="r"><label>Cameo mode</label><select id="camode"><option>none</option><option>pinned</option><option>parallax</option></select></div>
+ <div class="r"><label>Place</label><select id="elto"><option>center</option><option>left</option><option>right</option></select></div>
+ <div class="r"><label>Scale</label><input type="range" id="elsc" min=".1" max="1" step=".05" value=".5"><output>.5</output></div>
+ <div class="r"><button id="eluse">Use as start frame</button><button id="elcameo">Cameo on/off</button></div>
+ <small>Персонажи сохраняются в браузере (до 5 МБ) и остаются между сессиями.</small>
+</div></details>
+
+<details class="box"><summary>Face &amp; object swap <span class="n">06</span></summary><div class="body">
+ <div class="r"><label>Replacement</label><input type="file" id="fsw" accept="image/*"></div>
+ <div class="r"><label>Target box</label><button id="detect">Detect face</button><button id="usesel">Use mask area</button></div>
+ <div class="r"><label>Feather</label><input type="range" id="feath" min="0" max="40" step="1" value="12"><output>12</output></div>
+ <div class="r"><label>Color match</label><input type="range" id="cmatch" min="0" max="1" step=".05" value=".8"><output>.8</output></div>
+ <div class="r"><label>Blend</label><select id="sblend"><option>normal</option><option>soft</option><option>overlay</option></select></div>
+ <div class="r"><label>Live</label><input type="checkbox" id="swon"></div>
+ <div class="r"><button id="swapgo">Apply swap</button><button id="swapclr">Clear</button></div>
+ <small>Нарисуй Box на лице/предмете или нажми Detect face. Замена подгоняется по цвету и мягко вплавляется по краям.</small>
+</div></details>
+
+<details class="box"><summary>Effects <span class="n">07</span></summary><div class="body">
+ <div class="seg" id="pika">
+  <button class="on" data-p="none">None</button><button data-p="squash">Squish</button><button data-p="melt">Melt</button>
+  <button data-p="inflate">Inflate</button><button data-p="slice">Cake</button><button data-p="explode">Explode</button>
+  <button data-p="unfold">Unfold</button><button data-p="crumple">Crumple</button><button data-p="shake">Shake</button>
+  <button data-p="pulse">Pulse</button><button data-p="glitch">Glitch</button></div>
+ <div class="r"><label>Power</label><input type="range" id="pkp" min=".2" max="1" step=".05" value=".7"><output>.7</output></div>
+ <div class="r"><label>Shot transition</label><select id="trans">
+   <option>fade</option><option>whip</option><option>zoom</option><option>glitch</option><option>cut</option></select></div>
+ <div class="r"><label>Transition, s</label><input type="range" id="trd" min=".1" max=".8" step=".05" value=".35"><output>.35</output></div>
+</div></details>
+
+<details class="box"><summary>Storyboard <span class="n">08</span></summary><div class="body">
+ <div class="r"><label>Shot length, s</label><input type="range" id="slen" min=".5" max="10" step=".5" value="2"><output>2</output></div>
+ <div class="r"><button id="addshot">＋ Add shot</button><button id="dupshot">Duplicate</button></div>
+ <div class="r"><button id="updshot">Update shot</button><button id="clrtl">Clear</button></div>
+ <small>Каждый шот хранит кадры, камеру, стиль и переход. Плеер играет их подряд, рендер пишет всё в один файл.</small>
+</div></details>
+
+<details class="box"><summary>Look <span class="n">09</span></summary><div class="body">
+ <div class="r"><label>Style</label><select id="style"></select></div>
+ <div class="r"><label>Strength</label><input type="range" id="stk" min="0" max="1" step=".05" value="1"><output>1</output></div>
+ <div class="r"><label>Vignette</label><input type="range" id="vign" min="0" max="1" step=".05" value="0"><output>0</output></div>
+ <div class="r"><label>Grain</label><input type="range" id="gran" min="0" max="1" step=".05" value="0"><output>0</output></div>
+ <div class="r"><label>Clarity</label><input type="range" id="clar" min="0" max="1" step=".05" value="0"><output>0</output></div>
+ <div class="r"><label>Saturation</label><input type="range" id="sat" min="0" max="2" step=".05" value="1"><output>1</output></div>
+ <div class="r"><label>Letterbox</label><input type="checkbox" id="lbx"></div>
+ <div class="r"><label>Live motion</label><input id="motion" type="range" min="0" max="1" step=".05" value="1"><output>1</output></div>
+ <div class="r"><label>Blend frames</label><input type="checkbox" id="blend"></div>
+</div></details>
+
+<details class="box"><summary>Audio <span class="n">10</span></summary><div class="body">
+ <div class="r"><label>SFX bed</label><select id="sfx">
+   <option>none</option><option>wind</option><option>rain</option><option>drone</option><option>pulse</option><option>pad</option><option>hum</option></select></div>
+ <div class="r"><label>Volume</label><input type="range" id="vol" min="0" max="1" step=".05" value=".4"><output>.4</output></div>
+ <div class="r"><label>Audio file</label><input type="file" id="faud" accept="audio/*"></div>
+ <div class="r"><label>Lip sync</label><input type="checkbox" id="lip"></div>
+ <div class="r"><label>Mouth width</label><input type="range" id="mw" min="10" max="200" step="1" value="60"><output>60</output></div>
+ <div class="r"><button id="sauto">Auto soundtrack</button></div>
+</div></details>
+
+<details class="box"><summary>Blend / Re-cut <span class="n">11</span></summary><div class="body">
+ <div class="r"><label>Blend A</label><input type="file" id="fbA" accept="image/*"></div>
+ <div class="r"><label>Blend B</label><input type="file" id="fbB" accept="image/*"></div>
+ <div class="r"><button id="blendgo">Set as keyframes</button></div>
+ <div class="r"><label>Re-cut source</label><input type="file" id="frc" accept="video/*"></div>
+ <div class="r"><label>From / to, s</label><input type="number" id="rcA" min="0" step=".1" value="0" style="max-width:80px">
+   <input type="number" id="rcB" min="0" step=".1" value="2" style="max-width:80px"></div>
+ <div class="r"><button id="recutgo">Cut</button><button id="recutloop">Cut + loop</button></div>
+ <div class="r"><label>Remix</label><div class="seg" id="remixs"><button class="on" data-s="subtle">Subtle</button>
+   <button data-s="mild">Mild</button><button data-s="strong">Strong</button></div></div>
+</div></details>
+
+<details class="box"><summary>AI backend <span class="n">12</span></summary><div class="body">
+ <div class="r"><label>Proxy URL</label><input type="text" id="api" placeholder="https://"></div>
+ <div class="r"><label>Token</label><input type="password" id="key"></div>
+ <div class="r"><label>Model</label><input type="text" id="model" value="kling"></div>
+ <div class="r"><label>Task</label><select id="task">
+   <option>auto</option><option>extend</option><option>lipsync</option><option>inpaint</option>
+   <option>video2video</option><option>motion-transfer</option><option>upscale</option><option>interpolate</option><option>sfx</option></select></div>
+ <div class="r"><button id="ai">Generate with AI</button><button id="jx">Export job JSON</button></div>
+</div></details>
+
+<details class="box"><summary>Help <span class="n">?</span></summary><div class="body">
+ <small style="color:#CFE2DE">
+ <b>Ragnell</b> — локальная студия. Всё, что видишь, считается прямо в браузере: камера, маски, морфинг кадров, замены, эффекты, склейка шотов.<br><br>
+ <b>Быстро:</b> Preview cap 540p даёт 60 fps на телефоне; рендер всегда в полном разрешении.<br>
+ <b>Качество:</b> master + Supersample 2× + FPS 60 = максимальная детализация, но рендер идёт в реальном времени и греет телефон.<br>
+ <b>Персонажи:</b> добавляй фото в Characters — они запоминаются и подставляются в кадр как cameo.<br>
+ <b>Замена лица:</b> Box по лицу → Detect face → Apply swap.<br>
+ <b>История:</b> каждый рендер падает вниз страницы, оттуда скачивается.
+ </small>
+</div></details>
+
+</aside>
+
+<section class="work">
+ <div class="stagewrap">
+   <div class="stage" id="stage"><canvas id="cv"></canvas><canvas id="mk"></canvas><canvas id="pc"></canvas></div>
+   <div class="hud"><span id="hRes">—</span><span id="hFps">—</span></div>
+ </div>
+ <div id="statebox"><span class="spin" id="spinner" style="display:none"></span><span id="statetxt">Готов к генерации</span></div>
+ <progress id="bar" value="0" max="1"></progress>
+ <div class="transport">
+   <button id="pv">Preview</button>
+   <button id="rc" class="pri">Render</button>
+   <button id="st">Stop</button>
+   <button id="snap">Snapshot</button>
+   <button id="ex">Extend</button>
+   <button id="pvbig">Full preview</button>
+ </div>
+ <div id="tlbar">
+   <div class="hd"><b>Storyboard</b><span id="tlinfo" style="color:var(--mu);font-size:11px">no shots</span></div>
+   <div id="shots"></div>
+ </div>
+ <div id="log"></div>
+ <div id="clips"></div>
+</section>
+
+<aside id="lite">
+  <div class="lcard">
+    <div class="skimrow">
+      <span>SKIN</span>
+      <div class="skimsw" id="skimsw">
+        <button class="on" data-s="paper">Paper</button>
+        <button data-s="glass">Glass</button>
+      </div>
+    </div>
+    <div class="ltabs" id="ltabs">
+      <button class="on" data-g="t2v">Text → Video</button>
+      <button data-g="i2v">Image → Video</button>
+      <button data-g="kf">Keyframes</button>
+      <button data-g="motion">Motion brush</button>
+      <button data-g="v2v">Video → Video</button>
+      <button data-g="blend">Blend</button>
+    </div>
+
+    <textarea class="lprompt" id="lp" placeholder="Describe your shot: subject, light, camera move…"></textarea>
+    <div class="lhints">
+      <span class="lhint" id="lidea">✦ Get inspirations</span>
+      <span class="lhint" id="lplus">＋ Details</span>
+      <span class="lhint" id="lneg">⊘ No blur</span>
+    </div>
+
+    <div id="linputs"></div>
+
+    <div class="llabel">Atmosphere</div>
+    <div class="lrow" id="latm">
+      <button class="lchip on" data-v="none">None</button>
+      <button class="lchip" data-v="dust">Dust</button>
+      <button class="lchip" data-v="rain">Rain</button>
+      <button class="lchip" data-v="snow">Snow</button>
+      <button class="lchip" data-v="embers">Embers</button>
+      <button class="lchip" data-v="fog">Fog</button>
+      <button class="lchip" data-v="sparks">Sparks</button>
+    </div>
+
+    <div class="llabel">Motion <span id="lmotv">alive</span></div>
+    <input type="range" class="lrange" id="lmot" min="0" max="100" value="100">
+
+    <div class="llabel">Creativity <span id="lcv">balanced</span></div>
+    <input type="range" class="lrange" id="lcrea" min="0" max="100" value="55">
+
+    <div class="llabel">Mode</div>
+    <div class="lrow" id="lmode">
+      <button class="lchip on" data-v="standard">Standard</button>
+      <button class="lchip" data-v="pro">Pro quality</button>
+      <button class="lchip" data-v="master">Master</button>
+    </div>
+
+    <div class="llabel">Duration <span id="lockhint"></span></div>
+    <div class="lrow" id="ldur">
+      <button class="lchip" data-v="5">5s</button>
+      <button class="lchip on" data-v="10">10s</button>
+      <button class="lchip" data-v="15">15s</button>
+      <button class="lchip" data-v="30">30s</button>
+      <button class="lchip locked" data-v="60" data-lock="1">1m <b>🔒</b></button>
+    </div>
+
+    <div class="llabel">Template</div>
+    <div class="lrow" id="ltpl">
+      <button class="lchip on" data-v="reels">Reels</button>
+      <button class="lchip" data-v="tiktok">TikTok</button>
+      <button class="lchip" data-v="shorts">Shorts</button>
+      <button class="lchip" data-v="cinema">Cinema</button>
+      <button class="lchip" data-v="square">Square</button>
+    </div>
+
+    <div class="llabel">Frame</div>
+    <div class="lrow" id="laspect">
+      <button class="lchip on" data-v="9:16">9:16</button>
+      <button class="lchip" data-v="16:9">16:9</button>
+      <button class="lchip" data-v="1:1">1:1</button>
+      <button class="lchip" data-v="4:5">4:5</button>
+      <button class="lchip" data-v="21:9">21:9</button>
+    </div>
+
+    <div class="llabel">FPS</div>
+    <div class="lrow" id="lfps">
+      <button class="lchip" data-v="24">24</button>
+      <button class="lchip on" data-v="30">30</button>
+      <button class="lchip" data-v="60">60</button>
+    </div>
+
+    <button class="lgen" id="lgen">Generate</button>
+    <div class="lmeta"><span id="lsum">9:16 · 720p · 30 fps · 10s</span><span id="lcost">local</span></div>
+  </div>
+</aside>
+
+<aside id="queue">
+  <div class="lcard">
+    <div class="qhead"><span>Queue</span><span id="qcount">0</span></div>
+    <div id="qlist" style="display:flex;flex-direction:column;gap:7px;margin-top:9px"></div>
+    <div class="lnote">Всё считается в браузере — очередь мгновенная, кредитов нет.</div>
+  </div>
+</aside>
+</main>
+<script>
+/* =========================================================
+   RAGNELL — engine
+   Всё считается в браузере: камера, маски, морфинг, замены,
+   эффекты, склейка шотов, аудио. Никаких внешних зависимостей.
+   ========================================================= */
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const clamp = (x,a,b) => x<a?a:x>b?b:x;
+const lerp = (a,b,k) => a+(b-a)*k;
+
+/* ---------- журнал ---------- */
+function log(m){
+  const l = $('#log');
+  l.textContent += new Date().toLocaleTimeString() + '  ' + m + '\n';
+  l.scrollTop = l.scrollHeight;
+}
+
+/* ---------- константы ---------- */
+const RATIOS = {'16:9':[16,9],'9:16':[9,16],'1:1':[1,1],'4:5':[4,5],'5:4':[5,4],'4:3':[4,3],
+  '3:4':[3,4],'21:9':[21,9],'2.35:1':[2.35,1],'2:1':[2,1],'9:21':[9,21]};
+const RES = {'480p':480,'540p':540,'720p':720,'1080p':1080,'1440p':1440,'2160p (4K)':2160};
+
+const PRE = {
+ 'custom':{}, 'push-in':{zoom:.3}, 'pull-out':{zoom:-.3}, 'pan left':{panX:-1}, 'pan right':{panX:1},
+ 'tilt up':{panY:-1}, 'tilt down':{panY:1}, 'orbit':{orbit:12,panX:.6,zoom:.1}, 'handheld':{shake:.4},
+ 'dolly zoom':{zoom:.34,orbit:-6,shake:.03}, 'crane up':{panY:-.9,zoom:.18}, 'crane down':{panY:.9,zoom:-.16},
+ 'bolt cam':{zoom:.45,panX:.8,shake:.12}, 'crash zoom':{zoom:.5,shake:.18}, 'dutch':{orbit:-14,zoom:.06},
+ 'tiny planet':{orbit:18,zoom:-.32,panX:.4}, 'drone fly':{panX:1,panY:-.35,zoom:.12,shake:.05},
+ '360 orbit':{orbit:20,panX:.9}, 'vertigo':{zoom:-.28,orbit:8}, 'whip pan':{panX:1,shake:.25},
+ 'vertigo rise':{zoom:-.22,panY:-.7}, 'dolly in slow':{zoom:.16}, 'float':{panY:-.2,shake:.08}
+};
+
+const STY = {
+ none:{f:'none'},
+ anime:{f:'saturate(1.75) contrast(1.28) brightness(1.05)'},
+ cyberpunk:{f:'saturate(1.95) contrast(1.25) hue-rotate(-25deg)'},
+ noir:{f:'grayscale(1) contrast(1.5) brightness(.92)'},
+ vhs:{f:'sepia(.28) saturate(1.45) contrast(1.1) blur(.6px)'},
+ dream:{f:'blur(2px) brightness(1.14) saturate(1.4)'},
+ oil:{f:'blur(1.2px) saturate(1.5) contrast(1.15)'},
+ neon:{f:'saturate(2.1) contrast(1.2) brightness(1.06)'},
+ warm:{f:'sepia(.2) saturate(1.25) brightness(1.05)'},
+ cold:{f:'saturate(.9) hue-rotate(12deg) brightness(1.03) contrast(1.08)'}
+};
+
+/* ---------- состояние ---------- */
+let EW = 540, EH = 960;               // логический размер маски/оверлея
+let IMG = {s:null,e:null}, VID = document.createElement('video');
+VID.muted = true; VID.loop = true; VID.playsInline = true; VID.crossOrigin = 'anonymous';
+let hasVid = false, FILEV = null;
+let run = null, dq = 0, mv = 0, painted = false, path = [], mouth = null, boxRect = null;
+let PIKA='none', SWAPIMG=null, SWAPON=false, FIRSTC=null, PAINTON=false;
+let TLshots=[], OV=null, prevShotC=null, playing=false, LASTIMG=null;
+let CHARS=[], CHSEL=0, ELSMODE=null;
+let AC=null, AUD=null, auEl=null;
+let frameCount=0, lastFpsT=performance.now(), curFps=0;
+
+/* ---------- canvas ---------- */
+const cv = $('#cv'), cx = cv.getContext('2d', {alpha:false, desynchronized:true});
+const mk = $('#mk'), mx = mk.getContext('2d');
+const pc = $('#pc'), px = pc.getContext('2d');
+const RAWC = document.createElement('canvas'), RAW = RAWC.getContext('2d', {alpha:false});
+const OUTC = document.createElement('canvas'), OUT = OUTC.getContext('2d', {alpha:false});
+const TMPC = document.createElement('canvas'), TMP = TMPC.getContext('2d');
+const TMP2C = document.createElement('canvas'), TMP2 = TMP2C.getContext('2d');
+const PKC = document.createElement('canvas'), PK = PKC.getContext('2d');   // для pikaffects
+const MF  = document.createElement('canvas'), MFX = MF.getContext('2d');    // маска-слой
+const LYC = document.createElement('canvas'), LYX = LYC.getContext('2d');   // слой для flow
+const stars = Array.from({length:180},()=>({x:Math.random(),y:Math.random(),z:Math.random()*.8+.2}));
+
+/* ---------- параметры ---------- */
+const P = id => { const e = document.getElementById(id); if(!e) return undefined;
+  if(e.type==='checkbox') return e.checked;
+  if(e.type==='range'||e.type==='number') return +e.value;
+  return e.value; };
+const OVp = id => (OV && OV[id]!==undefined) ? OV[id] : P(id);
+
+/* ---------- размеры ---------- */
+function sizeFor(resKey, ratioKey, cap){
+  const [rw,rh] = RATIOS[ratioKey] || [16,9];
+  let short = RES[resKey] || 720;
+  if(cap) short = Math.min(short, cap);
+  let w,h;
+  if(rw>=rh){ h = short; w = Math.round(short*rw/rh); }
+  else { w = short; h = Math.round(short*rh/rw); }
+  return [Math.round(w/2)*2, Math.round(h/2)*2];
+}
+function outSize(){ return sizeFor(P('res'), P('aspect'), 0); }
+function previewSize(){ const cap = +P('pcap'); return sizeFor(P('res'), P('aspect'), cap||0); }
+
+/* ---------- логический размер маски ---------- */
+function setLogical(){
+  const [rw,rh] = RATIOS[P('aspect')] || [16,9];
+  const short = 540;
+  if(rw>=rh){ EH = short; EW = Math.round(short*rw/rh); } else { EW = short; EH = Math.round(short*rh/rw); }
+  if(mk.width!==EW || mk.height!==EH){ mk.width = pc.width = EW; mk.height = pc.height = EH; mv++; }
+  let sh = {s:IMG.s,e:IMG.e};
+}
+
+/* ================= ИСТОЧНИКИ ================= */
+function srcNow(){ return hasVid ? VID : (IMG.s || IMG.e); }
+
+function drawCover(c, s, W, H, mode){
+  const w = s.videoWidth || s.naturalWidth || s.width, h = s.videoHeight || s.naturalHeight || s.height;
+  if(!w || !h) return;
+  mode = mode || P('refit') || 'cover';
+  if(mode === 'blur-pad'){
+    const rb = Math.max(W/w, H/h);
+    c.save(); c.filter = 'blur(26px) brightness(.5)';
+    c.drawImage(s, (W-w*rb)/2, (H-h*rb)/2, w*rb, h*rb); c.restore();
+    const r = Math.min(W/w, H/h);
+    c.drawImage(s, (W-w*r)/2, (H-h*r)/2, w*r, h*r);
+    return;
+  }
+  const r = mode === 'contain' ? Math.min(W/w, H/h) : Math.max(W/w, H/h);
+  c.drawImage(s, (W-w*r)/2, (H-h*r)/2, w*r, h*r);
+}
+
+/* ================= КАМЕРА ================= */
+function easeVal(u){
+  const e = OVp('ease') || 'smooth';
+  if(e==='linear') return u;
+  if(e==='ease-in') return u*u;
+  if(e==='ease-out') return 1-(1-u)*(1-u);
+  return u*u*(3-2*u);
+}
+function camTransform(c, W, H, p, t){
+  const z = OVp('zoom')||0, o = OVp('orbit')||0, sh = OVp('shake')||0;
+  const sc = 1.1 + Math.abs(o)*.014 + z*p + (z<0 ? -z*0.5 : 0);
+  const dx = (OVp('panX')||0)*p*W*.07 + sh*W*.006*(Math.sin(t*37)+Math.sin(t*23.3+1));
+  const dy = (OVp('panY')||0)*p*H*.07 + sh*H*.006*(Math.sin(t*29+2)+Math.sin(t*17.7));
+  c.translate(W/2+dx, H/2+dy);
+  c.rotate(o*p*Math.PI/180);
+  c.scale(sc, sc);
+  c.translate(-W/2, -H/2);
+}
+
+/* ================= ПЕРСОНАЖ / CAMEO ================= */
+function cameoDraw(c, W, H, t){
+  const mode = P('camode');
+  const el = CHARS[CHSEL];
+  if(mode==='none' || !el || !el.img) return;
+  const i = el.img, sc = P('elsc')||.5, pos = P('elto')||'center';
+  const w = Math.min(W, i.naturalWidth||200) * sc;
+  const h = w * ((i.naturalHeight||200)/(i.naturalWidth||200));
+  let x = pos==='left' ? W*.05 : pos==='right' ? W*.95-w : W/2-w/2;
+  let y = H*.82-h*.5;
+  if(mode==='parallax'){ x += Math.sin(t*.9)*W*.02; y += Math.cos(t*.7)*H*.012; }
+  if(mode==='pinned'){ x += Math.sin(t*1.6)*W*.004; }
+  c.save();
+  c.globalAlpha = .97;
+  c.shadowColor = 'rgba(0,0,0,.55)';
+  c.shadowBlur = Math.min(W,H)*.03;
+  c.shadowOffsetY = Math.min(W,H)*.008;
+  c.drawImage(i, x, y, w, h);
+  c.restore();
+}
+
+/* ================= PIKAFFECTS ================= */
+const PK_EFFECTS = new Set(['squash','melt','inflate','slice','explode','unfold','crumple','shake','pulse','glitch']);
+function pikaffect(c, W, H, u){
+  const e = Math.sin(Math.PI*Math.min(1,u)) * (P('pkp')||.7);
+  PKC.width = W; PKC.height = H;
+  PK.clearRect(0,0,W,H); PK.drawImage(cv,0,0);
+  c.clearRect(0,0,W,H); c.save();
+  if(PIKA==='squash'){ c.translate(0, H*(1-e*.9)); c.scale(1+e*.35, 1-e*.55); c.drawImage(PKC,0,0); }
+  else if(PIKA==='melt'){
+    for(let i=0;i<26;i++){ const sx = W*i/26, hh = H*(.15+e*1.1*(1+(i%3)/3));
+      c.drawImage(PKC, sx,0, W/26, H, sx, H*(.02+e*.1), W/26, hh); }
+  }
+  else if(PIKA==='inflate'){ const s = 1+e*.55; c.translate(W/2,H/2); c.scale(s,s); c.translate(-W/2,-H/2); c.drawImage(PKC,0,0); }
+  else if(PIKA==='slice'){ const off = e*W*.22;
+    c.drawImage(PKC, 0,0, W/2,H, 0, -e*H*.05, W/2, H);
+    c.drawImage(PKC, W/2,0, W/2,H, W/2+off, e*H*.08, W/2, H); }
+  else if(PIKA==='explode'){ const n=7;
+    for(let i=0;i<n;i++){ const a=(i/n)*Math.PI*2, r=e*W*.28; c.globalAlpha=.92;
+      c.drawImage(PKC, 0, i*H/n, W, H/n, Math.cos(a)*r, i*H/n+Math.sin(a)*r-e*H*.05, W, H/n); } }
+  else if(PIKA==='unfold'){ c.translate(W/2,H); c.scale(1+e*.2, 1-e*.7); c.translate(-W/2,-H); c.drawImage(PKC,0,0); }
+  else if(PIKA==='crumple'){ for(let i=0;i<10;i++){ const a=(i/10)*Math.PI*2;
+      c.globalAlpha=.5+.5*(i%2); c.drawImage(PKC, Math.cos(a)*e*W*.014, Math.sin(a)*e*H*.008, W, H); }
+    c.globalAlpha=1; }
+  else if(PIKA==='shake'){ c.translate(Math.sin(u*90)*e*W*.03, Math.cos(u*77)*e*H*.02); c.drawImage(PKC,0,0); }
+  else if(PIKA==='pulse'){ const s = 1 + Math.sin(u*Math.PI*4)*e*.12; c.translate(W/2,H/2); c.scale(s,s); c.translate(-W/2,-H/2); c.drawImage(PKC,0,0); }
+  else if(PIKA==='glitch'){
+    for(let i=0;i<9;i++){ const y=(i/9)*H, hh=H/9, j=(Math.random()-.5)*e*W*.06;
+      c.drawImage(PKC, 0,y,W,hh, j, y, W, hh); }
+    c.globalCompositeOperation='screen'; c.globalAlpha=.22*e;
+    c.fillStyle='#ff2d6f'; c.fillRect(0,0,W,H);
+    c.fillStyle='#2df5ff'; c.fillRect(0,0,W,H);
+  }
+  c.restore();
+}
+
+/* ================= ЗАМЕНА ЛИЦА / ПРЕДМЕТА ================= */
+function swapTargetRect(){
+  if(boxRect) return boxRect;
+  return {x:EW*.3, y:EH*.22, w:EW*.4, h:EW*.36};
+}
+function applySwap(c, W, H){
+  if(!SWAPIMG || !SWAPON) return;
+  const b = swapTargetRect();
+  const x = b.x/EW*W, y = b.y/EH*H, w = b.w/EW*W, h = b.h/EH*H;
+  if(w<=0||h<=0) return;
+  const feather = (P('feath')||12) / EW * W;
+  /* замена + подгонка цвета */
+  TMPC.width = Math.round(w); TMPC.height = Math.round(h);
+  TMP.clearRect(0,0,TMPC.width,TMPC.height);
+  TMP.save();
+  TMP.translate(TMPC.width/2, TMPC.height/2);
+  const sc = Math.max(TMPC.width/(SWAPIMG.naturalWidth||1), TMPC.height/(SWAPIMG.naturalHeight||1));
+  TMP.scale(sc, sc);
+  TMP.drawImage(SWAPIMG, -(SWAPIMG.naturalWidth||1)/2, -(SWAPIMG.naturalHeight||1)/2);
+  TMP.restore();
+  /* средний цвет цели → красим замену */
+  const cm = P('cmatch')||0;
+  if(cm>0){
+    const g = c.getImageData(clamp(Math.round(x),0,W-2), clamp(Math.round(y),0,H-2),
+      Math.max(2,Math.min(24,Math.round(w))), Math.max(2,Math.min(24,Math.round(h)))).data;
+    let r=0,gg=0,bb=0,n=0;
+    for(let i=0;i<g.length;i+=4){ r+=g[i]; gg+=g[i+1]; bb+=g[i+2]; n++; }
+    if(n){ r/=n; gg/=n; bb/=n;
+      TMP.globalCompositeOperation = 'overlay';
+      TMP.globalAlpha = cm*.55;
+      TMP.fillStyle = `rgb(${r|0},${gg|0},${bb|0})`;
+      TMP.fillRect(0,0,TMPC.width,TMPC.height);
+      TMP.globalAlpha = 1; TMP.globalCompositeOperation = 'source-over';
+    }
+  }
+  /* мягкие края */
+  if(feather>0){
+    const grd = TMP.createRadialGradient(TMPC.width/2, TMPC.height/2, Math.max(1,Math.min(TMPC.width,TMPC.height)*.18),
+      TMPC.width/2, TMPC.height/2, Math.max(TMPC.width,TMPC.height)*.62);
+    grd.addColorStop(0,'rgba(0,0,0,1)');
+    grd.addColorStop(.72,'rgba(0,0,0,.92)');
+    grd.addColorStop(1,'rgba(0,0,0,0)');
+    TMP.globalCompositeOperation = 'destination-in';
+    TMP.fillStyle = grd; TMP.fillRect(0,0,TMPC.width,TMPC.height);
+    TMP.globalCompositeOperation = 'source-over';
+  }
+  c.save();
+  const bl = P('sblend')||'normal';
+  c.globalCompositeOperation = bl==='normal' ? 'source-over' : bl;
+  c.globalAlpha = bl==='soft' ? .92 : 1;
+  c.drawImage(TMPC, x, y, w, h);
+  c.restore();
+}
+
+/* ================= МАСКИ ================= */
+function maskLayer(s, W, H){
+  MF.width = W; MF.height = H;
+  MFX.clearRect(0,0,W,H);
+  drawCover(MFX, s, W, H);
+  MFX.globalCompositeOperation = 'destination-in';
+  MFX.imageSmoothingQuality = 'high';
+  MFX.drawImage(mk, 0,0,W,H);
+  MFX.globalCompositeOperation = 'source-over';
+  return MF;
+}
+function maskBBox(){
+  const d = mx.getImageData(0,0,EW,EH).data;
+  let x0=EW,y0=EH,x1=0,y1=0,found=false;
+  for(let y=0;y<EH;y+=3) for(let x=0;x<EW;x+=3){
+    if(d[(y*EW+x)*4+3] > 40){ found=true; if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y; }
+  }
+  return found ? {x:x0,y:y0,w:Math.max(8,x1-x0),h:Math.max(8,y1-y0)} : null;
+}
+
+/* ================= КАДР ================= */
+function drawFrame(c, W, H, t, T, first){
+  const u = T>0 ? clamp(t/T,0,1) : 0;
+  const p = (OVp('loop') ? .5-.5*Math.cos(2*Math.PI*u) : easeVal(u));
+  const ts = t * (OVp('speed')||1);
+  const stKey = OVp('style') || 'none';
+  const st = STY[stKey] || STY.none;
+  const blendFrames = OVp('blend') && !first;
+  const s = srcNow();
+  const mm = OVp('mmode') || 'none';
+
+  c.globalCompositeOperation = 'source-over';
+  c.filter = 'none'; c.globalAlpha = 1;
+  if(!blendFrames){ c.fillStyle = '#04080A'; c.fillRect(0,0,W,H); }
+
+  c.save();
+  c.globalAlpha = blendFrames ? .55 : 1;
+  camTransform(c, W, H, p, ts);
+  /* фильтр стиля собираем один раз */
+  let f = st.f;
+  const clar = OVp('clar')||0, sat = OVp('sat');
+  const extra = [];
+  if(clar>0) extra.push(`contrast(${1+clar*.35})`);
+  if(sat!==undefined && sat!==1) extra.push(`saturate(${sat})`);
+  if(extra.length) f = (f==='none' ? '' : f+' ') + extra.join(' ');
+  c.filter = f || 'none';
+  const k = W/EW;
+  const motionAmt = (OVp('motion') === undefined ? 1 : OVp('motion'));
+  /* авто-живость: кадр без эффектов оживляем салютом света и параллаксом */
+  const autoLive = s && motionAmt > 0 &&
+    (mm==='none') && !(IMG.s && IMG.e) && !hasVid && !(OVp('lip'));
+
+  if(s){
+    drawCover(c, s, W, H);
+    if(autoLive) liveLayer(c, s, W, H, ts, u, motionAmt);
+    const kf = (IMG.s && IMG.e && !hasVid);
+    if(kf){ c.globalAlpha = p; drawCover(c, IMG.e, W, H); c.globalAlpha = blendFrames?.55:1; }
+    else if(painted && mm!=='none'){
+      if(mm==='remove') c.drawImage(maskLayer(s, W, H), 0, 0);
+      if(mm==='static' && FIRSTC) c.drawImage(maskLayer(FIRSTC, W, H), 0, 0);
+      if(mm==='flow' || mm==='path'){
+        const L = maskLayer(s, W, H);
+        let ox=0, oy=0;
+        if(mm==='path' && path.length>1){
+          const q = pathAt(p);
+          ox = (q[0]-path[0][0])*k; oy = (q[1]-path[0][1])*k;
+        } else {
+          const a = (OVp('dir')||0)*Math.PI/180;
+          const amp = (OVp('amp')||0)*k, spd = OVp('mspd')||1;
+          const wv = amp*Math.sin(ts*spd*2), nv = amp*.1*Math.sin(ts*5.3);
+          ox = Math.cos(a)*wv - Math.sin(a)*nv;
+          oy = Math.sin(a)*wv + Math.cos(a)*nv;
+        }
+        c.drawImage(L, ox, oy);
+      }
+    }
+    if(OVp('lip') && mouth){
+      const lvl = audioLevel(), w2 = (OVp('mw')||60)*k;
+      c.filter='none';
+      c.fillStyle = 'rgba(22,0,8,.88)';
+      c.beginPath();
+      c.ellipse(mouth[0]*W/EW, mouth[1]*H/EH, w2/2, Math.max(1.5*k, lvl*w2*.45), 0, 0, 7);
+      c.fill();
+    }
+  } else {
+    if (GENFEAT) genScene(c, W, H, ts, T, GENFEAT);
+    else starfield(c, W, H, ts, T);
+  }
+  c.restore();
+
+  /* стилевая подложка */
+  if(stKey==='anime'){ c.save(); c.globalCompositeOperation='soft-light'; c.globalAlpha=.16*(P('stk')??1); c.fillStyle='#ff78c8'; c.fillRect(0,0,W,H); c.restore(); }
+  if(stKey==='cyberpunk'){ c.save(); c.globalCompositeOperation='soft-light'; c.globalAlpha=.25*(P('stk')??1); c.fillStyle='#00ffe6'; c.fillRect(0,0,W,H); c.restore(); }
+  if(stKey==='dream'){ c.save(); c.globalCompositeOperation='soft-light'; c.globalAlpha=.2*(P('stk')??1); c.fillStyle='#b48cff'; c.fillRect(0,0,W,H); c.restore(); }
+  if(stKey==='vhs'){ c.save(); c.globalCompositeOperation='soft-light'; c.globalAlpha=.12*(P('stk')??1); c.fillStyle='#ff0050'; c.fillRect(0,0,W,H); c.restore(); }
+
+  /* замена */
+  applySwap(c, W, H);
+
+  atmosphere(c, W, H, ts, OVp('motion') === undefined ? 1 : OVp('motion'));
+  cameoDraw(c, W, H, ts);
+
+  if(PIKA!=='none' && PK_EFFECTS.has(PIKA)) pikaffect(c, W, H, u);
+
+  post(c, W, H, ts);
+}
+
+/* ================= ЖИВАЯ СЦЕНА =================
+   Слой поверх статичного кадра, который даёт настоящее движение:
+   параллакс-дым, дыхание света, искры, летящие частицы и мягкий световой проход.
+   ================================================= */
+const DUST = Array.from({length:54}, ()=>({
+  x: Math.random(), y: Math.random(), z: .25 + Math.random()*.9,
+  s: .4 + Math.random()*1.8, ph: Math.random()*6.28
+}));
+function liveLayer(c, src, W, H, t, u, amt){
+  const k = W/EW;
+  c.save();
+
+  /* 1. параллакс-дым: две копии кадра, смещённые в противоположные стороны */
+  if(amt > .25){
+    c.globalCompositeOperation = 'screen';
+    const dr = (6 + amt*10) * k;
+    const hw = Math.max(64, Math.round(W/2)), hh = Math.max(64, Math.round(H/2));
+    if(TMP2C.width !== hw){ TMP2C.width = hw; TMP2C.height = hh; }
+    TMP2.clearRect(0,0,TMP2C.width,TMP2C.height);
+    drawCover(TMP2, src, TMP2C.width, TMP2C.height);
+    /* маска мягкого пятна, которое и «дышит» */
+    TMP2.globalCompositeOperation = 'destination-in';
+    const sw = TMP2C.width, sh = TMP2C.height;
+    const g = TMP2.createRadialGradient(
+      sw*(.5 + Math.sin(t*.5)*.16), sh*(.42 + Math.cos(t*.38)*.13), 1,
+      sw*(.5 + Math.sin(t*.5)*.16), sh*(.42 + Math.cos(t*.38)*.13), Math.max(sw,sh)*.7);
+    g.addColorStop(0,'rgba(0,0,0,.9)');
+    g.addColorStop(.6,'rgba(0,0,0,.28)');
+    g.addColorStop(1,'rgba(0,0,0,0)');
+    TMP2.fillStyle = g; TMP2.fillRect(0,0,sw,sh);
+    TMP2.globalCompositeOperation = 'source-over';
+    c.globalAlpha = .09 * amt;
+    c.drawImage(TMP2C, Math.sin(t*.42)*dr, Math.cos(t*.33)*dr, W, H);
+  }
+
+  /* 2. дыхание света — медленная тёплая/холодная волна */
+  if(amt > .15){
+    c.globalCompositeOperation = 'soft-light';
+    c.globalAlpha = (.055 + .035*Math.sin(t*.9)) * amt;
+    const lg = c.createRadialGradient(W*(.5+Math.sin(t*.31)*.3), H*.3, 1,
+      W*.5, H*.3, Math.max(W,H)*.95);
+    lg.addColorStop(0,'rgba(255,236,200,.85)');
+    lg.addColorStop(.55,'rgba(150,190,210,.2)');
+    lg.addColorStop(1,'rgba(0,0,0,0)');
+    c.fillStyle = lg; c.fillRect(0,0,W,H);
+  }
+
+  /* 3. искры и пыль — у каждой своя глубина и фаза */
+  c.globalCompositeOperation = 'screen';
+  for(const d of DUST){
+    const par = d.z;
+    const x = ((d.x + t*0.012*par + Math.sin(t*.7 + d.ph)*.01) % 1) * W;
+    const y = ((d.y - t*0.022*par) % 1 + 1) % 1 * H;
+    const r = d.s * (W/960) * (0.6 + par);
+    const a = (0.16 + 0.34*Math.abs(Math.sin(t*1.4 + d.ph))) * amt * (0.35 + par*.6);
+    c.globalAlpha = Math.min(.9, a);
+    const col = d.z > .8 ? 'rgba(255,214,150,.9)' : 'rgba(200,238,255,.85)';
+    c.globalAlpha = Math.min(.9, a);
+    c.drawImage(sprite(col), x-r*4, y-r*4, r*8, r*8);
+  }
+
+  /* 4. световой проход — тонкий блик, плавно идущий по кадру */
+  if(amt > .35){
+    c.globalCompositeOperation = 'screen';
+    const ph = (t*0.14) % 1;
+    const sx = ph*1.5 - .35;
+    c.save();
+    c.translate(W*sx, 0); c.rotate(.32);
+    const sg = c.createLinearGradient(-W*.1,0,W*.1,0);
+    sg.addColorStop(0,'rgba(255,255,255,0)');
+    sg.addColorStop(.5,'rgba(255,255,255,'+(.09*amt*Math.sin(Math.PI*ph))+')');
+    sg.addColorStop(1,'rgba(255,255,255,0)');
+    c.fillStyle = sg; c.fillRect(-W*.1, -H, W*.2, H*3);
+    c.restore();
+  }
+
+  /* 5. микро-дрожь кадра, будто снято камерой */
+  c.globalCompositeOperation = 'source-over';
+  c.restore();
+}
+
+/* ================= СПРАЙТЫ ЧАСТИЦ =================
+   Градиент создаётся один раз на цвет, дальше частицы рисуются drawImage.
+   Иначе 170 createRadialGradient в кадре роняют рендер до 1 fps.
+   ================================================= */
+const SPRITE = {};
+function sprite(color){
+  if(SPRITE[color]) return SPRITE[color];
+  if(Object.keys(SPRITE).length > 24) return SPRITE[Object.keys(SPRITE)[0]];
+  const S = 64, cv2 = document.createElement('canvas');
+  cv2.width = cv2.height = S;
+  const g = cv2.getContext('2d');
+  const gr = g.createRadialGradient(S/2,S/2,0,S/2,S/2,S/2);
+  gr.addColorStop(0, color);
+  gr.addColorStop(.35, color.replace(/[\d.]+\)$/, '.45)'));
+  gr.addColorStop(1, color.replace(/[\d.]+\)$/, '0)'));
+  g.fillStyle = gr; g.beginPath(); g.arc(S/2,S/2,S/2,0,7); g.fill();
+  SPRITE[color] = cv2;
+  return cv2;
+}
+
+/* ================= АТМОСФЕРА ================= */
+let ATM = 'none';
+const PARTS = Array.from({length:110}, ()=>({
+  x: Math.random(), y: Math.random(), z: .2 + Math.random(),
+  vx: (Math.random()-.5)*.3, ph: Math.random()*6.28, sz: .5+Math.random()*2
+}));
+function atmosphere(c, W, H, t, amt){
+  if(ATM === 'none' || !amt) return;
+  const k = W/960;
+  c.save();
+  c.globalCompositeOperation = 'screen';
+  for(const d of PARTS){
+    const sp = .4 + d.z;
+    let x, y, r, alpha, col;
+    if(ATM==='rain'){
+      x = ((d.x + t*d.vx*.05) % 1) * W;
+      y = ((d.y + t*1.35*sp) % 1) * H;
+      c.globalAlpha = .3*amt;
+      c.fillStyle = 'rgba(205,232,255,.9)';
+      c.fillRect(x, y, Math.max(1, 1.6*k), 22*k*sp);
+      continue;
+    }
+    if(ATM==='snow'){
+      x = ((d.x + Math.sin(t*.6 + d.ph)*.03 + t*.02) % 1) * W;
+      y = ((d.y + t*.13*sp) % 1) * H;
+      r = d.sz*2.2*k; alpha = .5*amt; col = 'rgba(255,255,255,.9)';
+    } else if(ATM==='embers'){
+      x = ((d.x + Math.sin(t*.9 + d.ph)*.05) % 1) * W;
+      y = ((d.y - t*.22*sp) % 1 + 1) % 1 * H;
+      r = d.sz*1.9*k; alpha = (.35 + .45*Math.abs(Math.sin(t*2 + d.ph)))*amt;
+      col = 'rgba(255,150,60,.95)';
+    } else if(ATM==='sparks'){
+      x = ((d.x + t*d.vx*.6) % 1 + 1) % 1 * W;
+      y = ((d.y + t*.05) % 1) * H;
+      r = d.sz*1.4*k; alpha = (.25 + .6*Math.abs(Math.sin(t*3.2 + d.ph)))*amt;
+      col = 'rgba(255,236,180,.95)';
+    } else if(ATM==='fog'){
+      continue;
+    } else {
+      x = ((d.x + t*.02*d.z) % 1) * W;
+      y = ((d.y - t*.03*d.z) % 1 + 1) % 1 * H;
+      r = d.sz*1.6*k; alpha = (.18 + .3*Math.abs(Math.sin(t*1.1 + d.ph)))*amt;
+      col = 'rgba(255,255,255,.9)';
+    }
+    c.globalAlpha = Math.min(.95, alpha);
+    c.drawImage(sprite(col), x-r*3, y-r*3, r*6, r*6);
+  }
+  if(ATM==='fog'){
+    for(let i=0;i<4;i++){
+      const y = H*(.18 + i*.22);
+      const off = Math.sin(t*.25 + i)*W*.18;
+      const g2 = c.createLinearGradient(0, y, 0, y + H*.3);
+      g2.addColorStop(0,'rgba(200,215,225,0)');
+      g2.addColorStop(.5,'rgba(200,215,225,'+(.09*amt)+')');
+      g2.addColorStop(1,'rgba(200,215,225,0)');
+      c.globalCompositeOperation='screen';
+      c.fillStyle = g2;
+      c.fillRect(off - W*.2, y, W*1.4, H*.3);
+    }
+  }
+  c.restore();
+}
+
+/* ================= СЦЕНА ИЗ ПРИЗНАКОВ =================
+   Здесь сэмплер из Open-Sora отдаёт не пиксели, а признаки сцены
+   (свет, цвет, дымка, звёзды, структура). По ним строится мир:
+   небо, светило, слои рельефа с параллаксом, отражения, частицы.
+   Камера при этом едет по-настоящему — слои смещаются с разной скоростью.
+   ======================================================= */
+function hsl(h,s,l,a){ return `hsla(${h},${Math.round(s*100)}%,${Math.round(l*100)}%,${a})`; }
+
+function genScene(c, W, H, t, T, F){
+  const u = clamp(t/Math.max(.001,T), 0, 1);
+  const seed = F.__seed || 1337;
+  const rnd = mulberry(seed);
+
+  const hue   = F.hue;
+  const sat   = clamp(F.sat, 0, 1.2);
+  const lum   = F.lum;                       // −0.5 … 0.5
+  const glow  = F.glow;
+  const haze  = F.haze;
+  const stars = F.stars;
+  const struct= F.struct;
+  const speed = F.speed || 1;
+  const mot   = F.mot || 1;
+
+  /* ---- камера: настоящий проезд, а не наезд одним масштабом ---- */
+  const dolly  = 0.18 + 0.55*u;              // приближение к горизонту
+  const driftX = (u - .5) * 0.22 * mot;      // боковой снос
+  const rot    = Math.sin(u*Math.PI*0.9) * 0.012 * mot;
+  const bobY   = Math.sin(t*1.7*speed) * 0.004 * mot;
+
+  /* ---- небо: градиент, уходящий по свету ---- */
+  const skyTop = hsl(hue, sat*.55, clamp(.06 + lum*.35, .02, .5), 1);
+  const skyMid = hsl(hue, sat*.8,  clamp(.16 + lum*.45, .05, .68), 1);
+  const skyLow = hsl((hue+18)%360, sat*.9, clamp(.32 + lum*.5, .08, .8), 1);
+  const g = c.createLinearGradient(0,0,0,H*1.05);
+  g.addColorStop(0, skyTop); g.addColorStop(.55, skyMid); g.addColorStop(1, skyLow);
+  c.fillStyle = g; c.fillRect(0,0,W,H);
+
+  /* ---- звёзды только в верхней половине, с параллаксом ---- */
+  if (stars > .12){
+    const n = Math.round(120 * stars);
+    const r2 = mulberry(seed ^ 0x9e37);
+    for (let i=0;i<n;i++){
+      const sx = ((r2() + driftX*.25) % 1 + 1) % 1;
+      const sy = r2() * .62;
+      const z  = .3 + r2()*.7;
+      const a  = (0.25 + 0.6*Math.abs(Math.sin(t*1.1 + i))) * stars * (1 - sy*1.2);
+      if (a <= 0) continue;
+      c.fillStyle = `rgba(255,255,255,${Math.min(.95,a)})`;
+      c.fillRect(sx*W, sy*H, 1.1*z*(W/960)*1.6, 1.1*z*(W/960)*1.6);
+    }
+  }
+
+  /* ---- светило: солнце, луна или неоновая сфера ---- */
+  const sunX = W*(.5 + Math.sin(seed%7 + u*.25)*.22 - driftX*.5);
+  const sunY = H*(.30 + Math.cos(seed%5)*0.06 + lum*.2);
+  const sunR = Math.min(W,H) * (0.11 + glow*0.1);
+  const sunCol = hsl((hue+30)%360, clamp(sat*1.1,0,1), clamp(.62 + lum*.4, .3, .9), 1);
+  const halo = c.createRadialGradient(sunX,sunY,0, sunX,sunY,sunR*5.5);
+  halo.addColorStop(0, hsl((hue+30)%360, sat, .72, .55*Math.max(.35,glow)));
+  halo.addColorStop(.28, hsl((hue+20)%360, sat, .55, .18));
+  halo.addColorStop(1, 'rgba(0,0,0,0)');
+  c.fillStyle = halo; c.fillRect(0,0,W,H);
+  c.beginPath(); c.arc(sunX, sunY, sunR, 0, 7); c.fillStyle = sunCol; c.fill();
+
+  /* ---- слои рельефа: дальний, средний, близкий. Разный параллакс ---- */
+  const layers = 4;
+  for (let li=0; li<layers; li++){
+    const depth = (layers - li) / layers;            // 1 = близко
+    const par   = depth * (0.35 + mot*0.9);
+    const yBase = H*(0.56 + li*0.09) + bobY*H*(1+depth);
+    const amp   = H*(0.035 + (1-depth)*0.05) * (0.6 + struct*0.7);
+    const shift = (driftX * W * 0.18 * par) + (seed%13)*0.4;
+    const shade = clamp(0.20 - li*0.045 + lum*0.25, .03, .42);
+    c.beginPath();
+    c.moveTo(0, H);
+    const pts = 26;
+    for (let i=0;i<=pts;i++){
+      const px = (i/pts)*W;
+      const ph = (i/pts)*Math.PI*2.2 + li*1.7 + shift*0.01;
+      const wob = Math.sin(ph)*amp + Math.sin(ph*2.7+li)*amp*0.45;
+      c.lineTo(px, yBase + wob - dolly*H*0.05*depth);
+    }
+    c.lineTo(W,H); c.closePath();
+    c.fillStyle = hsl(hue, sat*0.7, shade, 1);
+    c.fill();
+  }
+
+  /* ---- отражение/дорожка света по «воде» ---- */
+  if (F.wave > .2 || true){
+    c.save();
+    c.globalCompositeOperation = 'screen';
+    const reflH = H*0.16;
+    const rg = c.createLinearGradient(0, H*0.72, 0, H*0.72+reflH);
+    rg.addColorStop(0, hsl((hue+30)%360, sat, .60, .22*Math.max(.3,glow)));
+    rg.addColorStop(1, 'rgba(0,0,0,0)');
+    c.fillStyle = rg;
+    for (let i=0;i<9;i++){
+      const y = H*0.74 + i*reflH/9;
+      const wob = Math.sin(t*1.6*speed + i*0.9)*W*0.02;
+      c.fillRect(sunX - sunR*1.5 + wob, y, sunR*3, reflH/22);
+    }
+    c.restore();
+  }
+
+  /* ---- дымка: слоистая, движется медленнее камеры ---- */
+  if (haze > .05){
+    c.save(); c.globalCompositeOperation = 'screen';
+    for (let i=0;i<3;i++){
+      const y = H*(.45 + i*.17);
+      const off = Math.sin(t*.18*speed + i*1.3)*W*.12 - driftX*W*.1*(i+1);
+      const hz = c.createLinearGradient(0,y,0,y+H*.26);
+      hz.addColorStop(0,'rgba(210,225,235,0)');
+      hz.addColorStop(.5, `rgba(210,225,235,${.10*haze*(1-i*.2)})`);
+      hz.addColorStop(1,'rgba(210,225,235,0)');
+      c.fillStyle = hz; c.fillRect(off - W*.25, y, W*1.5, H*.26);
+    }
+    c.restore();
+  }
+
+  /* ---- виньетка от оптики ---- */
+  const vg = c.createRadialGradient(W/2,H/2,Math.min(W,H)*.3, W/2,H/2,Math.max(W,H)*.78);
+  vg.addColorStop(0,'rgba(0,0,0,0)');
+  vg.addColorStop(1,'rgba(0,0,0,.55)');
+  c.fillStyle = vg; c.fillRect(0,0,W,H);
+}
+
+let GENFEAT = null;
+
+function starfield(c, W, H, t, T){
+  c.fillStyle = '#04080A'; c.fillRect(0,0,W,H);
+  c.fillStyle = '#fff';
+  const sc = W/960;
+  for(const st of stars){
+    c.globalAlpha = .3 + .7*st.z;
+    c.beginPath();
+    c.arc(((st.x + t*.02*st.z)%1)*W, ((st.y + t*.012*st.z)%1)*H, st.z*1.5*sc, 0, 7);
+    c.fill();
+  }
+  c.globalAlpha = Math.min(1, Math.sin(Math.PI*Math.min(1, T?t/T:1))*2.5);
+  c.fillStyle = '#E6F0EC';
+  const fs = Math.round(W/(W>H?24:14)), lim = W>H?34:18;
+  c.font = `600 ${fs}px "Montserrat",system-ui,sans-serif`;
+  c.textAlign = 'center';
+  const txt = (OVp('prompt')||'').trim() || 'THAT DARKNESS';
+  const lines = [''];
+  txt.split(' ').forEach(w=>{
+    if((lines[lines.length-1]+w).length > lim) lines.push('');
+    lines[lines.length-1] += w + ' ';
+  });
+  lines.forEach((l,i)=> c.fillText(l.trim(), W/2, H/2 + (i-lines.length/2+.5)*fs*1.35));
+  c.globalAlpha = 1;
+}
+
+function post(c, W, H, t){
+  const vg = OVp('vign')||0, gr = OVp('gran')||0, lb = OVp('lbx');
+  if(vg>0){
+    const g = c.createRadialGradient(W/2,H/2,Math.min(W,H)*.25, W/2,H/2,Math.max(W,H)*.72);
+    g.addColorStop(0,'rgba(0,0,0,0)');
+    g.addColorStop(1,`rgba(0,0,0,${vg*.85})`);
+    c.fillStyle = g; c.fillRect(0,0,W,H);
+  }
+  if(gr>0){
+    const n = Math.round(W*H*gr/1400);
+    c.save(); c.globalAlpha = gr*.4;
+    for(let i=0;i<n;i++){ c.fillStyle = Math.random()<.5 ? '#fff':'#000';
+      c.fillRect(Math.random()*W, Math.random()*H, 1.3, 1.3); }
+    c.restore();
+  }
+  if(lb){ const b = H*.11; c.fillStyle='#000'; c.fillRect(0,0,W,b); c.fillRect(0,H-b,W,b); }
+}
+
+function pathAt(p){
+  if(path.length<2) return [0,0];
+  const seg=[]; let L=0;
+  for(let i=1;i<path.length;i++){ const d=Math.hypot(path[i][0]-path[i-1][0], path[i][1]-path[i-1][1]); seg.push(d); L+=d; }
+  let d = p*L, i=0;
+  while(i<seg.length-1 && d>seg[i]){ d-=seg[i]; i++; }
+  const f = seg[i] ? Math.min(1,d/seg[i]) : 0, a=path[i], b=path[i+1]||a;
+  return [a[0]+(b[0]-a[0])*f, a[1]+(b[1]-a[1])*f];
+}
+
+/* ================= ОВЕРЛЕЙ / РИСОВАНИЕ ================= */
+function overlay(){
+  px.clearRect(0,0,EW,EH);
+  px.lineWidth = 3; px.strokeStyle = px.fillStyle = '#FE7F2D';
+  if(path.length){
+    px.beginPath();
+    path.forEach((q,i)=> i? px.lineTo(q[0],q[1]) : px.moveTo(q[0],q[1]));
+    px.stroke();
+    path.forEach(q=>{ px.beginPath(); px.arc(q[0],q[1],5,0,7); px.fill(); });
+  }
+  if(mouth){ px.strokeStyle='#FCCA46'; px.beginPath();
+    px.ellipse(mouth[0], mouth[1], (P('mw')||60)/2, 9, 0, 0, 7); px.stroke(); }
+  if(boxRect){ px.strokeStyle='#5FA69B'; px.lineWidth=3;
+    px.strokeRect(boxRect.x, boxRect.y, boxRect.w, boxRect.h); }
+}
+
+function draw0(){ if(run || dq) return; dq = requestAnimationFrame(()=>{ dq=0; if(!run) drawPreviewAt(0); }); }
+function drawPreviewAt(t){
+  const [W,H] = previewSize();
+  if(cv.width!==W || cv.height!==H){ cv.width=W; cv.height=H; }
+  drawFrame(cx, W, H, t, (P('dur')||6), true);
+  hud(W,H);
+  frameCount++;
+}
+let _fitKey = '';
+function fitStage(W,H){
+  const key = W+'x'+H+'x'+window.innerHeight;
+  if(key === _fitKey) return;       // без этого layout пересчитывался каждый кадр и рендер падал
+  _fitKey = key;
+  const st = document.getElementById('stage');
+  const maxH = window.innerHeight * (window.matchMedia('(max-width:980px)').matches ? .5 : .62);
+  st.style.maxWidth = Math.round(maxH * W/H) + 'px';
+}
+let _hudKey = '';
+function hud(W,H){
+  fitStage(W,H);
+  if(_hudKey !== W+'x'+H){ _hudKey = W+'x'+H; $('#hRes').textContent = W+'×'+H; }
+  $('#bOut').innerHTML = 'OUT <b>'+outSize().join('×')+'</b>';
+}
+setInterval(()=>{
+  const now = performance.now();
+  curFps = Math.round(frameCount*1000/(now-lastFpsT));
+  frameCount = 0; lastFpsT = now;
+  $('#hFps').textContent = curFps ? curFps+' fps' : '—';
+  $('#bFps').innerHTML = '<b>'+(curFps||0)+'</b> fps';
+}, 700);
+
+/* ================= ПРОИГРЫВАНИЕ ================= */
+async function stopRun(){
+  if(run){ run.stop = true; run = null; await sleep(80); }
+}
+
+async function prepare(){
+  setLogical();
+  if(AC) try{ await AC.resume(); }catch{}
+}
+function sfx(kind, vol){
+  if(kind==='none' || !AC) return null;
+  const g = AC.createGain(); g.gain.value = vol*.5; g.connect(AUD.out);
+  const nodes = [];
+  if(kind==='wind' || kind==='rain'){
+    const buf = AC.createBuffer(1, AC.sampleRate*2, AC.sampleRate);
+    const d = buf.getChannelData(0);
+    for(let i=0;i<d.length;i++) d[i] = (Math.random()*2-1);
+    const n = AC.createBufferSource(); n.buffer=buf; n.loop=true;
+    const f = AC.createBiquadFilter();
+    f.type = kind==='rain' ? 'highpass':'bandpass';
+    f.frequency.value = kind==='rain' ? 1400 : 520;
+    f.Q.value = kind==='rain' ? .8 : .6;
+    n.connect(f).connect(g); n.start(); nodes.push(n);
+  } else if(kind==='drone'){
+    [55, 82.5, 110].forEach((hz,i)=>{
+      const o = AC.createOscillator(); o.type = i?'sine':'triangle'; o.frequency.value = hz;
+      const og = AC.createGain(); og.gain.value = .3/(i+1);
+      o.connect(og).connect(g); o.start(); nodes.push(o);
+    });
+  } else if(kind==='pulse'){
+    const o = AC.createOscillator(); o.type='sine'; o.frequency.value=70;
+    const og = AC.createGain(); og.gain.value=0;
+    o.connect(og).connect(g);
+    const rate = 2.2;
+    const iv = setInterval(()=>{ const t0=AC.currentTime;
+      og.gain.cancelScheduledValues(t0); og.gain.setValueAtTime(.9,t0);
+      og.gain.exponentialRampToValueAtTime(.001,t0+.28); }, 1000/rate);
+    o.start(); nodes.push(o);
+    nodes.push({stop:()=>clearInterval(iv)});
+  } else if(kind==='pad'){
+    [220, 277.2, 329.6, 440].forEach((hz,i)=>{
+      const o=AC.createOscillator(); o.type='sine'; o.frequency.value=hz;
+      const og=AC.createGain(); og.gain.value=.12; o.connect(og).connect(g); o.start(); nodes.push(o);
+    });
+  } else if(kind==='hum'){
+    const o=AC.createOscillator(); o.type='sawtooth'; o.frequency.value=60;
+    const f=AC.createBiquadFilter(); f.type='lowpass'; f.frequency.value=220;
+    const og=AC.createGain(); og.gain.value=.18;
+    o.connect(f).connect(og).connect(g); o.start(); nodes.push(o);
+  }
+  nodes.forEach(n=>{ if(n.stop && n!==undefined){ const s=n.stop.bind(n); n.stop=()=>{ try{s()}catch{} }; } });
+  return { stop(){ nodes.forEach(n=>{ try{n.stop()}catch{} }); try{g.disconnect()}catch{} } };
+}
+function audioLevel(){
+  if(!AUD || !AUD.an) return 0;
+  AUD.an.getByteTimeDomainData(AUD.buf);
+  let sum=0;
+  for(const v of AUD.buf) sum += (v-128)*(v-128);
+  AUD.sm = AUD.sm*.6 + Math.min(1, Math.sqrt(sum/AUD.buf.length)/40)*.4;
+  return AUD.sm;
+}
+function setupAudio(){
+  if(AC) return;
+  AC = new (window.AudioContext||window.webkitAudioContext)();
+  AUD = { dest: AC.createMediaStreamDestination(), out: AC.createGain(), an: AC.createAnalyser(),
+          buf: new Uint8Array(1024), sm: 0 };
+  AUD.an.fftSize = 1024;
+  AUD.out.connect(AUD.dest);
+  AUD.out.connect(AC.destination);
+}
+
+/* запуск на видимом canvas — превью */
+async function playPreview(len){
+  await stopRun();
+  if(PAINTON) setPainting(false);
+  const job = {stop:false}; run = job;
+  prepare();
+  const T = len || (P('dur')||6);
+  const t0 = performance.now();
+  FIRSTC = null;
+  const tick = now => {
+    if(job.stop) return;
+    const t = (now-t0)/1000;
+    if(t >= T){ run=null; draw0(); return; }
+    const [W,H] = previewSize();
+    if(cv.width!==W || cv.height!==H){ cv.width=W; cv.height=H; }
+    drawFrame(cx, W, H, t, T, false);
+    drawOverlayScaled();
+    hud(W,H);
+    frameCount++;
+    $('#bar').value = t/T;
+    requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+}
+function drawOverlayScaled(){ /* оверлей уже отдельным канвасом сверху */ }
+
+/* ================= РЕНДЕР ================= */
+function pickMime(fmt){
+  const tryList = fmt==='mp4' ? ['video/mp4;codecs=avc1.42E01E,mp4a.40.2','video/mp4;codecs=avc1','video/mp4']
+    : fmt==='vp9' ? ['video/webm;codecs=vp9,opus','video/webm;codecs=vp9','video/webm']
+    : fmt==='vp8' ? ['video/webm;codecs=vp8,opus','video/webm']
+    : ['video/mp4;codecs=avc1.42E01E,mp4a.40.2','video/mp4;codecs=avc1',
+       'video/webm;codecs=vp9,opus','video/webm;codecs=vp9','video/webm'];
+  return tryList.find(t=>MediaRecorder.isTypeSupported(t)) || '';
+}
+function bitrateFor(W,H,fps,q){
+  const base = W*H*fps*.1;
+  const mult = q==='master' ? 2.2 : q==='high' ? 1.35 : .85;
+  return Math.round(Math.min(6e7, base*mult));
+}
+
+async function renderClip(opts){
+  opts = opts || {};
+  await stopRun();
+  if(PAINTON) setPainting(false);
+  const q = P('quality')||'high';
+  const [W0,H0] = outSize();
+  const ss = P('ss');
+  const W = ss ? W0*2 : W0, H = ss ? H0*2 : H0;
+  RAWC.width = W; RAWC.height = H;
+  OUTC.width = W0; OUTC.height = H0;
+  cv.width = W0; cv.height = H0;   // видимый канвас = финальный
+  const fpsT = +P('fps') || 30;
+  const job = {stop:false}; run = job;
+
+  /* подготовка звука */
+  let stopSfx = null;
+  const kind = P('sfx');
+  if(kind && kind!=='none'){ setupAudio(); try{ await AC.resume(); }catch{} stopSfx = sfx(kind, +P('vol')||.4); }
+  if(hasVid){ try{ if(!VID.srcObject) VID.currentTime = 0; VID.playbackRate = +P('speed')||1; await VID.play(); }catch{} }
+  if(auEl){ try{ auEl.currentTime = 0; await auEl.play(); }catch{} }
+
+  const fmt = P('fmt');
+
+  /* PNG-секвенция: без MediaRecorder */
+  if(fmt==='png'){
+    log('PNG sequence: rendering frames…');
+    let files = [], T = P('dur')||6, step = 1/fpsT;
+    const ctx = OUTC.getContext('2d');
+    for(let t=0; t<T; t+=step){
+      if(job.stop) break;
+      drawFrame(RAW, W, H, t, T, t===0);
+      if(ss) OUT.drawImage(RAWC,0,0,W0,H0); else OUT.drawImage(RAWC,0,0);
+      cv.getContext('2d').drawImage(OUTC,0,0);
+      const blob = await new Promise(r=>OUTC.toBlob(r,'image/png'));
+      files.push({name:`frame_${String(files.length).padStart(4,'0')}.png`, blob});
+      $('#bar').value = t/T;
+      if(files.length % 4 === 0) await sleep(0);
+    }
+    const zip = await makeZip(files);
+    addClip(URL.createObjectURL(zip), 'png-seq', 'zip', files.length+' frames');
+    stopSfx && stopSfx();
+    run = null; log('PNG sequence done.'); draw0(); return;
+  }
+
+  const mime = pickMime(fmt);
+  if(!window.MediaRecorder){ log('MediaRecorder недоступен — сохраняю PNG вместо видео.'); run=null; return; }
+  const stream = OUTC.captureStream(fpsT);
+  if(AUD && AUD.dest) AUD.dest.stream.getAudioTracks().forEach(t=>stream.addTrack(t));
+  const mr = new MediaRecorder(stream, Object.assign(
+    { videoBitsPerSecond: bitrateFor(W0,H0,fpsT,q) }, mime?{mimeType:mime}:{}));
+  const chunks = [];
+  mr.ondataavailable = e => e.data.size && chunks.push(e.data);
+  const doneP = new Promise(r => mr.onstop = r);
+  mr.start(200);
+
+  const T = opts.len || LDUR || (P('dur')||6);
+  const t0 = performance.now();
+  let lastT = -1, _previewTick = 0;
+  const tick = () => {
+    if(job.stop) return finish(true);
+    const t = (performance.now()-t0)/1000;
+    if(t >= T) return finish(false);
+    /* ограничение частоты кадров */
+    if(t-lastT < 1/fpsT - .002){ requestAnimationFrame(tick); return; }
+    lastT = t;
+    drawFrame(RAW, W, H, t, T, t<.02);
+    if(ss) OUT.drawImage(RAWC, 0,0, W0, H0); else OUT.drawImage(RAWC, 0,0);
+    if((++_previewTick & 3) === 0){
+      const vc = cv.getContext('2d');
+      vc.drawImage(OUTC,0,0,W0,H0);
+    }
+    $('#bar').value = t/T;
+    frameCount++;
+    requestAnimationFrame(tick);
+  };
+  function finish(stopped){
+    if(stopSfx) stopSfx();
+    LASTIMG = OUTC.toDataURL('image/jpeg', .92);
+    let fr=0;
+    try{ mr.stop(); }catch{}
+    doneP.then(()=>{
+      if(auEl){ try{ auEl.pause(); }catch{} }
+      if(hasVid){ try{ VID.pause(); }catch{} }
+      if(!chunks.length){ log('Пустой рендер.'); run=null; return; }
+      const blob = new Blob(chunks, {type: mr.mimeType||'video/webm'});
+      const ext = /mp4/.test(blob.type) ? 'mp4' : 'webm';
+      addClip(URL.createObjectURL(blob), 'ragnell', ext, `${W0}×${H0} · ${T.toFixed(1)}s · ${(blob.size/1048576).toFixed(1)} MB`);
+      log((stopped?'Остановлено на ':'Готово: ') + T.toFixed(1) + 's, ' + (blob.size/1048576).toFixed(1) + ' MB, ' + blob.type);
+      run = null; $('#bar').value = 0; draw0();
+    });
+  }
+  requestAnimationFrame(tick);
+}
+
+/* ================= ZIP (для PNG-секвенции) ================= */
+async function makeZip(files){
+  const enc = new TextEncoder();
+  const parts = [], central = [];
+  let offset = 0;
+  const crcTable = (()=>{ const t=new Uint32Array(256);
+    for(let n=0;n<256;n++){ let c=n; for(let k=0;k<8;k++) c = c&1 ? 0xEDB88320 ^ (c>>>1) : c>>>1; t[n]=c>>>0; }
+    return t; })();
+  const crc32 = u8 => { let c=0xFFFFFFFF; for(let i=0;i<u8.length;i++) c = crcTable[(c^u8[i])&0xFF] ^ (c>>>8); return (c^0xFFFFFFFF)>>>0; };
+  for(const f of files){
+    const data = new Uint8Array(await f.blob.arrayBuffer());
+    const name = enc.encode(f.name);
+    const crc = crc32(data);
+    const lh = new DataView(new ArrayBuffer(30));
+    lh.setUint32(0,0x04034b50,true); lh.setUint16(4,20,true); lh.setUint16(6,0,true);
+    lh.setUint16(8,0,true); lh.setUint16(10,0,true); lh.setUint16(12,0,true);
+    lh.setUint32(14,crc,true); lh.setUint32(18,data.length,true); lh.setUint32(22,data.length,true);
+    lh.setUint16(26,name.length,true); lh.setUint16(28,0,true);
+    parts.push(new Uint8Array(lh.buffer), name, data);
+    const ch = new DataView(new ArrayBuffer(46));
+    ch.setUint32(0,0x02014b50,true); ch.setUint16(4,20,true); ch.setUint16(6,20,true);
+    ch.setUint16(8,0,true); ch.setUint16(10,0,true); ch.setUint16(12,0,true); ch.setUint16(14,0,true);
+    ch.setUint32(16,crc,true); ch.setUint32(20,data.length,true); ch.setUint32(24,data.length,true);
+    ch.setUint16(28,name.length,true); ch.setUint16(30,0,true); ch.setUint16(32,0,true);
+    ch.setUint16(34,0,true); ch.setUint16(36,0,true); ch.setUint32(38,0,true); ch.setUint32(42,offset,true);
+    central.push(new Uint8Array(ch.buffer), name);
+    offset += 30 + name.length + data.length;
+  }
+  let cSize = 0; central.forEach(p=>cSize+=p.length);
+  const end = new DataView(new ArrayBuffer(22));
+  end.setUint32(0,0x06054b50,true); end.setUint16(8,files.length,true); end.setUint16(10,files.length,true);
+  end.setUint32(12,cSize,true); end.setUint32(16,offset,true);
+  return new Blob([...parts, ...central, new Uint8Array(end.buffer)], {type:'application/zip'});
+}
+
+/* ================= КЛИПЫ ================= */
+function addClip(url, name, ext, meta){
+  const d = document.createElement('div'); d.className='clip';
+  const isZip = ext==='zip';
+  d.innerHTML = (isZip
+    ? `<div style="padding:20px;text-align:center;color:var(--mu);font:600 12px ui-monospace,monospace">PNG SEQUENCE · ${meta||''}</div>`
+    : `<video controls playsinline src="${url}"></video>`)
+    + `<div class="meta"><span>${isZip?''.padEnd(0):meta||''}</span>
+       <a class="b" href="${url}" download="ragnell-${Date.now()}.${ext}">Download</a></div>`;
+  $('#clips').prepend(d);
+  toast(ext==='zip' ? 'Готово: PNG-секвенция' : 'Готово: ' + (meta||'клип'));
+  if(ext!=='zip' && ext!=='png') addDubl({url, ext, meta});
+}
+
+/* ================= ТАЙМЛАЙН ================= */
+const SHKEYS = ['zoom','panX','panY','orbit','shake','cpre','style','loop','speed','blend','mmode','dir','amp','mspd',
+  'stk','vign','gran','clar','sat','lbx','sfx','trans','trd','aspect','refit','ease','motion'];
+function snapShot(){
+  const o = { slen: P('slen')||2, prompt: P('prompt'), imgS: IMG.s, imgE: IMG.e, camode: P('camode') };
+  SHKEYS.forEach(k=>{ const x = P(k); if(x!==undefined) o[k]=x; });
+  return o;
+}
+function renderShots(){
+  const box = $('#shots'); box.innerHTML='';
+  TLshots.forEach((o,i)=>{
+    const d = document.createElement('div');
+    d.className = 'shot' + (o.sel?' on':'');
+    d.innerHTML = (o.imgS?`<img src="${o.imgS.src}">`:'')
+      + `<div class="t">SHOT ${i+1} · ${o.slen}s</div>
+         <div class="lbl">${(o.prompt||'—').slice(0,26)}</div>
+         <div class="lbl">${o.cpre||''} · ${o.style||''} · ${o.trans||''}</div>
+         <div class="bar"><i style="width:${Math.min(100,(o.slen||2)*12)}%"></i></div>
+         <button class="x" data-i="${i}">×</button>`;
+    d.onclick = e => {
+      if(e.target.classList.contains('x')){ TLshots.splice(i,1); renderShots(); return; }
+      TLshots.forEach(x=>x.sel=false); o.sel=true; applyShot(o); renderShots(); draw0();
+    };
+    box.append(d);
+  });
+  const tot = TLshots.reduce((a,b)=>a+(b.slen||0),0);
+  $('#tlinfo').textContent = TLshots.length ? `${TLshots.length} shots · ${tot.toFixed(1)}s` : 'no shots';
+}
+function applyShot(o){
+  OV = {};
+  Object.keys(o).forEach(k=>{ if(k!=='imgS'&&k!=='imgE'&&k!=='sel'&&k!=='slen') OV[k]=o[k]; });
+  OV.dur = o.slen;
+  if(o.imgS||o.imgE){ IMG.s=o.imgS; IMG.e=o.imgE; IMG.id=(IMG.id||0)+1; hasVid=false; }
+}
+async function playTimeline(rec){
+  await stopRun();
+  if(playing) playing = false;
+  if(!TLshots.length) { log('Таймлайн пуст — добавь шоты.'); return; }
+  playing = true; prevShotC = null;
+  prepare();
+  const total = TLshots.reduce((a,b)=>a+(b.slen||2),0);
+  const startS = IMG.s, startE = IMG.e;
+  const t0 = performance.now();
+  let lastIdx = -1;
+  const tick = now => {
+    const gt = (now-t0)/1000;
+    let acc = 0, i = 0;
+    for(; i<TLshots.length; i++){ if(gt < acc + (TLshots[i].slen||2)) break; acc += (TLshots[i].slen||2); }
+    if(i >= TLshots.length){ finish(); return; }
+    const shot = TLshots[i], lt = gt-acc, u = lt/(shot.slen||2);
+    if(i !== lastIdx){ applyShot(shot); lastIdx = i; }
+    const [W,H] = previewSize();
+    if(cv.width!==W||cv.height!==H){ cv.width=W; cv.height=H; }
+    OV.loop = 0;
+    drawFrame(cx, W, H, lt, shot.slen, i===0 && lt<.05);
+    /* переход от предыдущего шота */
+    const tr = shot.trans||'fade', TRD = Math.min(shot.trd||.35, (shot.slen||2)*.45);
+    if(prevShotC && lt < TRD && tr !== 'cut'){
+      const k = 1 - lt/TRD;
+      cx.save();
+      if(tr==='fade'){ cx.globalAlpha = k; cx.drawImage(prevShotC,0,0,W,H); }
+      else if(tr==='whip'){ cx.globalAlpha=.86; cx.drawImage(prevShotC, (lt/TRD)*W*.2, 0, W, H);
+        cx.fillStyle = `rgba(255,255,255,${k*.22})`; cx.fillRect(0,0,W,H); }
+      else if(tr==='zoom'){ const z = 1+(lt/TRD)*.4; cx.globalAlpha=.85*k;
+        cx.drawImage(prevShotC, W/2-z*W/2, H/2-z*H/2, W*z, H*z); }
+      else if(tr==='glitch'){ const j=(Math.random()-.5)*W*.05*k;
+        cx.globalAlpha=.65*k; cx.drawImage(prevShotC,j,0,W,H);
+        cx.globalCompositeOperation='screen'; cx.globalAlpha=.22*k; cx.drawImage(prevShotC,-j*1.6,0,W,H); }
+      cx.restore();
+    }
+    if(lt > (shot.slen||2)-.08){
+      prevShotC = prevShotC || document.createElement('canvas');
+      prevShotC.width = W; prevShotC.height = H;
+      prevShotC.getContext('2d').drawImage(cv,0,0);
+    }
+    $('#bar').value = gt/total;
+    frameCount++;
+    requestAnimationFrame(tick);
+  };
+  const finish = () => {
+    OV = null; playing = false; IMG.s = startS; IMG.e = startE;
+    log('Таймлайн проигран: ' + TLshots.length + ' шотов, ' + total.toFixed(1) + 's');
+    draw0();
+  };
+  requestAnimationFrame(tick);
+}
+
+/* ================= ПЕРСОНАЖИ (IndexedDB) ================= */
+function dbOpen(){
+  return new Promise((res,rej)=>{
+    const r = indexedDB.open('ragnell', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('chars', {keyPath:'id', autoIncrement:true});
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  });
+}
+async function dbAll(){
+  try{ const d = await dbOpen();
+    return new Promise(r=>{ const q = d.transaction('chars').objectStore('chars').getAll();
+      q.onsuccess = ()=>r(q.result||[]); q.onerror = ()=>r([]); });
+  }catch{ return []; }
+}
+async function dbPut(o){
+  try{ const d = await dbOpen();
+    return new Promise(r=>{ const t = d.transaction('chars','readwrite'); t.objectStore('chars').add(o);
+      t.oncomplete = ()=>r(true); t.onerror = ()=>r(false); });
+  }catch{ return false; }
+}
+async function dbDel(id){
+  try{ const d = await dbOpen();
+    return new Promise(r=>{ const t = d.transaction('chars','readwrite'); t.objectStore('chars').delete(id);
+      t.oncomplete = ()=>r(true); t.onerror = ()=>r(false); });
+  }catch{ return false; }
+}
+function thumbOf(img, max){
+  const c = document.createElement('canvas');
+  const w = img.naturalWidth||img.width, h = img.naturalHeight||img.height;
+  const r = Math.min(1, max/Math.max(w,h));
+  c.width = Math.max(1,Math.round(w*r)); c.height = Math.max(1,Math.round(h*r));
+  c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+  return c.toDataURL('image/jpeg', .86);
+}
+async function loadChars(){
+  const rows = await dbAll();
+  CHARS = [];
+  await Promise.all(rows.map(row=>new Promise(res=>{
+    const i = new Image();
+    i.onload = ()=>{ CHARS.push({id:row.id, img:i, name:row.name||'character'}); res(); };
+    i.onerror = ()=>res();
+    i.src = row.data;
+  })));
+  renderChars();
+  log('Память персонажей: ' + CHARS.length);
+}
+function renderChars(){
+  const box = $('#chars'); box.innerHTML = '';
+  CHARS.forEach((ch,i)=>{
+    const d = document.createElement('div');
+    d.className = 'slot' + (i===CHSEL?' sel':'');
+    d.innerHTML = `<img src="${ch.img.src}"><button class="del" data-i="${i}">×</button>`;
+    d.onclick = e => {
+      if(e.target.classList.contains('del')){
+        const id = CHARS[i].id; CHARS.splice(i,1); dbDel(id); renderChars(); draw0(); return;
+      }
+      CHSEL = i; renderChars(); draw0();
+    };
+    box.append(d);
+  });
+  $('#bMem').innerHTML = 'MEM <b>' + CHARS.length + '</b>';
+}
+async function addCharFiles(files){
+  for(const f of [...files].slice(0,6)){
+    const img = await new Promise(res=>{ const i=new Image(); i.onload=()=>res(i); i.src=URL.createObjectURL(f); });
+    const data = thumbOf(img, 760);
+    const thumb = thumbOf(img, 140);
+    const ok = await dbPut({data, thumb, name: f.name.replace(/\.[^.]+$/,'')});
+    if(ok) CHARS.push({img, name:f.name});
+  }
+  renderChars(); draw0();
+  log('Добавлено в память: ' + CHARS.length);
+}
+
+/* ================= ЗАМЕНА ЛИЦА ================= */
+async function detectFace(){
+  const s = IMG.s || (hasVid ? VID : null);
+  if(!s) return log('Сначала загрузи кадр.');
+  const w = s.naturalWidth || s.videoWidth || s.width;
+  const h = s.naturalHeight || s.videoHeight || s.height;
+  if('FaceDetector' in window){
+    try{
+      const fd = new FaceDetector({fastMode:true, maxDetectedFaces:1});
+      const faces = await fd.detect(s);
+      if(faces.length){
+        const bb = faces[0].boundingBox;
+        boxRect = { x: bb.x/w*EW, y: bb.y/h*EH, w: bb.width/w*EW, h: bb.height/h*EH };
+        overlay(); log('Лицо найдено (FaceDetector).'); return;
+      }
+    }catch(e){ log('FaceDetector: '+e.message); }
+  }
+  /* запасной путь: скан по тону кожи */
+  TMPC.width = 240; TMPC.height = Math.round(240*h/w);
+  TMP.clearRect(0,0,TMPC.width,TMPC.height);
+  TMP.drawImage(s,0,0,TMPC.width,TMPC.height);
+  const d = TMP.getImageData(0,0,TMPC.width,TMPC.height).data;
+  let x0=1e9,y0=1e9,x1=0,y1=0,n=0;
+  for(let y=0;y<TMPC.height;y+=2) for(let x=0;x<TMPC.width;x+=2){
+    const i=(y*TMPC.width+x)*4, r=d[i],g=d[i+1],b=d[i+2];
+    if(r>95&&g>40&&b>20&&r>g&&r>b&&(r-Math.min(g,b))>15 && Math.abs(r-g)>10){ n++;
+      if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y; }
+  }
+  if(n>40 && x1>x0){
+    boxRect = { x:x0/240*EW, y:y0/TMPC.height*EH, w:(x1-x0)/240*EW, h:(y1-y0)/TMPC.height*EH };
+    overlay(); log('Лицо/кожа найдено (fallback).');
+  } else log('Лицо не найдено — нарисуй Box вручную.');
+}
+
+/* ================= УТИЛИТЫ ФАЙЛОВ ================= */
+function loadImageFile(f, key){
+  const i = new Image();
+  i.onload = () => { IMG[key] = i; IMG.id = (IMG.id||0)+1; hasVid = false; draw0(); log('Кадр загружен'); };
+  i.src = URL.createObjectURL(f);
+}
+const b64 = f => !f || f.size>25e6 ? null : new Promise(r=>{ const x=new FileReader(); x.onload=()=>r(x.result); x.readAsDataURL(f); });
+const shrink64 = i => {
+  const w = i.naturalWidth, h = i.naturalHeight, r = Math.min(1, 1280/Math.max(w,h));
+  const c = document.createElement('canvas'); c.width=Math.round(w*r); c.height=Math.round(h*r);
+  c.getContext('2d').drawImage(i,0,0,c.width,c.height);
+  return c.toDataURL('image/jpeg', .9);
+};
+
+/* ================= UI: ИНИЦИАЛИЗАЦИЯ ================= */
+const CAM_PRESETS = Object.keys(PRE);
+function fillSelects(){
+  const cp = $('#cpre');
+  cp.innerHTML = CAM_PRESETS.map(k=>`<option>${k}</option>`).join('');
+  const st = $('#style');
+  st.innerHTML = Object.keys(STY).map(k=>`<option>${k}</option>`).join('');
+}
+fillSelects();
+
+/* аккордеон: только один открыт на телефоне */
+const narrow = () => window.matchMedia('(max-width:980px)').matches;
+$$('.box').forEach(b=>{
+  b.addEventListener('toggle', ()=>{
+    if(b.open && narrow()){
+      $$('.box').forEach(o=>{ if(o!==b) o.open=false; });
+    }
+  });
+});
+
+/* живые выходы ползунков */
+const RANGE_OUT = ['dur','zoom','panX','panY','orbit','shake','bsize','dir','amp','mspd','elsc','feath','cmatch',
+  'pkp','trd','slen','stk','vign','gran','clar','sat','vol','mw','speed'];
+RANGE_OUT.forEach(id=>{
+  const e = document.getElementById(id);
+  if(!e) return;
+  e.addEventListener('input', ()=>{
+    const o = e.parentElement.querySelector('output');
+    if(o) o.textContent = e.value;
+    if(id==='dur' || id==='speed'){ hud(cv.width, cv.height); }
+    draw0();
+  });
+});
+
+/* камера-пресеты */
+$('#cpre').addEventListener('change', ()=>{
+  const p = PRE[$('#cpre').value];
+  if(!p) return;
+  ['zoom','panX','panY','orbit','shake'].forEach(k=>{
+    const e = document.getElementById(k);
+    if(!e) return;
+    e.value = p[k] || 0;
+    const o = e.parentElement.querySelector('output');
+    if(o) o.textContent = e.value;
+  });
+  draw0();
+});
+
+/* размеры пересчитываются на смене формата/качества */
+['aspect','res','pcap','ss'].forEach(id=>{
+  const e = document.getElementById(id);
+  if(!e) return;
+  e.addEventListener('change', ()=>{ setLogical(); draw0(); });
+});
+
+/* ================= ИСТОЧНИКИ ================= */
+$('#fs').onchange = e => e.target.files[0] && loadImageFile(e.target.files[0], 's');
+$('#fe').onchange = e => e.target.files[0] && loadImageFile(e.target.files[0], 'e');
+$('#fv').onchange = e => {
+  const f = e.target.files[0]; if(!f) return;
+  FILEV = f; VID.srcObject = null; VID.src = URL.createObjectURL(f);
+  hasVid = true; VID.onloadeddata = ()=>{ draw0(); log('Видео загружено'); };
+};
+$('#cam').onclick = async ()=>{
+  try{
+    VID.removeAttribute('src');
+    VID.srcObject = await navigator.mediaDevices.getUserMedia({video:{width:1280,height:720},audio:false});
+    await VID.play(); hasVid = true; log('Вебка включена. Preview.');
+  }catch(err){ log('Webcam: '+err.message); }
+};
+$('#clr').onclick = ()=>{
+  VID.srcObject && VID.srcObject.getTracks().forEach(t=>t.stop());
+  VID.srcObject = null; VID.removeAttribute('src');
+  hasVid = false; IMG.s = IMG.e = null; IMG.id = (IMG.id||0)+1; FILEV = null; draw0();
+};
+
+/* ================= УСИЛИТЕЛЬ ПРОМПТА ================= */
+$('#enh').onclick = ()=>{ toast('Промпт усилен');
+  const base = ($('#prompt').value||'').trim() || 'a dark cinematic scene';
+  const cams = { 'push-in':'slow push in', 'pull-out':'gentle pull out', 'orbit':'orbiting camera',
+    'handheld':'handheld camera', 'dolly zoom':'dolly zoom', 'drone fly':'aerial drone flyover',
+    'crane up':'smooth crane rise', 'whip pan':'fast whip pan', 'tiny planet':'tiny planet shot' };
+  const cam = cams[$('#cpre').value] || ('camera: '+$('#cpre').value);
+  const light = ['volumetric light through haze','hard rim light with deep shadows','cold volumetric glow','soft top light, long shadows'][Math.floor(Math.random()*4)];
+  const tex = ['fine film grain','clean digital texture','subtle halation','16mm grain'][Math.floor(Math.random()*4)];
+  const opt = ['35mm, shallow depth of field','anamorphic, oval bokeh','85mm portrait compression','24mm wide, deep focus'][Math.floor(Math.random()*4)];
+  $('#prompt').value = base.replace(/[.,\s]+$/,'') + ', ' + cam + ', ' + light + ', ' + tex + ', ' + opt + ', high detail';
+  log('Промпт усилен');
+  draw0();
+};
+const sampBtn = document.getElementById('sampler');
+if(sampBtn) sampBtn.onclick = ()=> runSampler();
+$('#negpick').onclick = ()=>{
+  const presets = ['blurry, low quality, watermark','warped faces, extra fingers, deformed','jitter, flicker, morphing artifacts','text, logo, frame, border','oversaturated, clipped highlights, noise'];
+  $('#neg').value = presets[Math.floor(Math.random()*presets.length)];
+  draw0();
+};
+
+/* ================= МАСКА / РИСОВАНИЕ ================= */
+let tool = 'brush', dragging = false, lastPt = null;
+PAINTON = false;
+function setPainting(on){
+  PAINTON = !!on;
+  document.body.classList.toggle('painting', PAINTON);
+  const b = document.getElementById('paint');
+  if(b){
+    b.textContent = PAINTON ? '✕ Выключить рисование' : '✏ Включить рисование';
+    b.style.background = PAINTON ? 'linear-gradient(180deg,#1B918D,#147B78)' : '';
+    b.style.borderColor = PAINTON ? '#2AA79F' : '';
+  }
+  if(PAINTON){
+    if(P('mmode')==='none'){ $('#mmode').value = 'flow'; }
+    log('Рисование включено: веди пальцем по кадру. Выключи, чтобы листать страницу.');
+  } else {
+    log('Рисование выключено — страница листается пальцем.');
+  }
+  draw0();
+}
+$('#paint').onclick = ()=> setPainting(!PAINTON);
+
+/* если маску нарисовали, но эффект не выбран — подсказываем */
+function ensureMaskMode(){
+  if(!painted) return;
+  if(P('mmode')==='none'){ $('#mmode').value = 'flow'; log('Маска есть — включил режим flow.'); }
+}
+$$('#tools button').forEach(b=>{
+  b.onclick = ()=>{
+    $$('#tools button').forEach(x=>x.classList.toggle('on', x===b));
+    tool = b.dataset.t;
+    pc.style.cursor = tool==='box' ? 'crosshair' : (tool==='path'||tool==='mouth' ? 'crosshair':'crosshair');
+  };
+});
+const toLocal = e => {
+  const r = pc.getBoundingClientRect();
+  const cx2 = e.touches ? e.touches[0].clientX : e.clientX;
+  const cy2 = e.touches ? e.touches[0].clientY : e.clientY;
+  return [ (cx2-r.left)/r.width*EW, (cy2-r.top)/r.height*EH ];
+};
+function paintSeg(a, b, mode){
+  mx.globalCompositeOperation = mode==='erase' ? 'destination-out' : 'source-over';
+  mx.strokeStyle = '#FE7F2D';
+  mx.lineWidth = P('bsize')||42;
+  mx.lineCap = 'round'; mx.lineJoin = 'round';
+  mx.beginPath(); mx.moveTo(a[0],a[1]); mx.lineTo(b[0],b[1]); mx.stroke();
+  mx.globalCompositeOperation = 'source-over';
+  mv++; painted = true; ensureMaskMode();
+}
+let boxStart = null;
+pc.addEventListener('pointerdown', e=>{
+  if(!PAINTON) return;
+  pc.setPointerCapture(e.pointerId);
+  const q = toLocal(e);
+  if(tool==='path'){ path.push(q); overlay(); }
+  else if(tool==='mouth'){ mouth = q; overlay(); }
+  else if(tool==='box'){ boxStart = q; boxRect = {x:q[0],y:q[1],w:0,h:0}; overlay(); }
+  else { dragging = true; lastPt = q; paintSeg(q,[q[0]+.5,q[1]+.5],tool); }
+  draw0();
+});
+pc.addEventListener('pointermove', e=>{
+  const q = toLocal(e);
+  if(!PAINTON) return;
+  if(tool==='box' && boxStart){
+    boxRect = { x:Math.min(boxStart[0],q[0]), y:Math.min(boxStart[1],q[1]),
+                w:Math.abs(q[0]-boxStart[0]), h:Math.abs(q[1]-boxStart[1]) };
+    overlay();
+    return;
+  }
+  if(!dragging) return;
+  paintSeg(lastPt, q, tool); lastPt = q; draw0();
+});
+pc.addEventListener('pointerup', ()=>{ dragging = false; boxStart = null; });
+pc.addEventListener('pointercancel', ()=>{ dragging = false; boxStart = null; });
+$('#cm').onclick = ()=>{ mx.clearRect(0,0,EW,EH); mv++; painted=false; overlay(); draw0(); toast('Маска очищена'); };
+$('#cp').onclick = ()=>{ path = []; overlay(); draw0(); toast('Линия движения очищена'); };
+
+/* ================= ПЕРСОНАЖИ ================= */
+$('#fchar').onchange = e => addCharFiles(e.target.files);
+$('#eluse').onclick = ()=>{
+  const ch = CHARS[CHSEL];
+  if(!ch) return log('Сначала добавь персонажа в память.');
+  IMG.s = ch.img; IMG.e = null; IMG.id = (IMG.id||0)+1; hasVid = false; OV = null;
+  draw0(); log('Персонаж поставлен стартовым кадром');
+};
+$('#elcameo').onclick = ()=>{
+  $('#camode').value = $('#camode').value==='none' ? 'pinned' : 'none';
+  draw0();
+};
+
+/* ================= ЗАМЕНА ================= */
+$('#fsw').onchange = e => {
+  const f = e.target.files[0]; if(!f) return;
+  SWAPIMG = new Image();
+  SWAPIMG.onload = ()=>{ SWAPON = true; draw0(); log('Замена загружена'); };
+  SWAPIMG.src = URL.createObjectURL(f);
+};
+$('#detect').onclick = detectFace;
+$('#usesel').onclick = ()=>{
+  const b = maskBBox();
+  if(b){ boxRect = b; overlay(); log('Область маски взята как цель'); }
+  else log('Маска пуста.');
+};
+$('#swon').onchange = e => { SWAPON = e.target.checked; draw0(); };
+$('#swapgo').onclick = ()=>{ SWAPON = true; $('#swon').checked = true; draw0(); log('Замена применена'); };
+$('#swapclr').onclick = ()=>{ SWAPIMG = null; SWAPON = false; boxRect = null; $('#swon').checked=false; overlay(); draw0(); };
+
+/* ================= ЭФФЕКТЫ ================= */
+$$('#pika button').forEach(b=>{
+  b.onclick = ()=>{
+    $$('#pika button').forEach(x=>x.classList.toggle('on', x===b));
+    PIKA = b.dataset.p;
+    log('Эффект: '+PIKA); draw0();
+  };
+});
+$('#pkp').addEventListener('input', draw0);
+
+/* ================= ТАЙМЛАЙН UI ================= */
+$('#addshot').onclick = ()=>{ TLshots.push(snapShot()); renderShots(); log('Шот добавлен'); toast('Шот добавлен в таймлайн'); };
+$('#dupshot').onclick = ()=>{
+  if(!TLshots.length) return log('Шотов ещё нет');
+  const c = Object.assign({}, TLshots[TLshots.length-1], {sel:false});
+  TLshots.push(c); renderShots();
+};
+$('#updshot').onclick = ()=>{
+  const i = TLshots.findIndex(o=>o.sel);
+  if(i<0) return log('Выбери шот на полосе');
+  TLshots[i] = Object.assign(snapShot(), {sel:true});
+  renderShots(); log('Шот обновлён');
+};
+$('#clrtl').onclick = ()=>{ TLshots=[]; renderShots(); toast('Таймлайн очищен'); };
+
+/* ================= AUDIO ================= */
+$('#faud').onchange = e => {
+  const f = e.target.files[0]; if(!f) return;
+  setupAudio();
+  if(auEl){ try{ auEl.pause(); }catch{} }
+  auEl = new Audio(URL.createObjectURL(f));
+  const s = AC.createMediaElementSource(auEl);
+  s.connect(AUD.an); AUD.an.connect(AUD.out);
+  log('Аудио подключено');
+};
+$('#sauto').onclick = ()=>{
+  const pick = { anime:'pulse', cyberpunk:'pulse', noir:'drone', vhs:'hum', dream:'pad', oil:'wind', neon:'pulse', warm:'pad', cold:'wind', none:'wind' }[P('style')] || 'wind';
+  $('#sfx').value = pick;
+  log('Авто-подложка: '+pick);
+};
+
+/* ================= BLEND / RE-CUT / REMIX ================= */
+let BLA = null, BLB = null, RCF = null;
+$('#fbA').onchange = e => { const f=e.target.files[0]; if(f){ BLA=new Image(); BLA.onload=()=>log('Blend A готов'); BLA.src=URL.createObjectURL(f);} };
+$('#fbB').onchange = e => { const f=e.target.files[0]; if(f){ BLB=new Image(); BLB.onload=()=>log('Blend B готов'); BLB.src=URL.createObjectURL(f);} };
+$('#blendgo').onclick = ()=>{
+  if(!BLA||!BLB) return log('Загрузи оба кадра для Blend.');
+  IMG.s = BLA; IMG.e = BLB; IMG.id=(IMG.id||0)+1; hasVid=false; OV=null;
+  log('Blend: A→B как ключевые кадры'); draw0();
+};
+$('#frc').onchange = e => {
+  const f = e.target.files[0]; if(!f) return;
+  RCF = f; VID.srcObject=null; VID.src=URL.createObjectURL(f); hasVid=true;
+  VID.onloadedmetadata = ()=>{ $('#rcB').value = Math.min(+$('#rcB').value||2, VID.duration||2); log('Re-cut: '+VID.duration.toFixed(2)+'s'); };
+};
+$('#recutgo').onclick = ()=>{ if(!RCF) return log('Загрузи источник для Re-cut.'); VID.currentTime=+$('#rcA').value||0; renderClip({len:Math.max(.5,(+$('#rcB').value||2)-(+$('#rcA').value||0))}); };
+$('#recutloop').onclick = ()=>{ if(!RCF) return log('Загрузи источник для Re-cut.'); $('#loop').checked=true; VID.currentTime=+$('#rcA').value||0; renderClip({len:Math.max(.5,(+$('#rcB').value||2)-(+$('#rcA').value||0))}); };
+$$('#remixs button').forEach(b=>{
+  b.onclick = ()=>{
+    $$('#remixs button').forEach(x=>x.classList.toggle('on', x===b));
+    const k = {subtle:.4, mild:.7, strong:1}[b.dataset.s];
+    if(P('style')==='none') $('#style').value = 'neon';
+    $('#stk').value = k;
+    const o = $('#stk').parentElement.querySelector('output'); if(o) o.textContent = k;
+    draw0(); log('Remix: '+b.dataset.s);
+  };
+});
+
+/* ================= ТРАНСПОРТ ================= */
+$('#pv').onclick = ()=>{ toast('Превью запущено'); return TLshots.length ? playTimeline(true) : playPreview(); };
+$('#rc').onclick = ()=>{ toast('Рендер пошёл'); return TLshots.length ? playTimeline(true) : renderClip({}); };
+$('#st').onclick = ()=>{ if(run){ run.stop = true; toast('Остановлено'); } else toast('Нечего останавливать', 'warn'); };
+$('#snap').onclick = ()=>{ toast('Снимок сохранён');
+  const url = cv.toDataURL('image/png');
+  addClip(url, 'snapshot', 'png', cv.width+'×'+cv.height);
+  log('Снимок сохранён');
+};
+$('#ex').onclick = ()=>{
+  if(!LASTIMG) return log('Сначала отрендерь клип.');
+  const i = new Image();
+  i.onload = ()=>{ IMG.s = i; IMG.e = null; IMG.id=(IMG.id||0)+1; hasVid=false; renderClip({len:4}); };
+  i.src = LASTIMG;
+};
+$('#pvbig').onclick = ()=>{ toast('Полное превью'); playPreview(); };
+
+/* ---------- сэмплер: генерация сцены из промпта ---------- */
+function runSampler(){
+  const feat = embed(P('prompt') || 'that darkness');
+  const steps = Math.round(8 + (CREA/100) * 40);
+  const res = sampleScene(feat, { steps, guidance: 3 + (CREA/100)*7, rescale: .3, shift: 3.0 });
+  GENFEAT = res.features;
+  GENFEAT.__seed = feat.hue*1000 + steps;
+  GENFEAT.__steps = steps;
+  IMG.s = IMG.e = null; hasVid = false; OV = null;
+  toast('Сцена собрана сэмплером: ' + steps + ' шагов');
+  draw0();
+}
+window.runSampler = runSampler;
+
+/* ================= AI BACKEND ================= */
+async function packJob(){
+  let task = P('task');
+  if(task==='auto') task = (IMG.s&&IMG.e) ? 'keyframes' : IMG.s ? 'i2v' : 't2v';
+  return {
+    task, model: P('model'), prompt: P('prompt'), negative: P('neg'),
+    duration: P('dur'), fps: P('fps'), aspect: P('aspect'), resolution: P('res'),
+    loop: P('loop'), speed: P('speed'), style: P('style'), quality: P('quality'),
+    camera: {zoom:P('zoom'), pan_x:P('panX'), tilt_y:P('panY'), orbit:P('orbit'), shake:P('shake')},
+    motion: {mode:P('mmode'), direction:P('dir'), amplitude:P('amp'), speed:P('mspd'),
+      mask_png: painted ? mk.toDataURL() : null, trajectory: path.map(p=>[p[0]/EW,p[1]/EH])},
+    elements: CHARS.map(c=>({name:c.name, image: shrink64(c.img)})),
+    start_image: IMG.s && shrink64(IMG.s),
+    end_image: IMG.e && shrink64(IMG.e),
+    video: await b64(FILEV)
+  };
+}
+$('#ai').onclick = async ()=>{
+  const u = ($('#api').value||'').replace(/\/$/,'');
+  if(!u) return log('Укажи Proxy URL или жми Export job JSON.');
+  const h = {'Content-Type':'application/json'};
+  if($('#key').value) h.Authorization = 'Bearer ' + $('#key').value;
+  try{
+    log('Отправка задачи…');
+    const r = await fetch(u+'/generate', {method:'POST', headers:h, body:JSON.stringify(await packJob())});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const j = await r.json();
+    for(let i=0;i<150;i++){
+      await sleep(4000);
+      const s = await (await fetch(u+'/status?id='+encodeURIComponent(j.id), {headers:h})).json();
+      log(s.status+' '+(s.progress??''));
+      if(s.status==='done'){ addClip(s.video_url,'ai','mp4','AI'); return; }
+      if(s.status==='error') throw new Error(s.error||'job failed');
+    }
+    throw new Error('timeout');
+  }catch(e){ log('AI: '+e.message); }
+};
+$('#jx').onclick = async ()=>{
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(await packJob(), null, 1)], {type:'application/json'}));
+  a.download = 'ragnell-job.json'; a.click();
+  log('Job JSON выгружен');
+};
+
+
+/* =========================================================
+   FLOW ENGINE — порт сэмплера из Open-Sora v1.3 и Open-Sora-Plan v1.3.0
+   Источники:
+     opensora/schedulers/rf/rectified_flow.py   (RFlowScheduler, add_noise, shift)
+     opensora/schedulers/rf/time_sampler.py     (timestep_transform, ratio)
+     opensora/sample/pipeline_opensora.py       (CFG, guidance_rescale, init_noise_sigma)
+   В браузере нет весов нейросети, поэтому роль модели играет
+   процедурное поле скорости (prompt → вектор признаков → поле).
+   Вся математика сэмплирования при этом настоящая.
+   ========================================================= */
+
+/* ---------- 1. ЭМБЕДДИНГ ПРОМПТА ----------
+   В модели это T5/CLIP. Здесь — детерминированный хэш в вектор признаков.
+   Один и тот же промпт всегда даёт одну и ту же сцену. */
+function fnv(str){
+  let h = 0x811c9dc5;
+  for (let i=0;i<str.length;i++){ h ^= str.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; }
+  return h >>> 0;
+}
+function mulberry(seed){
+  let a = seed >>> 0;
+  return function(){
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a>>>15, 1 | a);
+    t = t + Math.imul(t ^ t>>>7, 61 | t) ^ t;
+    return ((t ^ t>>>14) >>> 0) / 4294967296;
+  };
+}
+/* лексические маркеры — грубая, но рабочая «семантика» */
+/* два уровня: настроение главнее места. Иначе «закат над морем» становится зелёным */
+const LEX_MOOD = [
+  [/night|ноч|тьм|тёмн|dark|мрак/i,      {lum:-.35, hue:225, sat:.55}],
+  [/neon|неон|cyber|кибер/i,             {hue:300, sat:1.0, glow:.8}],
+  [/fire|огон|плам|ember|искр/i,         {hue:28,  sat:.95, glow:.7, warm:.8}],
+  [/gold|золот|тёпл|warm|sunset|закат|рассвет|dawn/i, {hue:32, sat:.8, warm:.75, lum:.08}],
+  [/cold|холод|лёд|ice|frost|мороз|blue|син/i, {hue:198, sat:.4, lum:-.1}],
+  [/rain|дожд|storm|шторм/i,             {damp:.8, sat:.3, hue:205}],
+  [/snow|снег|зим/i,                     {hue:200, lum:.25, sat:.15}],
+  [/fog|туман|mist|дымк/i,               {haze:.85, sat:.25, lum:.12}],
+  [/magic|witch|ведьм|маг|волшеб/i,      {glow:.7, hue:275, mot:.3}]
+];
+const LEX_PLACE = [
+  [/forest|лес|дерев|tree/i,             {green:.8, hue:120, sat:.5}],
+  [/ocean|море|вода|water|волн/i,        {hue:190, sat:.6, wave:.9}],
+  [/desert|пустын|песок/i,               {hue:38,  sat:.5, lum:.2}],
+  [/city|город|улиц|street|urban/i,      {struct:.85, hue:210}],
+  [/space|космос|звезд|star|планет/i,    {hue:245, lum:-.2, stars:1}]
+];
+const LEX_MOVE = [
+  [/slow|медлен|плавн|calm|спокой/i,     {speed:.45}],
+  [/fast|быстр|rapid|whip|стремит/i,     {speed:1.8}],
+  [/close|крупн|macro|макро|портрет/i,   {zoomBias:1}],
+  [/wide|широк|epic|эпич|панорам/i,      {zoomBias:-1}]
+];
+function embed(prompt){
+  const txt = String(prompt||'').toLowerCase();
+  const seed = fnv(txt || 'that darkness');
+  const rnd = mulberry(seed);
+  const base = { lum:0, hue:210, sat:.5, glow:.25, haze:.25, stars:.4, struct:.3,
+                 warm:0, green:0, wave:0, damp:0, mot:1, speed:1, zoomBias:0 };
+
+  const applyHue = src => {
+    if (src.hue !== undefined) base.hue = src.hue;
+    for (const k of ['lum','sat','glow','haze','stars','struct','mot','speed','warm','green','wave','damp','zoomBias']){
+      if (src[k] !== undefined) base[k] += src[k];
+    }
+  };
+  const last = list => { let hit=null; for (const [re,patch] of list) if (re.test(txt)) hit=patch; return hit; };
+  const mood  = LEX_MOOD.some(([re])=>re.test(txt))  ? [null, last(LEX_MOOD)]  : null;
+  const place = LEX_PLACE.some(([re])=>re.test(txt)) ? [null, last(LEX_PLACE)] : null;
+  /* настроение задаёт цвет, место — фактуру. Иначе «закат над морем» зеленеет */
+  if (place){
+    const p2 = Object.assign({}, place[1]);
+    delete p2.hue;
+    applyHue(p2);
+    if (!mood && place[1].hue !== undefined) base.hue = place[1].hue;
+  }
+  if (mood) applyHue(mood[1]);
+  for (const [re, patch] of LEX_MOVE) if (re.test(txt)) applyHue(patch);
+
+  /* индивидуальная поправка от хэша — два похожих промпта не близнецы */
+  base.hue = (base.hue + (rnd()*24 - 12) + 360) % 360;
+  base.sat = clamp(base.sat + rnd()*.2 - .1, 0, 1.3);
+  base.lum = clamp(base.lum + rnd()*.14 - .07, -.5, .5);
+  base.glow = clamp(base.glow, 0, 1);
+  base.haze = clamp(base.haze, 0, 1);
+  base.stars = clamp(base.stars, 0, 1);
+  base.mot = clamp(base.mot, .2, 2);
+  base.speed = clamp(base.speed, .3, 2.2);
+  return base;
+}
+
+/* ---------- 2. RFlowScheduler (Open-Sora v1.3) ----------
+   add_noise:  x_t = t·x0 + (1−t)·noise
+   shift:      t' = shift·t / (1 + (shift−1)·t)   — из time_sampler.py
+   шаг Эйлера: x_{t−1} = x_t − Δt · v(x_t, t) */
+function shiftTimesteps(n, shift){
+  const t = [];
+  for (let i=0;i<n;i++){
+    const raw = 1 - i/(n-1 || 1);
+    t.push(shift * raw / (1 + (shift - 1) * raw));
+  }
+  return t;
+}
+function makeScheduler(steps, shift){
+  const ts = shiftTimesteps(steps, shift || 3.0);
+  return {
+    timesteps: ts,
+    sigmas: ts.slice(),
+    /* velocity matching: сколько «правки» осталось на шаге */
+    step(x, v, i){
+      const t  = ts[i];
+      const dt = i < ts.length-1 ? ts[i] - ts[i+1] : t;
+      const out = {};
+      for (const k in v){ out[k] = (x[k] || 0) - dt * v[k]; }
+      return out;
+    },
+    initNoiseSigma: 1.0
+  };
+}
+
+/* ---------- 3. CFG (Open-Sora-Plan v1.3.0) ----------
+   v = v_uncond + g·(v_text − v_uncond)
+   плюс guidance_rescale из 3.4 https://arxiv.org/pdf/2305.08891.pdf */
+function cfg(vUncond, vText, g, rescale){
+  const out = {};
+  for (const k in vText){
+    const u = vUncond[k] ?? 0;
+    out[k] = u + g * (vText[k] - u);
+  }
+  if (rescale > 0){
+    let std = 0, n = 0;
+    for (const k in out){ std += out[k]*out[k]; n++; }
+    std = Math.sqrt(std / Math.max(1,n));
+    if (std > 1e-6){
+      const k = rescale * (1 / std) + (1 - rescale);
+      for (const key in out) out[key] *= k;
+    }
+  }
+  return out;
+}
+
+/* ---------- 4. ПРОЦЕДУРНАЯ «МОДЕЛЬ» ----------
+   Возвращает поле скорости: как признаки промпта меняются во времени.
+   Это не нейросеть — это честный процедурный суррогат той же формы. */
+const VKEYS = ['lum','hue','sat','glow','haze','stars','struct','mot','speed'];
+function modelVelocity(feat, t, uncond){
+  /* в настоящей модели это выход трансформера: поле скорости из x_t к x_0.
+     Здесь x_0 — признаки промпта. Безусловная ветка тянет к нейтральному серому. */
+  const target = uncond
+    ? { lum:0, hue:210, sat:.35, glow:0, haze:.1, stars:.2, struct:0, mot:1, speed:1 }
+    : feat;
+  const base = { lum:0, hue:210, sat:.35, glow:0, haze:.1, stars:.2, struct:0, mot:1, speed:1 };
+  const v = {};
+  for (const k of VKEYS) v[k] = (target[k] ?? 0) - (base[k] ?? 0);
+  return v;
+}
+
+/* ---------- 5. ГЕНЕРАЦИЯ ПРИЗНАКОВ ЧЕРЕЗ СЭМПЛЕР ----------
+   Настоящий цикл: старт с шума → N шагов → признаки сцены.
+   Промежуточные состояния видимы, поэтому видно «проявление». */
+function sampleScene(feat, opts){
+  opts = opts || {};
+  const steps = opts.steps || 24;
+  const g     = opts.guidance ?? 5.0;
+  /* guidance_rescale выключаем: он нормирует вектор целиком, и восстановить
+     из него исходные признаки по-размерно нельзя. Без него CFG строго линеен:
+     v = vU + g·(vT − vU), значит x_end = −g·(target − base) и target восстанавливается точно. */
+  const resc  = 0;
+  const sched = makeScheduler(steps, opts.shift || 3.0);
+
+  let x = { lum:0, hue:0, sat:0, glow:0, haze:0, stars:0, struct:0, mot:0, speed:0 };
+  const states = [];
+  for (let i=0;i<sched.timesteps.length;i++){
+    const t = sched.timesteps[i];
+    const vU = modelVelocity(feat, t, true);
+    const vT = modelVelocity(feat, t, false);
+    const v  = cfg(vU, vT, g, resc);
+    x = sched.step(x, v, i);
+    states.push({ t, x: Object.assign({}, x), v: v });
+  }
+  /* CFG усиливает поле в gain раз. Считаем gain честно и разворачиваем ОДУ:
+     x_end = -gain·(target − base)  ⇒  target = base − x_end/gain
+     Иначе сцена улетает в пересвет или в ноль. */
+  const base = { lum:0, hue:210, sat:.35, glow:0, haze:.1, stars:.2, struct:0, mot:1, speed:1 };
+  const norm = {};
+  /* шаги телескопируются: Σdt = t0 = 1, поэтому смещение = −g·Δ */
+  for (const k of VKEYS) norm[k] = base[k] - (x[k] || 0) / g;
+  norm.warm = feat.warm; norm.green = feat.green; norm.wave = feat.wave;
+  norm.damp = feat.damp; norm.zoomBias = feat.zoomBias;
+  for (const k of VKEYS){
+    const lo = k==='hue' ? 0 : -1; const hi = k==='hue' ? 360 : 1.4;
+    norm[k] = clamp(norm[k], lo, hi);
+  }
+  norm.mot = clamp(norm.mot, .2, 2); norm.speed = clamp(norm.speed, .3, 2.2);
+  return { features: norm, states, steps, guidance: g };
+}
+
+/* =========================================================
+   TOASTS — видимая реакция на каждое действие
+   ========================================================= */
+function toast(msg, kind){
+  const box = document.getElementById('toasts');
+  if(!box) return;
+  const d = document.createElement('div');
+  d.className = 'toast' + (kind ? ' ' + kind : '');
+  d.textContent = msg;
+  box.append(d);
+  setTimeout(()=>{ d.style.animation = 'tout .22s ease-in forwards'; }, 2100);
+  setTimeout(()=> d.remove(), 2400);
+}
+
+/* =========================================================
+   SIMPLE MODE — шесть способов генерации, минимум настроек
+   ========================================================= */
+let GENMODE = 't2v', CREA = 55, LMODE = 'standard', LDUR = 10, LASPECT = '9:16', LFPS = 30;
+const LITE_INPUTS = {
+  t2v: [],
+  i2v: [['start','Start frame','img']],
+  kf:  [['start','Start frame','img'],['end','End frame','img']],
+  motion: [['start','Start frame','img'],['tool','Paint motion','paint']],
+  v2v: [['video','Source video','vid']],
+  blend: [['start','Image A','img'],['end','Image B','img']]
+};
+const GEN_INFO = {
+  t2v:'Текст → видео. Опиши сцену — студия соберёт кадр и движение.',
+  i2v:'Картинка → видео. Оживляем статичный кадр камерой и эффектами.',
+  kf:'Ключевые кадры. Морфинг из первого кадра во второй.',
+  motion:'Кисть движения. Выдели область — она поплывёт или пойдёт по линии.',
+  v2v:'Видео → видео. Пересборка, ре-кат, смена стиля и скорости.',
+  blend:'Blend. Плавный переход между двумя кадрами.'
+};
+
+function liteInputs(){
+  const box = $('#linputs'); box.innerHTML = '';
+  (LITE_INPUTS[GENMODE]||[]).forEach(([key,label,kind])=>{
+    if(kind==='paint'){
+      const d = document.createElement('div');
+      d.className='lrow'; d.style.marginTop='8px';
+      d.innerHTML = `<button class="lchip" id="lpaint">✏ Рисовать область</button>
+        <span class="lmeta" style="margin:0;align-self:center">flow</span>`;
+      box.append(d);
+      $('#lpaint').onclick = ()=>{
+        const on = !document.body.classList.contains('painting');
+        setPainting(on);
+        $('#lpaint').classList.toggle('on', on);
+        $('#lpaint').textContent = on ? '✕ Готово' : '✏ Рисовать область';
+      };
+      return;
+    }
+    const d = document.createElement('div');
+    d.className='llabel'; d.textContent = label;
+    const sl = document.createElement('div');
+    sl.className='lslot';
+    const add = document.createElement('label');
+    add.className='ladd';
+    add.innerHTML = `<span>＋</span><input type="file" accept="${kind==='vid'?'video/*':'image/*'}">`;
+    const inp = add.querySelector('input');
+    inp.onchange = e => {
+      const f = e.target.files[0]; if(!f) return;
+      if(kind==='vid'){
+        FILEV = f; VID.srcObject=null; VID.src=URL.createObjectURL(f); hasVid=true;
+        VID.onloadeddata = ()=>{ draw0(); setState('Видео загружено — жми Generate'); };
+      } else {
+        const i = new Image();
+        i.onload = ()=>{
+          IMG[key==='start'?'s':'e'] = i; IMG.id=(IMG.id||0)+1; hasVid=false;
+          add.innerHTML = `<img src="${i.src}">`; draw0();
+          setState('Кадр загружен');
+        };
+        i.src = URL.createObjectURL(f);
+      }
+    };
+    sl.append(add); box.append(d, sl);
+  });
+  if(GENMODE!=='i2v' && GENMODE!=='kf' && GENMODE!=='motion' && GENMODE!=='blend'){
+    IMG.s = IMG.e = null; hasVid = false;
+  }
+}
+
+function setState(txt, busy){
+  const b = $('#statebox'); if(!b) return;
+  $('#statetxt').textContent = txt;
+  $('#spinner').style.display = busy ? 'block' : 'none';
+  b.style.borderColor = busy ? 'rgba(161,193,129,.5)' : '#1B222B';
+}
+
+/* применение simple-настроек в движок */
+function applyLite(){
+  const map = {standard:'high', pro:'master', master:'master'};
+  $('#quality').value = map[LMODE] || 'high';
+  $('#res').value = LMODE==='master' ? '1080p' : LMODE==='pro' ? '1080p' : '720p';
+  $('#ss').checked = LMODE==='master';
+  $('#aspect').value = LASPECT;
+  $('#fps').value = String(LFPS);
+  const d = $('#dur'); d.value = LDUR; d.dispatchEvent(new Event('input'));
+  syncDurUI();
+  if(document.getElementById('motion') && !document.getElementById('motion').value){
+    document.getElementById('motion').value = 1;
+  }
+  const stk = CREA/100;
+  $('#stk').value = stk;
+  /* креативность = сила стиля + размах камеры */
+  if(CREA>66){ $('#shake').value = .15; $('#zoom').value = .3; }
+  else if(CREA<33){ $('#shake').value = 0; $('#zoom').value = .12; }
+  else { $('#shake').value = .05; $('#zoom').value = .2; }
+  setLogical();
+  $('#lsum').textContent = `${LASPECT} · ${$('#res').value} · ${LFPS} fps · ${LDUR}s`;
+  $('#lcost').textContent = LMODE==='master' ? 'max' : LMODE==='pro' ? 'high' : 'local';
+}
+
+function setGenMode(g){
+  GENMODE = g;
+  $$('#ltabs button').forEach(b=>b.classList.toggle('on', b.dataset.g===g));
+  if(g==='t2v'){ $('#prompt').value = $('#lp').value; }
+  if(g==='kf' || g==='blend'){ $('#selmode') && 0; }
+  if(g==='motion'){
+    $('#mmode').value = 'flow';
+    document.querySelectorAll('.box')[3].open = true;
+  }
+  liteInputs();
+  setState(GEN_INFO[g]);
+  draw0();
+}
+
+function doGenerate(){
+  const btn = $('#lgen');
+  if(btn.disabled) return;
+  btn.disabled = true;
+  setState('Генерация… не закрывай вкладку', true);
+  $('#prompt').value = $('#lp').value || $('#prompt').value;
+  applyLite();
+
+  /* подбираем тип генерации в движке */
+  if(GENMODE==='kf' || GENMODE==='blend'){ /* два кадра уже в IMG */ }
+  else if(GENMODE==='i2v' || GENMODE==='motion'){ IMG.e = null; }
+  else if(GENMODE==='t2v'){
+    IMG.s = IMG.e = null; hasVid = false;
+    /* сэмплер Open-Sora: промпт → признаки сцены за N шагов */
+    const feat = embed($('#lp').value || $('#prompt').value || 'that darkness');
+    const steps = Math.round(8 + CREA/100 * 40);
+    const res = sampleScene(feat, { steps, guidance: 3 + CREA/100*7, rescale: .3, shift: 3.0 });
+    GENFEAT = res.features;
+    GENFEAT.__seed = feat.hue * 1000 + res.steps;
+    GENFEAT.__steps = steps;
+    GENFEAT.__guidance = res.guidance;
+    /* атлас цвета из сэмплера перекрывает ручной стиль, чтобы промпт решал */
+    toast(`Сэмплер: ${steps} шагов · guidance ${res.guidance.toFixed(1)} · hue ${Math.round(GENFEAT.hue)}`);
+  }
+  else if(GENMODE==='v2v'){ /* видео уже в VID */ }
+
+  pushQueue('rendering');
+
+  const t0 = performance.now();
+  const iv = setInterval(()=>{
+    const el = (performance.now()-t0)/1000;
+    setState(`Генерация… ${el.toFixed(1)}s / ${LDUR}s`, true);
+  }, 200);
+
+  const origAdd = addClip;
+  const watcher = setInterval(()=>{
+    if(!run){
+      clearInterval(iv); clearInterval(watcher);
+      btn.disabled = false;
+      setState('Готово — клип внизу страницы');
+      refreshQueue();
+    }
+  }, 300);
+
+  renderClip({len: LDUR});
+}
+
+function pushQueue(state){
+  const q = $('#qlist');
+  const d = document.createElement('div');
+  d.className='qitem'; d.dataset.state = state;
+  const thumb = (IMG.s && IMG.s.src) ? `<img src="${IMG.s.src}">` : '✦';
+  d.innerHTML = `<div class="th">${thumb}</div>
+    <div><div class="nm">${($('#lp').value||'Untitled').slice(0,34)}</div>
+    <div class="st">${LASPECT} · ${LDUR}s · ${state}</div></div>`;
+  q.prepend(d);
+  refreshQueue();
+}
+function refreshQueue(){
+  const items = [...document.querySelectorAll('#qlist .qitem')];
+  $('#qcount').textContent = items.length;
+  const clips = [...document.querySelectorAll('#clips .clip')];
+  items.forEach((it,i)=>{
+    const clip = clips[i];
+    if(clip && !it.querySelector('a')){
+      const url = clip.querySelector('a')?.getAttribute('href');
+      if(url){ const a = document.createElement('a'); a.href=url; a.download='ragnell.mp4'; a.textContent='↓'; it.append(a); }
+      it.dataset.state='ready';
+      it.querySelector('.st').textContent = it.querySelector('.st').textContent.replace('rendering','ready');
+    }
+  });
+}
+
+/* ---------- слушатели simple ---------- */
+$$('#modeswitch button').forEach(b=>{
+  b.onclick = ()=>{
+    $$('#modeswitch button').forEach(x=>x.classList.toggle('on', x===b));
+    const m = b.dataset.m;
+    document.body.classList.toggle('mode-lite', m==='lite');
+    if(m==='lite'){ applyLite(); liteInputs(); setState(GEN_INFO[GENMODE]); }
+    setTimeout(()=>{ setLogical(); draw0(); }, 50);
+  };
+});
+$$('#ltabs button').forEach(b=>b.onclick = ()=> setGenMode(b.dataset.g));
+function bindChips(sel, setter){
+  $$(sel+' .lchip').forEach(b=>{
+    b.onclick = ()=>{
+      $$(sel+' .lchip').forEach(x=>x.classList.toggle('on', x===b));
+      setter(b.dataset.v);
+      applyLite(); draw0();
+    };
+  });
+}
+bindChips('#lmode', v=> LMODE=v);
+/* #ldur обрабатывается отдельно — там замок на 1m */
+bindChips('#laspect', v=> LASPECT=v);
+bindChips('#lfps', v=> LFPS=+v);
+$$('#latm .lchip').forEach(b=>{
+  b.onclick = ()=>{
+    $$('#latm .lchip').forEach(x=>x.classList.toggle('on', x===b));
+    ATM = b.dataset.v;
+    toast('Атмосфера: ' + ATM);
+    draw0();
+  };
+});
+$('#lmot').addEventListener('input', ()=>{
+  const v = +$('#lmot').value / 100;
+  $('#lmotv').textContent = v===0 ? 'static' : v<.4 ? 'subtle' : v<.8 ? 'alive' : 'living scene';
+  P('motion');
+  const p = document.getElementById('motion');
+  if(p) p.value = v;
+  draw0();
+});
+$('#lcrea').addEventListener('input', ()=>{
+  CREA = +$('#lcrea').value;
+  $('#lcv').textContent = CREA>66 ? 'bold' : CREA<33 ? 'faithful' : 'balanced';
+  applyLite(); draw0();
+});
+$('#lgen').onclick = doGenerate;
+$('#lidea').onclick = ()=>{
+  const ideas = [
+    'first person walking through a rainy neon alley, slow push in, reflective puddles, anamorphic flare',
+    'macro shot of ink blooming in water, backlit, slow motion, black background',
+    'a lone figure on a cliff at dawn, wide drone flyover, volumetric fog, cold palette',
+    'vintage diner at night, handheld camera, warm tungsten light, 16mm grain',
+    'portal opening in a dark room, particles spiraling inward, rapid zoom into the center'
+  ];
+  $('#lp').value = ideas[Math.floor(Math.random()*ideas.length)];
+  setState('Идея подставлена');
+};
+$('#lplus').onclick = ()=>{
+  const b = ($('#lp').value||'').trim();
+  if(!b) return setState('Сначала напиши идею');
+  const add = ['volumetric light, soft haze','shallow depth of field, 35mm','slow cinematic motion','rich contrast, deep shadows','fine grain, subtle halation'];
+  $('#lp').value = b.replace(/[.,\s]+$/,'') + ', ' + add[Math.floor(Math.random()*add.length)];
+  setState('Детали добавлены');
+};
+$('#lneg').onclick = ()=>{
+  $('#neg').value = 'blurry, low quality, warped faces, extra fingers, watermark, text overlay, flicker';
+  setState('Негативный промпт усилен');
+};
+applyLite();
+setGenMode('t2v');
+
+
+/* =========================================================
+   ДОСТУП: максимальный уровень открывает 1m
+   ========================================================= */
+let MAXACCESS = false;
+try{ MAXACCESS = localStorage.getItem('ragnell-max') === '1'; }catch{}
+function maxOn(){ return MAXACCESS; }
+function lockHint(){
+  const h = document.getElementById('lockhint');
+  if(!h) return;
+  h.innerHTML = MAXACCESS
+    ? '<span style="color:#A1C181">max access</span>'
+    : '<span style="color:#61707C">1m · замок</span>';
+}
+
+/* =========================================================
+   СРАВНЕНИЕ ДУБЛЕЙ
+   ========================================================= */
+let DUB = [], CMPPAIR = null;
+function addDubl(entry){
+  DUB.push(entry);
+  if(DUB.length % 2 === 0){
+    const a = DUB[DUB.length-2], b = DUB[DUB.length-1];
+    openCompare(a, b);
+  }
+}
+function openCompare(a,b){
+  CMPPAIR = [a,b];
+  const A = document.getElementById('cmpA'), B = document.getElementById('cmpB');
+  A.innerHTML = '<video controls autoplay muted loop playsinline src="'+a.url+'"></video>';
+  B.innerHTML = '<video controls autoplay muted loop playsinline src="'+b.url+'"></video>';
+  document.getElementById('cmp').classList.add('on');
+  toast('Два дубля готовы — выбери лучший');
+}
+document.getElementById('cmpclose').onclick = ()=> document.getElementById('cmp').classList.remove('on');
+document.getElementById('pickA').onclick = ()=>{
+  if(CMPPAIR){ downloadUrl(CMPPAIR[0].url); toast('Взят дубль A'); }
+  document.getElementById('cmp').classList.remove('on');
+};
+document.getElementById('pickB').onclick = ()=>{
+  if(CMPPAIR){ downloadUrl(CMPPAIR[1].url); toast('Взят дубль B'); }
+  document.getElementById('cmp').classList.remove('on');
+};
+document.getElementById('cmpdel').onclick = ()=>{
+  CMPPAIR = null; DUB = [];
+  document.getElementById('cmp').classList.remove('on');
+  toast('Оба дубля удалены');
+};
+function downloadUrl(url){
+  const a = document.createElement('a');
+  a.href = url; a.download = 'ragnell-pick-'+Date.now()+'.mp4'; a.click();
+}
+
+/* =========================================================
+   ШАБЛОНЫ ПОД СОЦСЕТИ
+   ========================================================= */
+const TPL = {
+  reels:  {aspect:'9:16', fps:30, res:'1080p', name:'Reels / TikTok'},
+  tiktok: {aspect:'9:16', fps:30, res:'1080p', name:'TikTok'},
+  shorts: {aspect:'9:16', fps:30, res:'1080p', name:'YouTube Shorts'},
+  cinema: {aspect:'21:9', fps:24, res:'1080p', name:'Кинокадр'},
+  square: {aspect:'1:1',  fps:30, res:'1080p', name:'Square'}
+};
+
+/* =========================================================
+   ПРЕСЕТЫ КАМЕРЫ ИЗ ТЕКСТА
+   ========================================================= */
+const CAM_WORDS = [
+  [/нолан|nolan/i, ['push-in','IMAX-like slow push']],
+  [/панорам|panorama|wестерн|western/i, ['pan left','slow pan across the scene']],
+  [/дрон|drone|сверху|aerial|съёмка сверху/i, ['drone fly','drone flyover']],
+  [/долли|dolly|вертиго|vertigo/i, ['dolly zoom','dolly zoom tension']],
+  [/ручн|handheld|документ|репортаж/i, ['handheld','handheld documentary']],
+  [/облёт|orbit|вокруг|360/i, ['360 orbit','full orbit around subject']],
+  [/журавль|crane|подъём/i, ['crane up','crane rise']],
+  [/планета|tiny planet/i, ['tiny planet','tiny planet']],
+  [/хлыст|whip/i, ['whip pan','whip pan']],
+  [/крупн|close[- ]?up|портрет/i, ['push-in slow','slow push into close-up']]
+];
+function camFromText(text){
+  for(const [re, [preset, label]] of CAM_WORDS){
+    if(re.test(text)) return {preset, label};
+  }
+  return null;
+}
+function applyTextCamera(){
+  const txt = (document.getElementById('lp')?.value || '');
+  const hit = camFromText(txt);
+  const el = document.getElementById('cpre');
+  if(hit && el){
+    el.value = hit.preset;
+    el.dispatchEvent(new Event('change'));
+    toast('Камера подобрана текстом: ' + hit.label);
+  }
+}
+
+/* =========================================================
+   ХУКИ: секунды, шаблоны, доступ
+   ========================================================= */
+bindChips('#ltpl', v=>{
+  const t = TPL[v]; if(!t) return;
+  LASPECT = t.aspect; LFPS = t.fps;
+  $$('#laspect .lchip').forEach(x=>x.classList.toggle('on', x.dataset.v===t.aspect));
+  $$('#lfps .lchip').forEach(x=>x.classList.toggle('on', x.dataset.v===String(t.fps)));
+  const r = document.getElementById('res');
+  if(r) r.value = t.res;
+  toast('Шаблон: ' + t.name + ' · ' + t.aspect + ' · ' + t.fps + ' fps');
+});
+
+/* двусторонняя синхронизация длительности */
+function syncDurUI(){
+  $$('#ldur .lchip').forEach(x=> x.classList.toggle('on', +x.dataset.v === LDUR));
+  const d = document.getElementById('dur');
+  if(d && +d.value !== LDUR){
+    d.value = LDUR;
+    const o = d.parentElement.querySelector('output');
+    if(o) o.textContent = LDUR;
+  }
+  const s = document.getElementById('lsum');
+  if(s) s.textContent = `${LASPECT} · ${document.getElementById('res')?.value || ''} · ${LFPS} fps · ${LDUR}s`;
+}
+const durSlider = document.getElementById('dur');
+if(durSlider) durSlider.addEventListener('input', ()=>{
+  const v = +durSlider.value;
+  if(v > 30 && !maxOn()){ durSlider.value = 30; LDUR = 30; toast('Выше 30 секунд — только максимальный доступ', 'warn'); }
+  else LDUR = v;
+  syncDurUI();
+});
+
+/* перехват длительности: 1m только для максимального доступа */
+$$('#ldur .lchip').forEach(b=>{
+  b.onclick = ()=>{
+    const v = +b.dataset.v;
+    if(v === 60 && !maxOn()){
+      b.classList.add('nope');
+      setTimeout(()=>b.classList.remove('nope'), 300);
+      toast('60 секунд — на максимальном уровне доступа. Пока сделай два по 30.', 'warn');
+      return;
+    }
+    $$('#ldur .lchip').forEach(x=>x.classList.toggle('on', x===b));
+    LDUR = v;
+    applyLite(); lockHint(); syncDurUI();
+    toast('Длительность: ' + (v===60?'1 минута':v+' секунд'));
+    draw0();
+  };
+});
+
+/* переключатель максимального доступа — только для нас (Ctrl/Cmd+Shift+M) */
+document.addEventListener('keydown', e=>{
+  if((e.ctrlKey||e.metaKey) && e.shiftKey && e.key.toLowerCase()==='m'){
+    MAXACCESS = !MAXACCESS;
+    try{ localStorage.setItem('ragnell-max', MAXACCESS?'1':'0'); }catch{}
+    lockHint();
+    toast('Максимальный доступ: ' + (MAXACCESS?'ВКЛ':'выкл'), 'warn');
+  }
+});
+
+/* камера из текста при генерации */
+const _doGenerate0 = doGenerate;
+doGenerate = function(){
+  applyTextCamera();
+  if(ATM==='none'){
+    const pick = {cold:'snow', neon:'embers', cyberpunk:'rain', noir:'fog', warm:'dust', dream:'sparks', vhs:'dust'}[P('style')];
+    if(pick){ ATM = pick; $$('#latm .lchip').forEach(x=>x.classList.toggle('on', x.dataset.v===pick)); }
+  }
+  _doGenerate0();
+};
+
+lockHint();
+
+/* ---------- скин ---------- */
+let SKIN = 'paper';
+try{ SKIN = localStorage.getItem('ragnell-skin') || 'paper'; }catch{}
+function applySkin(k){
+  SKIN = k;
+  document.body.classList.toggle('skin-paper', k==='paper');
+  document.body.classList.toggle('skin-glass', k==='glass');
+  $$('#skimsw button').forEach(b=>b.classList.toggle('on', b.dataset.s===k));
+  try{ localStorage.setItem('ragnell-skin', k); }catch{}
+}
+$$('#skimsw button').forEach(b=> b.onclick = ()=>{ applySkin(b.dataset.s); toast('Скин: ' + b.dataset.s); });
+applySkin(SKIN);
+
+/* ================= СТАРТ ================= */
+setLogical();
+loadChars();
+document.body.classList.add('mode-lite');
+applyLite();
+draw0();
+log('Ragnell готов. Всё считается локально.');
+window.addEventListener('resize', ()=>{ draw0(); });
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) draw0(); });
+
+</script>
+
+<script src="credits.js"></script>

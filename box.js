@@ -1,10 +1,11 @@
 (() => {
-  const O = 'AzraelMainTarget', R = 'TheWall1';
-  const FEED = 'box/messages.md';
-  const RAW = 'https://raw.githubusercontent.com/' + O + '/' + R + '/main/';
-  const PAGES = 'https://azraelmaintarget.github.io/' + R + '/';
-  const TS = 'gh-voice-token';
-  const PEND = 'box-pending';
+  const C = window.BOXCORE;
+  const O = C.O, R = C.R;
+  const FEED = C.FEED;
+  const RAW = C.RAW;
+  const PAGES = C.PAGES;
+  const TS = C.TS;
+  const PEND = C.PEND;
   const NAME_ME = 'Azrael';      // как подписан пользователь
   const NAME_AI = 'Arena';
 
@@ -15,8 +16,8 @@
   const recBtn = document.getElementById('rec');
   const tracker = document.getElementById('tracker');
 
-  const token = () => { try { return (localStorage.getItem(TS) || '').trim(); } catch { return ''; } };
-  const esc = (s) => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const token = C.token;
+  const esc = C.esc;
   const linkify = (t) => t.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
   const show = (t) => { st.textContent = t; };
 
@@ -31,9 +32,9 @@
   }
 
   /* ---------- локальная очередь ---------- */
-  const readPend = () => { try { return JSON.parse(localStorage.getItem(PEND) || '[]'); } catch { return []; } };
-  const writePend = (a) => { try { localStorage.setItem(PEND, JSON.stringify(a.slice(-40))); } catch {} };
-  const addPend = (i) => { const a = readPend(); a.push(i); writePend(a); };
+  const readPend = C.readPend;
+  const writePend = C.writePend;
+  const addPend = C.addPend;
 
   tok.value = token();
   document.getElementById('saveTok').onclick = () => {
@@ -51,7 +52,7 @@
       ...(opt.headers || {})
     }
   });
-  const b64 = (s) => btoa(unescape(encodeURIComponent(s)));
+  const b64 = C.b64;
   const unb64 = (s) => decodeURIComponent(escape(atob(s.replace(/\n/g, ''))));
   const nowStamp = () => {
     const d = new Date(), p = (n) => String(n).padStart(2, '0');
@@ -61,7 +62,7 @@
   /* ---------- разбор ---------- */
   const READ = /\s*·\s*read\s*$/;
   const AUDIO = /audio:(\S+)/;
-  const localise = (u) => u.replace('https://raw.githubusercontent.com/' + O + '/' + R + '/main/', PAGES);
+  const localise = C.localise;
 
   const parse = (l) => {
     const raw = l.replace(/^\s*-\s*/, '').trim();

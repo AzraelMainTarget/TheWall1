@@ -1,0 +1,92 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>That Darkness — Key Generator</title>
+<style>
+:root{--bg:#081A23;--deep:#041015;--teal:#147B78;--soft:#5FA69B;--pale:#B8CEC6;--paper:#F0F0EA;--gold:#FCCA46;--orange:#FE7F2D}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:radial-gradient(120% 100% at 50% 0%,#0E4D55 0%,var(--bg) 62%,var(--deep) 100%);
+color:var(--paper);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:22px;display:flex;justify-content:center}
+.wrap{width:100%;max-width:420px}
+h1{font:800 11px/1 system-ui;letter-spacing:.3em;text-transform:uppercase;color:var(--soft);margin:0 0 6px;text-align:center}
+h2{font:800 26px/1.15 ui-monospace,monospace;letter-spacing:.06em;margin:0 0 18px;text-align:center;color:var(--paper)}
+.code{font:800 40px/1 ui-monospace,monospace;letter-spacing:.16em;text-align:center;color:var(--gold);
+ padding:22px 10px;border-radius:20px;background:linear-gradient(168deg,rgba(20,123,120,.26),rgba(4,16,21,.72));
+ border:1px solid rgba(184,206,198,.3);box-shadow:0 20px 50px rgba(0,0,0,.55),inset 0 1px 0 rgba(240,240,234,.16);
+ text-shadow:0 0 30px rgba(252,202,70,.45)}
+.bar{height:4px;border-radius:3px;background:rgba(184,206,198,.16);margin:12px 0 4px;overflow:hidden}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--teal),var(--gold));transition:width .9s linear}
+.left{text-align:center;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--soft);margin-bottom:22px}
+.row{display:flex;gap:8px;margin-bottom:14px}
+input{flex:1;min-width:0;padding:12px 14px;border-radius:14px;border:1px solid rgba(184,206,198,.28);
+ background:rgba(4,16,21,.6);color:var(--paper);font:600 13px/1 ui-monospace,monospace;outline:0}
+input:focus{border-color:rgba(95,166,155,.8);box-shadow:0 0 0 3px rgba(95,166,155,.14)}
+button{padding:12px 16px;border-radius:14px;border:0;cursor:pointer;font:800 10px/1 system-ui;letter-spacing:.18em;
+ text-transform:uppercase;color:#0A1A16;background:linear-gradient(180deg,var(--gold),var(--orange));white-space:nowrap}
+button.ghost{background:none;border:1px solid rgba(184,206,198,.3);color:var(--pale)}
+button:active{transform:scale(.97)}
+.note{font-size:11px;line-height:1.6;color:#6E8A85;margin:18px 0 0;padding:14px;border-radius:14px;
+ background:rgba(4,16,21,.5);border:1px solid rgba(184,206,198,.12)}
+.note b{color:var(--pale)}
+.warn{color:var(--orange)}
+</style></head><body><div class="wrap">
+<h1>Project Gate</h1><h2>KEY GENERATOR</h2>
+<div class="code" id="code">········</div>
+<div class="bar"><i id="bar" style="width:100%"></i></div>
+<div class="left" id="left">—</div>
+<div class="row">
+  <input id="secret" placeholder="base64 secret" autocomplete="off" spellcheck="false">
+  <button id="use">Use</button>
+</div>
+<div class="row">
+  <button class="ghost" id="gen" style="flex:1">New secret</button>
+  <button class="ghost" id="copy" style="flex:1">Copy code</button>
+</div>
+<p class="note">
+  <b>Same secret, same code.</b> Enter the secret on your phone and on this page — both show the same 8 digits for the same hour.
+  The secret never leaves the device: no server, no network.
+  <br><br><span class="warn">Keep the secret safe.</span> Nobody can recover it. And it is exactly why the emergency access exists.
+</p>
+</div>
+<script src="totp.js"></script>
+<script>
+(function(){
+  var $=function(i){return document.getElementById(i)};
+  var secretEl=$('secret'), codeEl=$('code'), barEl=$('bar'), leftEl=$('left');
+  var DEMO="ipY/Et5V6aR5Eg2m1EEoRSEDoiU=";
+  var secret = localStorage.getItem('td-totp-secret') || DEMO;
+
+  function b64url(bytes){
+    var s=''; for(var i=0;i<bytes.length;i++) s+=String.fromCharCode(bytes[i]);
+    return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  }
+  function newSecret(){
+    var b=new Uint8Array(20);
+    if(window.crypto && crypto.getRandomValues) crypto.getRandomValues(b);
+    else for(var i=0;i<20;i++) b[i]=Math.floor(Math.random()*256);
+    return b64url(b);
+  }
+  function save(s){ secret=s; localStorage.setItem('td-totp-secret', s); secretEl.value=s; render(); }
+
+  function render(){
+    var code;
+    try { code = TOTP.totp(secret, {step:3600, digits:8}); }
+    catch(e){ codeEl.textContent='BAD SECRET'; return; }
+    codeEl.textContent = code.slice(0,4)+' '+code.slice(4);
+    var rem = TOTP.remaining(3600);
+    barEl.style.width = (rem/3600*100)+'%';
+    var m = Math.floor(rem/60), s = rem%60;
+    leftEl.textContent = 'new code in ' + m + ':' + String(s).padStart(2,'0');
+  }
+
+  secretEl.value = secret;
+  $('use').onclick = function(){ var v=secretEl.value.trim(); if(v) save(v); };
+  $('gen').onclick = function(){ save(newSecret()); };
+  $('copy').onclick = function(){ var t=codeEl.textContent.replace(/\s/g,'');
+    (navigator.clipboard? navigator.clipboard.writeText(t) : Promise.reject())
+      .then(function(){ $('copy').textContent='copied'; setTimeout(function(){$('copy').textContent='Copy code'},1200); })
+      .catch(function(){ $('copy').textContent='copy failed'; });
+  };
+  render();
+  setInterval(render, 1000);
+})();
+</script></body></html>
