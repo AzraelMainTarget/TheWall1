@@ -68,6 +68,86 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .seg{display:flex;gap:5px;flex-wrap:wrap;margin:6px 0}
 .seg button{padding:6px 10px;font-size:11.5px;border-radius:20px}
 .seg button.on{background:var(--acc);border-color:var(--acc2);color:#fff}
+/* ---------- переключатель режимов ---------- */
+.modeswitch{display:flex;background:#071A22;border:1px solid var(--ln);border-radius:20px;padding:3px;gap:2px}
+.modeswitch button{border:0;background:transparent;padding:6px 13px;border-radius:17px;font:600 11px/1 system-ui;
+ letter-spacing:.1em;text-transform:uppercase;color:var(--mu)}
+.modeswitch button.on{background:linear-gradient(180deg,#1B918D,#147B78);color:#fff}
+
+/* ---------- LITE ---------- */
+body.mode-lite{background:#070A0D}
+body.mode-lite header{background:rgba(9,12,16,.86);border-bottom-color:#1A2028}
+body.mode-lite #app{grid-template-columns:340px minmax(0,1fr) 250px;align-items:start}
+body.mode-lite #panel{display:none}
+body.mode-lite #queue{display:flex}
+body.mode-lite #lite{display:flex;order:-1}
+body.mode-lite .work{align-items:center}
+body.mode-lite .work>*{width:100%}
+@media(max-width:1180px){body.mode-lite #app{grid-template-columns:320px minmax(0,1fr)}body.mode-lite #queue{display:none!important}}
+@media(max-width:860px){
+ body.mode-lite #app{grid-template-columns:1fr;padding:8px;gap:8px}
+ body.mode-lite .work{order:-1}
+ body.mode-lite #lite{order:0}
+ body.mode-lite .stage{max-height:46vh}
+}
+#lite,#queue{display:none;flex-direction:column;gap:9px}
+#lite{max-height:calc(100vh - 84px);overflow:auto;scrollbar-width:thin}
+#queue{max-height:calc(100vh - 84px);overflow:auto;scrollbar-width:thin}
+.lcard{background:#0E1218;border:1px solid #1B222B;border-radius:14px;padding:12px}
+.ltabs{display:flex;gap:14px;overflow-x:auto;padding:4px 2px 9px;border-bottom:1px solid #1B222B;margin-bottom:11px;scrollbar-width:none}
+.ltabs::-webkit-scrollbar{display:none}
+.ltabs button{background:none;border:0;border-bottom:2px solid transparent;border-radius:0;padding:5px 0 7px;
+ color:#7C8894;font:600 12.5px/1 system-ui;white-space:nowrap}
+.ltabs button.on{color:#EAF3EF;border-bottom-color:#A1C181}
+.lprompt{width:100%;min-height:132px;resize:vertical;background:#0A0E13;border:1px solid #1E2631;border-radius:11px;
+ color:#E9F3F1;padding:11px 12px;font:13.5px/1.5 system-ui}
+.lprompt::placeholder{color:#5C6874}
+.lhints{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 2px;align-items:center}
+.lhint{padding:5px 9px;border-radius:14px;border:1px solid #232C36;background:#0A0E13;color:#93A3AF;
+ font:600 10.5px/1 system-ui;white-space:nowrap;cursor:pointer}
+.lhint:hover{border-color:#A1C181;color:#CFE2DE}
+.llabel{display:flex;justify-content:space-between;align-items:center;color:#7C8894;
+ font:600 10px/1 system-ui;letter-spacing:.13em;text-transform:uppercase;margin:13px 0 7px}
+.lrow{display:flex;gap:6px;flex-wrap:wrap}
+.lchip{padding:6px 11px;border-radius:16px;border:1px solid #232C36;background:#0A0E13;color:#93A3AF;
+ font:600 11px/1 system-ui;cursor:pointer}
+.lchip.on{background:#16241F;border-color:#A1C181;color:#DDEBD8}
+.lrange{width:100%;accent-color:#A1C181}
+.lgen{width:100%;margin-top:14px;height:48px;border:0;border-radius:12px;cursor:pointer;
+ background:linear-gradient(90deg,#A1C181,#619B8A);color:#06120F;
+ font:800 14px/1 system-ui;letter-spacing:.1em;text-transform:uppercase;
+ box-shadow:0 6px 0 -2px #3E6B60,0 12px 26px rgba(0,0,0,.45)}
+.lgen:active{transform:translateY(2px);box-shadow:0 3px 0 -2px #3E6B60}
+.lgen:disabled{opacity:.5;cursor:wait}
+.lmeta{display:flex;justify-content:space-between;color:#61707C;font:600 10px/1.4 system-ui;margin-top:9px}
+.lslot{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 2px}
+.ladd{width:70px;height:70px;border-radius:11px;border:1px dashed #2A343F;background:#0A0E13;
+ display:grid;place-items:center;color:#5C6874;font-size:20px;cursor:pointer;position:relative;overflow:hidden}
+.ladd img{width:100%;height:100%;object-fit:cover}
+.ladd input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.lnote{color:#61707C;font-size:11px;line-height:1.45;margin-top:8px}
+#statebox{display:none;align-items:center;gap:9px;padding:11px 13px;border-radius:12px;
+ background:#0E1218;border:1px solid #1B222B;color:#93A3AF;font-size:12.5px}
+body.mode-lite #statebox{display:flex}
+#statebox b{color:#EAF3EF}
+.spin{width:15px;height:15px;border-radius:50%;border:2px solid #2A343F;border-top-color:#A1C181;
+ animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+body.mode-lite .transport{display:none}
+body.mode-lite #tlbar{display:none}
+body.mode-lite #log{display:none}
+body.mode-lite #clips{display:none}
+body.mode-lite .stage{border-radius:14px;border-color:#1B222B}
+.qitem{background:#0E1218;border:1px solid #1B222B;border-radius:11px;padding:7px;display:flex;gap:8px;align-items:center}
+.qitem .th{width:44px;height:44px;border-radius:8px;background:#0A0E13;flex:0 0 auto;overflow:hidden;
+ display:grid;place-items:center;color:#5C6874;font-size:16px}
+.qitem .th img{width:100%;height:100%;object-fit:cover}
+.qitem .nm{font:600 10.5px/1.35 system-ui;color:#CFE2DE;overflow:hidden}
+.qitem .st{font-size:10px;color:#61707C}
+.qitem a{margin-left:auto;color:#A1C181;font-size:11px;text-decoration:none;font-weight:700}
+.qhead{display:flex;justify-content:space-between;align-items:center;color:#7C8894;
+ font:600 10px/1 system-ui;letter-spacing:.14em;text-transform:uppercase;padding:2px 3px}
+
 /* ---------- рабочая зона ---------- */
 .work{display:flex;flex-direction:column;gap:10px;min-width:0}
 .stagewrap{position:relative}
@@ -124,6 +204,9 @@ hr{border:0;border-top:1px solid rgba(27,58,70,.7);margin:12px 0}
 <body>
 <header>
   <div class="brand"><h1>RAGNELL</h1><span>that darkness · studio</span></div>
+  <div class="modeswitch" id="modeswitch">
+    <button class="on" data-m="lite">Simple</button><button data-m="pro">Pro</button>
+  </div>
   <div class="stat">
     <span class="badge" id="bOut">—</span>
     <span class="badge" id="bFps">— fps</span>
@@ -131,7 +214,7 @@ hr{border:0;border-top:1px solid rgba(27,58,70,.7);margin:12px 0}
   </div>
 </header>
 
-<main class="app">
+<main class="app" id="app">
 <aside id="panel">
 
 <details class="box" open><summary>Source <span class="n">01</span></summary><div class="body">
@@ -294,6 +377,7 @@ hr{border:0;border-top:1px solid rgba(27,58,70,.7);margin:12px 0}
    <div class="stage" id="stage"><canvas id="cv"></canvas><canvas id="mk"></canvas><canvas id="pc"></canvas></div>
    <div class="hud"><span id="hRes">—</span><span id="hFps">—</span></div>
  </div>
+ <div id="statebox"><span class="spin" id="spinner" style="display:none"></span><span id="statetxt">Готов к генерации</span></div>
  <progress id="bar" value="0" max="1"></progress>
  <div class="transport">
    <button id="pv">Preview</button>
@@ -310,6 +394,73 @@ hr{border:0;border-top:1px solid rgba(27,58,70,.7);margin:12px 0}
  <div id="log"></div>
  <div id="clips"></div>
 </section>
+
+<aside id="lite">
+  <div class="lcard">
+    <div class="ltabs" id="ltabs">
+      <button class="on" data-g="t2v">Text → Video</button>
+      <button data-g="i2v">Image → Video</button>
+      <button data-g="kf">Keyframes</button>
+      <button data-g="motion">Motion brush</button>
+      <button data-g="v2v">Video → Video</button>
+      <button data-g="blend">Blend</button>
+    </div>
+
+    <textarea class="lprompt" id="lp" placeholder="Describe your shot: subject, light, camera move…"></textarea>
+    <div class="lhints">
+      <span class="lhint" id="lidea">✦ Get inspirations</span>
+      <span class="lhint" id="lplus">＋ Details</span>
+      <span class="lhint" id="lneg">⊘ No blur</span>
+    </div>
+
+    <div id="linputs"></div>
+
+    <div class="llabel">Creativity <span id="lcv">balanced</span></div>
+    <input type="range" class="lrange" id="lcrea" min="0" max="100" value="55">
+
+    <div class="llabel">Mode</div>
+    <div class="lrow" id="lmode">
+      <button class="lchip on" data-v="standard">Standard</button>
+      <button class="lchip" data-v="pro">Pro quality</button>
+      <button class="lchip" data-v="master">Master</button>
+    </div>
+
+    <div class="llabel">Duration</div>
+    <div class="lrow" id="ldur">
+      <button class="lchip" data-v="5">5s</button>
+      <button class="lchip on" data-v="10">10s</button>
+      <button class="lchip" data-v="3">3s</button>
+      <button class="lchip" data-v="15">15s</button>
+    </div>
+
+    <div class="llabel">Frame</div>
+    <div class="lrow" id="laspect">
+      <button class="lchip on" data-v="9:16">9:16</button>
+      <button class="lchip" data-v="16:9">16:9</button>
+      <button class="lchip" data-v="1:1">1:1</button>
+      <button class="lchip" data-v="4:5">4:5</button>
+      <button class="lchip" data-v="21:9">21:9</button>
+    </div>
+
+    <div class="llabel">FPS</div>
+    <div class="lrow" id="lfps">
+      <button class="lchip" data-v="24">24</button>
+      <button class="lchip on" data-v="30">30</button>
+      <button class="lchip" data-v="60">60</button>
+    </div>
+
+    <button class="lgen" id="lgen">Generate</button>
+    <div class="lmeta"><span id="lsum">9:16 · 720p · 30 fps · 10s</span><span id="lcost">local</span></div>
+  </div>
+</aside>
+
+<aside id="queue">
+  <div class="lcard">
+    <div class="qhead"><span>Queue</span><span id="qcount">0</span></div>
+    <div id="qlist" style="display:flex;flex-direction:column;gap:7px;margin-top:9px"></div>
+    <div class="lnote">Всё считается в браузере — очередь мгновенная, кредитов нет.</div>
+  </div>
+</aside>
 </main>
 <script>
 /* =========================================================
@@ -1547,9 +1698,237 @@ $('#jx').onclick = async ()=>{
   log('Job JSON выгружен');
 };
 
+
+/* =========================================================
+   SIMPLE MODE — шесть способов генерации, минимум настроек
+   ========================================================= */
+let GENMODE = 't2v', CREA = 55, LMODE = 'standard', LDUR = 10, LASPECT = '9:16', LFPS = 30;
+const LITE_INPUTS = {
+  t2v: [],
+  i2v: [['start','Start frame','img']],
+  kf:  [['start','Start frame','img'],['end','End frame','img']],
+  motion: [['start','Start frame','img'],['tool','Paint motion','paint']],
+  v2v: [['video','Source video','vid']],
+  blend: [['start','Image A','img'],['end','Image B','img']]
+};
+const GEN_INFO = {
+  t2v:'Текст → видео. Опиши сцену — студия соберёт кадр и движение.',
+  i2v:'Картинка → видео. Оживляем статичный кадр камерой и эффектами.',
+  kf:'Ключевые кадры. Морфинг из первого кадра во второй.',
+  motion:'Кисть движения. Выдели область — она поплывёт или пойдёт по линии.',
+  v2v:'Видео → видео. Пересборка, ре-кат, смена стиля и скорости.',
+  blend:'Blend. Плавный переход между двумя кадрами.'
+};
+
+function liteInputs(){
+  const box = $('#linputs'); box.innerHTML = '';
+  (LITE_INPUTS[GENMODE]||[]).forEach(([key,label,kind])=>{
+    if(kind==='paint'){
+      const d = document.createElement('div');
+      d.className='lrow'; d.style.marginTop='8px';
+      d.innerHTML = `<button class="lchip" id="lpaint">✏ Рисовать область</button>
+        <span class="lmeta" style="margin:0;align-self:center">flow</span>`;
+      box.append(d);
+      $('#lpaint').onclick = ()=>{
+        const on = !document.body.classList.contains('painting');
+        setPainting(on);
+        $('#lpaint').classList.toggle('on', on);
+        $('#lpaint').textContent = on ? '✕ Готово' : '✏ Рисовать область';
+      };
+      return;
+    }
+    const d = document.createElement('div');
+    d.className='llabel'; d.textContent = label;
+    const sl = document.createElement('div');
+    sl.className='lslot';
+    const add = document.createElement('label');
+    add.className='ladd';
+    add.innerHTML = `<span>＋</span><input type="file" accept="${kind==='vid'?'video/*':'image/*'}">`;
+    const inp = add.querySelector('input');
+    inp.onchange = e => {
+      const f = e.target.files[0]; if(!f) return;
+      if(kind==='vid'){
+        FILEV = f; VID.srcObject=null; VID.src=URL.createObjectURL(f); hasVid=true;
+        VID.onloadeddata = ()=>{ draw0(); setState('Видео загружено — жми Generate'); };
+      } else {
+        const i = new Image();
+        i.onload = ()=>{
+          IMG[key==='start'?'s':'e'] = i; IMG.id=(IMG.id||0)+1; hasVid=false;
+          add.innerHTML = `<img src="${i.src}">`; draw0();
+          setState('Кадр загружен');
+        };
+        i.src = URL.createObjectURL(f);
+      }
+    };
+    sl.append(add); box.append(d, sl);
+  });
+  if(GENMODE!=='i2v' && GENMODE!=='kf' && GENMODE!=='motion' && GENMODE!=='blend'){
+    IMG.s = IMG.e = null; hasVid = false;
+  }
+}
+
+function setState(txt, busy){
+  const b = $('#statebox'); if(!b) return;
+  $('#statetxt').textContent = txt;
+  $('#spinner').style.display = busy ? 'block' : 'none';
+  b.style.borderColor = busy ? 'rgba(161,193,129,.5)' : '#1B222B';
+}
+
+/* применение simple-настроек в движок */
+function applyLite(){
+  const map = {standard:'high', pro:'master', master:'master'};
+  $('#quality').value = map[LMODE] || 'high';
+  $('#res').value = LMODE==='master' ? '1080p' : LMODE==='pro' ? '1080p' : '720p';
+  $('#ss').checked = LMODE==='master';
+  $('#aspect').value = LASPECT;
+  $('#fps').value = String(LFPS);
+  const d = $('#dur'); d.value = LDUR; d.dispatchEvent(new Event('input'));
+  const stk = CREA/100;
+  $('#stk').value = stk;
+  /* креативность = сила стиля + размах камеры */
+  if(CREA>66){ $('#shake').value = .15; $('#zoom').value = .3; }
+  else if(CREA<33){ $('#shake').value = 0; $('#zoom').value = .12; }
+  else { $('#shake').value = .05; $('#zoom').value = .2; }
+  setLogical();
+  $('#lsum').textContent = `${LASPECT} · ${$('#res').value} · ${LFPS} fps · ${LDUR}s`;
+  $('#lcost').textContent = LMODE==='master' ? 'max' : LMODE==='pro' ? 'high' : 'local';
+}
+
+function setGenMode(g){
+  GENMODE = g;
+  $$('#ltabs button').forEach(b=>b.classList.toggle('on', b.dataset.g===g));
+  if(g==='t2v'){ $('#prompt').value = $('#lp').value; }
+  if(g==='kf' || g==='blend'){ $('#selmode') && 0; }
+  if(g==='motion'){
+    $('#mmode').value = 'flow';
+    document.querySelectorAll('.box')[3].open = true;
+  }
+  liteInputs();
+  setState(GEN_INFO[g]);
+  draw0();
+}
+
+function doGenerate(){
+  const btn = $('#lgen');
+  if(btn.disabled) return;
+  btn.disabled = true;
+  setState('Генерация… не закрывай вкладку', true);
+  $('#prompt').value = $('#lp').value || $('#prompt').value;
+  applyLite();
+
+  /* подбираем тип генерации в движке */
+  if(GENMODE==='kf' || GENMODE==='blend'){ /* два кадра уже в IMG */ }
+  else if(GENMODE==='i2v' || GENMODE==='motion'){ IMG.e = null; }
+  else if(GENMODE==='t2v'){ IMG.s = IMG.e = null; hasVid = false; }
+  else if(GENMODE==='v2v'){ /* видео уже в VID */ }
+
+  pushQueue('rendering');
+
+  const t0 = performance.now();
+  const iv = setInterval(()=>{
+    const el = (performance.now()-t0)/1000;
+    setState(`Генерация… ${el.toFixed(1)}s / ${LDUR}s`, true);
+  }, 200);
+
+  const origAdd = addClip;
+  const watcher = setInterval(()=>{
+    if(!run){
+      clearInterval(iv); clearInterval(watcher);
+      btn.disabled = false;
+      setState('Готово — клип внизу страницы');
+      refreshQueue();
+    }
+  }, 300);
+
+  renderClip({len: LDUR});
+}
+
+function pushQueue(state){
+  const q = $('#qlist');
+  const d = document.createElement('div');
+  d.className='qitem'; d.dataset.state = state;
+  const thumb = (IMG.s && IMG.s.src) ? `<img src="${IMG.s.src}">` : '✦';
+  d.innerHTML = `<div class="th">${thumb}</div>
+    <div><div class="nm">${($('#lp').value||'Untitled').slice(0,34)}</div>
+    <div class="st">${LASPECT} · ${LDUR}s · ${state}</div></div>`;
+  q.prepend(d);
+  refreshQueue();
+}
+function refreshQueue(){
+  const items = [...document.querySelectorAll('#qlist .qitem')];
+  $('#qcount').textContent = items.length;
+  const clips = [...document.querySelectorAll('#clips .clip')];
+  items.forEach((it,i)=>{
+    const clip = clips[i];
+    if(clip && !it.querySelector('a')){
+      const url = clip.querySelector('a')?.getAttribute('href');
+      if(url){ const a = document.createElement('a'); a.href=url; a.download='ragnell.mp4'; a.textContent='↓'; it.append(a); }
+      it.dataset.state='ready';
+      it.querySelector('.st').textContent = it.querySelector('.st').textContent.replace('rendering','ready');
+    }
+  });
+}
+
+/* ---------- слушатели simple ---------- */
+$$('#modeswitch button').forEach(b=>{
+  b.onclick = ()=>{
+    $$('#modeswitch button').forEach(x=>x.classList.toggle('on', x===b));
+    const m = b.dataset.m;
+    document.body.classList.toggle('mode-lite', m==='lite');
+    if(m==='lite'){ applyLite(); liteInputs(); setState(GEN_INFO[GENMODE]); }
+    setTimeout(()=>{ setLogical(); draw0(); }, 50);
+  };
+});
+$$('#ltabs button').forEach(b=>b.onclick = ()=> setGenMode(b.dataset.g));
+function bindChips(sel, setter){
+  $$(sel+' .lchip').forEach(b=>{
+    b.onclick = ()=>{
+      $$(sel+' .lchip').forEach(x=>x.classList.toggle('on', x===b));
+      setter(b.dataset.v);
+      applyLite(); draw0();
+    };
+  });
+}
+bindChips('#lmode', v=> LMODE=v);
+bindChips('#ldur', v=> LDUR=+v);
+bindChips('#laspect', v=> LASPECT=v);
+bindChips('#lfps', v=> LFPS=+v);
+$('#lcrea').addEventListener('input', ()=>{
+  CREA = +$('#lcrea').value;
+  $('#lcv').textContent = CREA>66 ? 'bold' : CREA<33 ? 'faithful' : 'balanced';
+  applyLite(); draw0();
+});
+$('#lgen').onclick = doGenerate;
+$('#lidea').onclick = ()=>{
+  const ideas = [
+    'first person walking through a rainy neon alley, slow push in, reflective puddles, anamorphic flare',
+    'macro shot of ink blooming in water, backlit, slow motion, black background',
+    'a lone figure on a cliff at dawn, wide drone flyover, volumetric fog, cold palette',
+    'vintage diner at night, handheld camera, warm tungsten light, 16mm grain',
+    'portal opening in a dark room, particles spiraling inward, rapid zoom into the center'
+  ];
+  $('#lp').value = ideas[Math.floor(Math.random()*ideas.length)];
+  setState('Идея подставлена');
+};
+$('#lplus').onclick = ()=>{
+  const b = ($('#lp').value||'').trim();
+  if(!b) return setState('Сначала напиши идею');
+  const add = ['volumetric light, soft haze','shallow depth of field, 35mm','slow cinematic motion','rich contrast, deep shadows','fine grain, subtle halation'];
+  $('#lp').value = b.replace(/[.,\s]+$/,'') + ', ' + add[Math.floor(Math.random()*add.length)];
+  setState('Детали добавлены');
+};
+$('#lneg').onclick = ()=>{
+  $('#neg').value = 'blurry, low quality, warped faces, extra fingers, watermark, text overlay, flicker';
+  setState('Негативный промпт усилен');
+};
+applyLite();
+setGenMode('t2v');
+
 /* ================= СТАРТ ================= */
 setLogical();
 loadChars();
+document.body.classList.add('mode-lite');
+applyLite();
 draw0();
 log('Ragnell готов. Всё считается локально.');
 window.addEventListener('resize', ()=>{ draw0(); });
