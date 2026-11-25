@@ -51,7 +51,28 @@ canvas#edge{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-
   #title::before{letter-spacing:0;text-shadow:
     0 0 1px rgba(6,20,26,.9),
     1px 1px 0 #E4EEE9,2px 2px 0 #D6E4DE,3px 3px 0 #C8D9D2,4px 4px 0 #BAD0C7,
-    5px 5px 0 #ACC6BC,6px 6px 0 #9EBCB1,7px 7px 0 #90B2A6,9px 10px 8px rgba(0,0,0,.45),0 18px 20px rgba(0,0,0,.4)}}@media (max-width:520px){
+    5px 5px 0 #ACC6BC,6px 6px 0 #9EBCB1,7px 7px 0 #90B2A6,9px 10px 8px rgba(0,0,0,.45),0 18px 20px rgba(0,0,0,.4)}}
+/* Тень логотипа: отблик на воде. Видна только на вспышке молнии.
+   Садим низко, на тёмную воду — там контраст есть, под порталом его нет. */
+#tdshadow{position:fixed;left:0;right:0;top:73vh;z-index:3;pointer-events:none;
+  text-align:center;opacity:0;will-change:opacity,transform;
+  font:800 clamp(28px,7.1vw,78px)/1 "Baloo 2",system-ui,sans-serif;
+  text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;
+  color:rgba(196,244,236,.95);
+  transform:scaleY(.82) scaleX(1.02);transform-origin:50% 0;
+  filter:blur(1.6px);
+  text-shadow:0 0 14px rgba(140,235,220,.95),0 0 34px rgba(90,190,180,.7)}
+#tdshadow.strike{animation:tds 1.4s ease-out}
+@keyframes tds{
+  0%{opacity:0;transform:scaleY(.72) scaleX(1.02) translateY(-3px)}
+  8%{opacity:.95;transform:scaleY(.84) scaleX(1.03) translateY(0)}
+  16%{opacity:.3}
+  26%{opacity:.9;transform:scaleY(.82) scaleX(1.02)}
+  42%{opacity:.42}
+  70%{opacity:.15}
+  100%{opacity:0;transform:scaleY(.88) scaleX(1.04) translateY(2px)}}
+@media (prefers-reduced-motion:reduce){#tdshadow.strike{animation-duration:1.9s}}
+</style>@media (max-width:520px){
   #hint{gap:3px;bottom:max(10px,env(safe-area-inset-bottom));left:0;right:0;opacity:.66}
   #hint .credit-line{font-size:8.2px;letter-spacing:.08em}
   #hint .credit-line:nth-child(2){font-size:7.4px;letter-spacing:.04em}
@@ -311,7 +332,7 @@ body.tp-out .win:not(.prodwin){animation:winSuck .7s ease-in forwards}
 </head>
 <body>
 <canvas id="c"></canvas>
-<h1 id="title" data-t="THAT DARKNESS">THAT DARKNESS</h1>
+<div id="tdshadow" aria-hidden="true">That Darkness</div>
 <div id="hint"><span class="credit-line">Made with the support of <b>Arena</b> · Agent Mode</span>
   <span class="credit-line">Built by <b>NeWerMoRe</b> (Author) — First Assistant of the Creator</span>
   <span class="credit-line credit-year">Project Gate · © <b>2027</b></span></div>
@@ -1074,5 +1095,34 @@ loop();
 <script src="portal-box.js?v=4"></script>
 <script src="credits.js"></script>
 
+<script>/* ============ Тень вместо надписи ============
+   Логика вспышек повторяет ту же, что в шейдере неба (period 3s, seed 1.7),
+   чтобы тень проступала именно тогда, когда бьёт молния. */
+(function(){
+  var el = document.getElementById('tdshadow');
+  if(!el) return;
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function h1(x){ var s=Math.sin(x*127.1)*43758.5453; return s-Math.floor(s); }
+  var next = 0;
+  function schedule(){
+    var t = performance.now()/1000;
+    var k = Math.floor(t/3);
+    var r = h1(k*1.7 + 0.37);
+    // вспышка есть только когда r > .25 — как в шейдере
+    next = (r > 0.25) ? (k+1)*3 + r*2.5 : (k+1)*3 + 0.4;
+    var wait = Math.max(600, (next - t)*1000);
+    if (reduce) wait = Math.max(4000, wait);
+    setTimeout(strike, wait);
+  }
+  function strike(){
+    el.classList.remove('strike');
+    void el.offsetWidth;
+    el.classList.add('strike');
+    schedule();
+  }
+  // первая тень — через секунду после входа, чтобы сразу было видно, что она есть
+  setTimeout(strike, 1200);
+})();
+</script>
 </body>
 </html>
