@@ -687,9 +687,7 @@ float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
 float n(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h(i),h(i+vec2(1,0)),f.x),mix(h(i+vec2(0,1)),h(i+vec2(1,1)),f.x),f.y);}
 float fbm(vec2 p){float v=0.,a=.5;for(int i=0;i<4;i++){v+=a*n(p);p=p*2.03+vec2(7.1,3.7);a*=.5;}return v;}
 float flash(float t){float P=uFlashRate;float k=floor(t/P),r=h(vec2(k,1.7));float ph=fract(t/P)*P-r*2.5*(P/3.0);
- // медленное затухание + послесвечение: вспышка живёт дольше, но не залипает
- return step(.25,r)*(exp(-abs(ph)*5.5)*(.6+.4*sin(ph*60.))+.55*exp(-abs(ph-.35)*5.)
-        +.30*exp(-abs(ph-1.1)*2.4));}
+ return step(.25,r)*(exp(-abs(ph)*9.)*(.6+.4*sin(ph*60.))+.5*exp(-abs(ph-.35)*7.));}
 float ocean(vec2 p,float t){p.y-=t*.5;float a=1.,s=0.;mat2 m=mat2(.8,.6,-.6,.8);
  for(int i=0;i<4;i++){float w=1.-abs(sin(p.x+t*(.9+float(i)*.25)+n(p*.8+t*.1)*3.));s+=a*w*w;p=m*p*1.85;a*=.5;}
  return s*.5;}
@@ -738,12 +736,22 @@ void main(){
   col+=vec3(.5,.6,.72)*foam*(.22+.9*fl);
   col=mix(col,skyL(vec3(rd.x,0.,rd.z),fl,lx),1.-exp(-tt*.012));
  }
- /* Тень слова за тучами: видна только на вспышке, гаснет вместе с ней. */
- vec2 wuv=vec2((uv.x-.5)/.93+.5,(uv.y-.845)/.125);
- if(wuv.x>0.&&wuv.x<1.&&wuv.y>0.&&wuv.y<1.){
-   float w=texture2D(uWord,wuv).a;
-   float lit=clamp(fl*1.7,0.,1.);   // тень чуть плотнее самой вспышки: иначе тонет
-   col*=1.-w*uWordAmt*lit;
+ /* Вывеска за тучами: висит в небе всегда, колышется на ветру.
+    Молния не проявляет её, а наоборот забивает светом — на вспышке силуэт пропадает. */
+ {
+  float sway=sin(t*.42)*.016+sin(t*.27+1.7)*.011;          // медленное колыхание
+  float breathe=sin(t*.63+.9)*.011;                         // дыхание по высоте
+  float ripple=sin(uv.x*7.5+t*.85)*.0045+sin(uv.x*3.1-t*.55)*.0035; // волна по полотнищу
+  vec2 wuv=vec2((uv.x-.5)/.90+.5+sway,(uv.y-.845-breathe+ripple)/.115);
+  if(wuv.x>0.&&wuv.x<1.&&wuv.y>0.&&wuv.y<1.){
+    float w=texture2D(uWord,wuv).a;
+    float cl=fbm(vec2(uv.x*5.+t*.07,uv.y*7.-t*.05));        // клочья туч по краю силуэта
+    w*=smoothstep(.30,.95,cl+.35);
+    float lit=1.-clamp(fl*1.35,0.,1.);                      // вспышка съедает тень
+    float a=w*uWordAmt*lit;
+    col*=1.-a*.55;                                          // буквы чуть темнее неба
+    col+=vec3(.10,.155,.245)*a*1.15;                        // и холодно светятся изнутри: так силуэт читается на чёрном
+  }
  }
  vec2 pd=(uv-uPc)*vec2(asp,1.);col+=uPcol*.05*uPI*exp(-length(pd)/(uPr*2.2));   // soft light in the air around the portal
  col=mix(vec3(dot(col,vec3(.3,.5,.2))),col,.78)*.62;                    // gloomier: desaturate + darken
@@ -1154,8 +1162,8 @@ loop();
 (function(){
   function arm(){
     if(!window.__BU || !window.__BU.uWordAmt){ return false; }
-    window.__BU.uWordAmt.value = 1;
-    window.__BU.uFlashRate.value = 4.2;
+    window.__BU.uWordAmt.value = .50;   // небольшой контраст: тень скорее чудится
+    window.__BU.uFlashRate.value = 3.0; // молния в исходном темпе
     return true;
   }
   var tries=0;
