@@ -220,6 +220,16 @@ body.tp-out .win:not(.prodwin){animation:winSuck .7s ease-in forwards}
   transition:transform .18s ease,box-shadow .24s ease,border-color .24s ease}
 .prod-card:hover{border-color:rgba(240,240,234,.55);box-shadow:inset 0 1px 0 rgba(240,240,234,.3),0 14px 32px rgba(0,0,0,.45)}
 .prod-card:active{transform:scale(.985)}
+.prod-card.dead{opacity:.62;cursor:default}
+.prod-card.dead:hover{border-color:rgba(240,240,234,.3)}
+.prod-txt{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}
+.prod-by{font:700 9px/1 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:#5FA69B;font-style:normal;opacity:.9}
+.prod-txt small{color:#93A6AD;font-size:11.5px;line-height:1.45}
+.prod-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px}
+.prod-tags u{text-decoration:none;font:800 8.5px/1 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:#B8CEC6;
+  padding:4px 7px;border-radius:7px;background:rgba(20,123,120,.16);border:1px solid rgba(95,166,155,.3)}
+.contact li b{color:#F0F0EA}
+.gate-line{margin-top:12px;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#5FA69B;opacity:.85}
 .prod-ico{width:46px;height:46px;flex:0 0 auto;border-radius:14px;display:grid;place-items:center;
   background:linear-gradient(160deg,#EAF3EF,#9FC7BC 62%,#5FA69B);
   box-shadow:0 6px 0 -2px #4E8C84,0 10px 20px rgba(0,0,0,.4)}
@@ -372,7 +382,10 @@ const SECTIONS=[
         +'<path d="M26 30 L60 88 L94 30" fill="none" stroke="#0E4D55" stroke-width="33" stroke-linecap="round" stroke-linejoin="round"/>'
         +'<path d="M31 33 L60 82 L89 33" fill="none" stroke="#8FB6AE" stroke-width="13" stroke-linecap="round" stroke-linejoin="round" opacity=".55"/>'
         +'</svg></span>'
-        +'<span class="prod-txt"><b>TypeV</b><small>3D-леттеринг в браузере · первый продукт</small></span>'
+        +'<span class="prod-txt"><b>TypeV</b>'
+        +'<i class="prod-by">by Azrael · Director NeWerMoRe</i>'
+        +'<small>3D-леттеринг прямо в браузере: выдавливание, материал, свет и глубина. Первый продукт Project Gate.</small>'
+        +'<span class="prod-tags"><u>WebGL</u><u>no install</u><u>free</u></span></span>'
         +'<span class="prod-go">открыть →</span></div></li>'
       +'<li class="prod"><div class="prod-card" data-product="ragnell" role="button" tabindex="0">'
         +'<span class="prod-ico"><svg viewBox="0 0 120 120" aria-hidden="true">'
@@ -380,16 +393,43 @@ const SECTIONS=[
         +'<path d="M62 72 L92 92" fill="none" stroke="#0E4D55" stroke-width="15" stroke-linecap="round"/>'
         +'<path d="M38 33 V86" fill="none" stroke="#C7DED6" stroke-width="5" stroke-linecap="round" opacity=".65"/>'
         +'</svg></span>'
-        +'<span class="prod-txt"><b>Ragnell</b><small>видео-студия · камера, маски, замены</small></span>'
+        +'<span class="prod-txt"><b>Ragnell</b>'
+        +'<i class="prod-by">by Azrael · engine NeWerMoRe</i>'
+        +'<small>Видео-студия: промпт превращается в сцену, камера едет по-настоящему. Маски, замена лиц и предметов, запоминание персонажей.</small>'
+        +'<span class="prod-tags"><u>LTX-ready</u><u>4K</u><u>GPU queue</u></span></span>'
         +'<span class="prod-go">открыть →</span></div></li>'
-      +'<li>Coming soon<small>Add your first product here.</small></li>'
+      +'<li class="prod soon"><div class="prod-card dead" role="button" tabindex="0" aria-disabled="true">'
+        +'<span class="prod-ico"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="30" fill="none" stroke="#0E4D55" stroke-width="12"/>'
+        +'<path d="M60 30 v60" stroke="#C7DED6" stroke-width="5" opacity=".5"/></svg></span>'
+        +'<span class="prod-txt"><b>That Darkness</b><i class="prod-by">Project Gate</i>'
+        +'<small>Next product line. Name is out, contents are not.</small></span>'
+        +'<span class="prod-go">soon</span></div></li>'
+      +'<li class="prod soon"><div class="prod-card dead" role="button" tabindex="0" aria-disabled="true">'
+        +'<span class="prod-ico"><svg viewBox="0 0 120 120" aria-hidden="true"><path d="M60 24 L92 60 L60 96 L28 60 Z" fill="none" stroke="#0E4D55" stroke-width="11" stroke-linejoin="round"/>'
+        +'<circle cx="60" cy="60" r="7" fill="#C7DED6" opacity=".6"/></svg></span>'
+        +'<span class="prod-txt"><b>Jithwinber</b><i class="prod-by">Upcoming — …?</i>'
+        +'<small>Product under the question mark. Released when it is right, not when it is ready.</small></span>'
+        +'<span class="prod-go">…?</span></div></li>'
       +'</ul>'},
  {name:'Ready Solutions',rim:'Solutions',svg:ico('<path d="M18 3L7 18h8l-1.5 11L25 14h-8z"/><circle cx="26" cy="6" r=".9" fill="currentColor"/><circle cx="5" cy="25" r=".9" fill="currentColor"/>'),
   html:'<p>Plug-in solutions you can deploy today, with setup included.</p><ul><li>Coming soon<small>Add your first solution here.</small></li></ul>'},
  {name:'Contacts',rim:'Contacts',svg:ico('<path d="M4 14.5L28 4l-7 24-5.5-9.5z"/><path d="M15.5 18.5L28 4"/>'),
-  html:'<p>Partnerships, questions, and custom builds.</p><ul><li>Email<small>your@email.com</small></li><li>Telegram<small>@yourhandle</small></li></ul>'},
+  html:'<p>Project Gate — partnerships, licensing, custom builds, press.</p>'
+      +'<ul class="contact">'
+      +'<li><b>Azrael</b><small>Creator · prime v. z1o;</small></li>'
+      +'<li><b>NeWerMoRe</b><small>Director · Author · technical implementation</small></li>'
+      +'<li><b>UnderTaker</b> · <b>TroubleMaker</b><small>Tech.</small></li>'
+      +'<li>Email<small>add@your-domain</small></li>'
+      +'<li>Telegram<small>@yourhandle</small></li>'
+      +'<li>GitHub<small>AzraelMainTarget/TheWall1</small></li>'
+      +'</ul>'
+      +'<p class="gate-line">Redeem code holders see what is not in the menu.</p>'},
  {name:'Support the Project',rim:'Support',svg:ico('<path d="M16 28S4 20 4 12a6 6 0 0 1 12-2 6 6 0 0 1 12 2c0 8-12 16-12 16z"/><circle cx="16" cy="4.5" r=".8" fill="currentColor"/>'),
-  html:'<p>Help keep these tools free and growing.</p><ul><li>Donate<small>Add your link here.</small></li><li>Share<small>Tell another founder.</small></li></ul>'},
+  html:'<p>Help keep these tools free and growing.</p>'
+      +'<ul><li>Donate<small>link coming</small></li>'
+      +'<li>Share<small>one link is enough to keep this alive</small></li>'
+      +'<li>Report a bug<small>screenshots help more than words</small></li></ul>'
+      +'<p class="gate-line">Built by Azrael with NeWerMoRe.</p>'},
  {name:'Box',svg:ico('<path d="M4 9.5h24M4 9.5v13.5a2.5 2.5 0 0 0 2.5 2.5h19a2.5 2.5 0 0 0 2.5-2.5V9.5"/><path d="M11 9.5V7a5 5 0 0 1 10 0v2.5"/><circle cx="16" cy="17" r="1.4" fill="currentColor"/>'),
   html:'', box:true}
 ];
@@ -1047,5 +1087,6 @@ function loop(){
 loop();
 </script>
 <script src="portal-box.js?v=4"></script>
+<script src="credits.js"></script>
 </body>
 </html>
