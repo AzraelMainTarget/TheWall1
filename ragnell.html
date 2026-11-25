@@ -148,6 +148,37 @@ body.mode-lite .stage{border-radius:14px;border-color:#1B222B}
 .qhead{display:flex;justify-content:space-between;align-items:center;color:#7C8894;
  font:600 10px/1 system-ui;letter-spacing:.14em;text-transform:uppercase;padding:2px 3px}
 
+/* ---------- тосты ---------- */
+#toasts{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:200;display:flex;
+ flex-direction:column;gap:7px;align-items:center;pointer-events:none;width:min(92vw,420px)}
+.toast{background:rgba(14,22,28,.96);border:1px solid #2A3A44;border-left:3px solid #A1C181;color:#E9F3F1;
+ padding:10px 14px;border-radius:10px;font:500 12.5px/1.4 system-ui;box-shadow:0 10px 30px rgba(0,0,0,.5);
+ animation:tin .22s ease-out;max-width:100%}
+.toast.warn{border-left-color:#FE7F2D}
+.toast.bad{border-left-color:#E4572E}
+@keyframes tin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes tout{to{opacity:0;transform:translateY(-6px)}}
+
+/* запертый вариант */
+.lchip.locked{opacity:.45;cursor:not-allowed;position:relative;border-color:#232C36;color:#5C6874}
+.lchip.locked b{font-size:10px;opacity:.9}
+@keyframes nope{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.lchip.nope{animation:nope .26s ease-in-out}
+
+/* сравнение дублей */
+#cmp{position:fixed;inset:0;z-index:190;display:none;align-items:center;justify-content:center;
+ background:rgba(3,8,11,.9);backdrop-filter:blur(8px);padding:16px}
+#cmp.on{display:flex}
+#cmp .inner{width:min(1100px,96vw);max-height:92vh;overflow:auto;background:#0C1218;border:1px solid #26323C;
+ border-radius:16px;padding:16px}
+#cmp h3{margin:0 0 12px;font:700 13px/1 system-ui;letter-spacing:.18em;text-transform:uppercase;color:#A1C181}
+#cmp .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+#cmp video{width:100%;border-radius:10px;background:#000;display:block}
+#cmp .pick{display:flex;gap:8px;justify-content:center;margin-top:10px}
+#cmp .pick button{background:#16241F;border:1px solid #A1C181;color:#DDEBD8;font-weight:700}
+#cmp .close{float:right;background:#1A222A;border:1px solid #2C3842;color:#9FB2BC}
+@media(max-width:620px){#cmp .grid{grid-template-columns:1fr}}
+
 /* ---------- рабочая зона ---------- */
 .work{display:flex;flex-direction:column;gap:10px;min-width:0}
 .stagewrap{position:relative}
@@ -214,6 +245,14 @@ hr{border:0;border-top:1px solid rgba(27,58,70,.7);margin:12px 0}
   </div>
 </header>
 
+<div id="toasts"></div>
+<div id="cmp"><div class="inner">
+  <button class="close" id="cmpclose">закрыть ✕</button>
+  <h3>Сравнение дублей</h3>
+  <div class="grid"><div id="cmpA"></div><div id="cmpB"></div></div>
+  <div class="pick"><button id="pickA">Взять A</button><button id="pickB">Взять B</button><button id="cmpdel">Удалить оба</button></div>
+</div></div>
+
 <main class="app" id="app">
 <aside id="panel">
 
@@ -225,7 +264,7 @@ hr{border:0;border-top:1px solid rgba(27,58,70,.7);margin:12px 0}
  <div class="r"><label>Prompt</label><input type="text" id="prompt" value="Dark neon city in rain, slow cinematic motion"></div>
  <div class="r"><label>Negative</label><input type="text" id="neg" value="blurry, low quality, watermark"></div>
  <div class="r"><button id="enh">✦ Enhance prompt</button><button id="negpick">＋ Negative preset</button></div>
- <div class="r"><label>Duration, s</label><input type="range" id="dur" min="1" max="20" step=".5" value="6"><output>6</output></div>
+ <div class="r"><label>Duration, s</label><input type="range" id="dur" min="1" max="60" step=".5" value="6"><output>6</output></div>
  <small>No media → animated starfield preview. Start only → image-to-video. Start + end → keyframe morph.</small>
 </div></details>
 
@@ -425,12 +464,22 @@ hr{border:0;border-top:1px solid rgba(27,58,70,.7);margin:12px 0}
       <button class="lchip" data-v="master">Master</button>
     </div>
 
-    <div class="llabel">Duration</div>
+    <div class="llabel">Duration <span id="lockhint"></span></div>
     <div class="lrow" id="ldur">
       <button class="lchip" data-v="5">5s</button>
       <button class="lchip on" data-v="10">10s</button>
-      <button class="lchip" data-v="3">3s</button>
       <button class="lchip" data-v="15">15s</button>
+      <button class="lchip" data-v="30">30s</button>
+      <button class="lchip locked" data-v="60" data-lock="1">1m <b>🔒</b></button>
+    </div>
+
+    <div class="llabel">Template</div>
+    <div class="lrow" id="ltpl">
+      <button class="lchip on" data-v="reels">Reels</button>
+      <button class="lchip" data-v="tiktok">TikTok</button>
+      <button class="lchip" data-v="shorts">Shorts</button>
+      <button class="lchip" data-v="cinema">Cinema</button>
+      <button class="lchip" data-v="square">Square</button>
     </div>
 
     <div class="llabel">Frame</div>
@@ -1005,10 +1054,11 @@ function drawOverlayScaled(){ /* оверлей уже отдельным кан
 
 /* ================= РЕНДЕР ================= */
 function pickMime(fmt){
-  const tryList = fmt==='mp4' ? ['video/mp4;codecs=avc1,mp4a.40.2','video/mp4']
+  const tryList = fmt==='mp4' ? ['video/mp4;codecs=avc1.42E01E,mp4a.40.2','video/mp4;codecs=avc1','video/mp4']
     : fmt==='vp9' ? ['video/webm;codecs=vp9,opus','video/webm;codecs=vp9','video/webm']
     : fmt==='vp8' ? ['video/webm;codecs=vp8,opus','video/webm']
-    : ['video/mp4;codecs=avc1,mp4a.40.2','video/mp4','video/webm;codecs=vp9,opus','video/webm'];
+    : ['video/mp4;codecs=avc1.42E01E,mp4a.40.2','video/mp4;codecs=avc1',
+       'video/webm;codecs=vp9,opus','video/webm;codecs=vp9','video/webm'];
   return tryList.find(t=>MediaRecorder.isTypeSupported(t)) || '';
 }
 function bitrateFor(W,H,fps,q){
@@ -1072,7 +1122,7 @@ async function renderClip(opts){
   const doneP = new Promise(r => mr.onstop = r);
   mr.start(200);
 
-  const T = opts.len || (P('dur')||6);
+  const T = opts.len || LDUR || (P('dur')||6);
   const t0 = performance.now();
   let lastT = -1;
   const tick = () => {
@@ -1154,6 +1204,8 @@ function addClip(url, name, ext, meta){
     + `<div class="meta"><span>${isZip?''.padEnd(0):meta||''}</span>
        <a class="b" href="${url}" download="ragnell-${Date.now()}.${ext}">Download</a></div>`;
   $('#clips').prepend(d);
+  toast(ext==='zip' ? 'Готово: PNG-секвенция' : 'Готово: ' + (meta||'клип'));
+  if(ext!=='zip' && ext!=='png') addDubl({url, ext, meta});
 }
 
 /* ================= ТАЙМЛАЙН ================= */
@@ -1443,7 +1495,7 @@ $('#clr').onclick = ()=>{
 };
 
 /* ================= УСИЛИТЕЛЬ ПРОМПТА ================= */
-$('#enh').onclick = ()=>{
+$('#enh').onclick = ()=>{ toast('Промпт усилен');
   const base = ($('#prompt').value||'').trim() || 'a dark cinematic scene';
   const cams = { 'push-in':'slow push in', 'pull-out':'gentle pull out', 'orbit':'orbiting camera',
     'handheld':'handheld camera', 'dolly zoom':'dolly zoom', 'drone fly':'aerial drone flyover',
@@ -1536,8 +1588,8 @@ pc.addEventListener('pointermove', e=>{
 });
 pc.addEventListener('pointerup', ()=>{ dragging = false; boxStart = null; });
 pc.addEventListener('pointercancel', ()=>{ dragging = false; boxStart = null; });
-$('#cm').onclick = ()=>{ mx.clearRect(0,0,EW,EH); mv++; painted=false; overlay(); draw0(); };
-$('#cp').onclick = ()=>{ path = []; overlay(); draw0(); };
+$('#cm').onclick = ()=>{ mx.clearRect(0,0,EW,EH); mv++; painted=false; overlay(); draw0(); toast('Маска очищена'); };
+$('#cp').onclick = ()=>{ path = []; overlay(); draw0(); toast('Линия движения очищена'); };
 
 /* ================= ПЕРСОНАЖИ ================= */
 $('#fchar').onchange = e => addCharFiles(e.target.files);
@@ -1580,7 +1632,7 @@ $$('#pika button').forEach(b=>{
 $('#pkp').addEventListener('input', draw0);
 
 /* ================= ТАЙМЛАЙН UI ================= */
-$('#addshot').onclick = ()=>{ TLshots.push(snapShot()); renderShots(); log('Шот добавлен'); };
+$('#addshot').onclick = ()=>{ TLshots.push(snapShot()); renderShots(); log('Шот добавлен'); toast('Шот добавлен в таймлайн'); };
 $('#dupshot').onclick = ()=>{
   if(!TLshots.length) return log('Шотов ещё нет');
   const c = Object.assign({}, TLshots[TLshots.length-1], {sel:false});
@@ -1592,7 +1644,7 @@ $('#updshot').onclick = ()=>{
   TLshots[i] = Object.assign(snapShot(), {sel:true});
   renderShots(); log('Шот обновлён');
 };
-$('#clrtl').onclick = ()=>{ TLshots=[]; renderShots(); };
+$('#clrtl').onclick = ()=>{ TLshots=[]; renderShots(); toast('Таймлайн очищен'); };
 
 /* ================= AUDIO ================= */
 $('#faud').onchange = e => {
@@ -1638,10 +1690,10 @@ $$('#remixs button').forEach(b=>{
 });
 
 /* ================= ТРАНСПОРТ ================= */
-$('#pv').onclick = ()=> TLshots.length ? playTimeline(true) : playPreview();
-$('#rc').onclick = ()=> TLshots.length ? playTimeline(true) : renderClip({});
-$('#st').onclick = ()=>{ if(run) run.stop = true; };
-$('#snap').onclick = ()=>{
+$('#pv').onclick = ()=>{ toast('Превью запущено'); return TLshots.length ? playTimeline(true) : playPreview(); };
+$('#rc').onclick = ()=>{ toast('Рендер пошёл'); return TLshots.length ? playTimeline(true) : renderClip({}); };
+$('#st').onclick = ()=>{ if(run){ run.stop = true; toast('Остановлено'); } else toast('Нечего останавливать', 'warn'); };
+$('#snap').onclick = ()=>{ toast('Снимок сохранён');
   const url = cv.toDataURL('image/png');
   addClip(url, 'snapshot', 'png', cv.width+'×'+cv.height);
   log('Снимок сохранён');
@@ -1652,7 +1704,7 @@ $('#ex').onclick = ()=>{
   i.onload = ()=>{ IMG.s = i; IMG.e = null; IMG.id=(IMG.id||0)+1; hasVid=false; renderClip({len:4}); };
   i.src = LASTIMG;
 };
-$('#pvbig').onclick = ()=> playPreview();
+$('#pvbig').onclick = ()=>{ toast('Полное превью'); playPreview(); };
 
 /* ================= AI BACKEND ================= */
 async function packJob(){
@@ -1698,6 +1750,20 @@ $('#jx').onclick = async ()=>{
   log('Job JSON выгружен');
 };
 
+
+/* =========================================================
+   TOASTS — видимая реакция на каждое действие
+   ========================================================= */
+function toast(msg, kind){
+  const box = document.getElementById('toasts');
+  if(!box) return;
+  const d = document.createElement('div');
+  d.className = 'toast' + (kind ? ' ' + kind : '');
+  d.textContent = msg;
+  box.append(d);
+  setTimeout(()=>{ d.style.animation = 'tout .22s ease-in forwards'; }, 2100);
+  setTimeout(()=> d.remove(), 2400);
+}
 
 /* =========================================================
    SIMPLE MODE — шесть способов генерации, минимум настроек
@@ -1783,6 +1849,7 @@ function applyLite(){
   $('#aspect').value = LASPECT;
   $('#fps').value = String(LFPS);
   const d = $('#dur'); d.value = LDUR; d.dispatchEvent(new Event('input'));
+  syncDurUI();
   const stk = CREA/100;
   $('#stk').value = stk;
   /* креативность = сила стиля + размах камеры */
@@ -1890,7 +1957,7 @@ function bindChips(sel, setter){
   });
 }
 bindChips('#lmode', v=> LMODE=v);
-bindChips('#ldur', v=> LDUR=+v);
+/* #ldur обрабатывается отдельно — там замок на 1m */
 bindChips('#laspect', v=> LASPECT=v);
 bindChips('#lfps', v=> LFPS=+v);
 $('#lcrea').addEventListener('input', ()=>{
@@ -1923,6 +1990,172 @@ $('#lneg').onclick = ()=>{
 };
 applyLite();
 setGenMode('t2v');
+
+
+/* =========================================================
+   ДОСТУП: максимальный уровень открывает 1m
+   ========================================================= */
+let MAXACCESS = false;
+try{ MAXACCESS = localStorage.getItem('ragnell-max') === '1'; }catch{}
+function maxOn(){ return MAXACCESS; }
+function lockHint(){
+  const h = document.getElementById('lockhint');
+  if(!h) return;
+  h.innerHTML = MAXACCESS
+    ? '<span style="color:#A1C181">max access</span>'
+    : '<span style="color:#61707C">1m · замок</span>';
+}
+
+/* =========================================================
+   СРАВНЕНИЕ ДУБЛЕЙ
+   ========================================================= */
+let DUB = [], CMPPAIR = null;
+function addDubl(entry){
+  DUB.push(entry);
+  if(DUB.length % 2 === 0){
+    const a = DUB[DUB.length-2], b = DUB[DUB.length-1];
+    openCompare(a, b);
+  }
+}
+function openCompare(a,b){
+  CMPPAIR = [a,b];
+  const A = document.getElementById('cmpA'), B = document.getElementById('cmpB');
+  A.innerHTML = '<video controls autoplay muted loop playsinline src="'+a.url+'"></video>';
+  B.innerHTML = '<video controls autoplay muted loop playsinline src="'+b.url+'"></video>';
+  document.getElementById('cmp').classList.add('on');
+  toast('Два дубля готовы — выбери лучший');
+}
+document.getElementById('cmpclose').onclick = ()=> document.getElementById('cmp').classList.remove('on');
+document.getElementById('pickA').onclick = ()=>{
+  if(CMPPAIR){ downloadUrl(CMPPAIR[0].url); toast('Взят дубль A'); }
+  document.getElementById('cmp').classList.remove('on');
+};
+document.getElementById('pickB').onclick = ()=>{
+  if(CMPPAIR){ downloadUrl(CMPPAIR[1].url); toast('Взят дубль B'); }
+  document.getElementById('cmp').classList.remove('on');
+};
+document.getElementById('cmpdel').onclick = ()=>{
+  CMPPAIR = null; DUB = [];
+  document.getElementById('cmp').classList.remove('on');
+  toast('Оба дубля удалены');
+};
+function downloadUrl(url){
+  const a = document.createElement('a');
+  a.href = url; a.download = 'ragnell-pick-'+Date.now()+'.mp4'; a.click();
+}
+
+/* =========================================================
+   ШАБЛОНЫ ПОД СОЦСЕТИ
+   ========================================================= */
+const TPL = {
+  reels:  {aspect:'9:16', fps:30, res:'1080p', name:'Reels / TikTok'},
+  tiktok: {aspect:'9:16', fps:30, res:'1080p', name:'TikTok'},
+  shorts: {aspect:'9:16', fps:30, res:'1080p', name:'YouTube Shorts'},
+  cinema: {aspect:'21:9', fps:24, res:'1080p', name:'Кинокадр'},
+  square: {aspect:'1:1',  fps:30, res:'1080p', name:'Square'}
+};
+
+/* =========================================================
+   ПРЕСЕТЫ КАМЕРЫ ИЗ ТЕКСТА
+   ========================================================= */
+const CAM_WORDS = [
+  [/нолан|nolan/i, ['push-in','IMAX-like slow push']],
+  [/панорам|panorama|wестерн|western/i, ['pan left','slow pan across the scene']],
+  [/дрон|drone|сверху|aerial|съёмка сверху/i, ['drone fly','drone flyover']],
+  [/долли|dolly|вертиго|vertigo/i, ['dolly zoom','dolly zoom tension']],
+  [/ручн|handheld|документ|репортаж/i, ['handheld','handheld documentary']],
+  [/облёт|orbit|вокруг|360/i, ['360 orbit','full orbit around subject']],
+  [/журавль|crane|подъём/i, ['crane up','crane rise']],
+  [/планета|tiny planet/i, ['tiny planet','tiny planet']],
+  [/хлыст|whip/i, ['whip pan','whip pan']],
+  [/крупн|close[- ]?up|портрет/i, ['push-in slow','slow push into close-up']]
+];
+function camFromText(text){
+  for(const [re, [preset, label]] of CAM_WORDS){
+    if(re.test(text)) return {preset, label};
+  }
+  return null;
+}
+function applyTextCamera(){
+  const txt = (document.getElementById('lp')?.value || '');
+  const hit = camFromText(txt);
+  const el = document.getElementById('cpre');
+  if(hit && el){
+    el.value = hit.preset;
+    el.dispatchEvent(new Event('change'));
+    toast('Камера подобрана текстом: ' + hit.label);
+  }
+}
+
+/* =========================================================
+   ХУКИ: секунды, шаблоны, доступ
+   ========================================================= */
+bindChips('#ltpl', v=>{
+  const t = TPL[v]; if(!t) return;
+  LASPECT = t.aspect; LFPS = t.fps;
+  $$('#laspect .lchip').forEach(x=>x.classList.toggle('on', x.dataset.v===t.aspect));
+  $$('#lfps .lchip').forEach(x=>x.classList.toggle('on', x.dataset.v===String(t.fps)));
+  const r = document.getElementById('res');
+  if(r) r.value = t.res;
+  toast('Шаблон: ' + t.name + ' · ' + t.aspect + ' · ' + t.fps + ' fps');
+});
+
+/* двусторонняя синхронизация длительности */
+function syncDurUI(){
+  $$('#ldur .lchip').forEach(x=> x.classList.toggle('on', +x.dataset.v === LDUR));
+  const d = document.getElementById('dur');
+  if(d && +d.value !== LDUR){
+    d.value = LDUR;
+    const o = d.parentElement.querySelector('output');
+    if(o) o.textContent = LDUR;
+  }
+  const s = document.getElementById('lsum');
+  if(s) s.textContent = `${LASPECT} · ${document.getElementById('res')?.value || ''} · ${LFPS} fps · ${LDUR}s`;
+}
+const durSlider = document.getElementById('dur');
+if(durSlider) durSlider.addEventListener('input', ()=>{
+  const v = +durSlider.value;
+  if(v > 30 && !maxOn()){ durSlider.value = 30; LDUR = 30; toast('Выше 30 секунд — только максимальный доступ', 'warn'); }
+  else LDUR = v;
+  syncDurUI();
+});
+
+/* перехват длительности: 1m только для максимального доступа */
+$$('#ldur .lchip').forEach(b=>{
+  b.onclick = ()=>{
+    const v = +b.dataset.v;
+    if(v === 60 && !maxOn()){
+      b.classList.add('nope');
+      setTimeout(()=>b.classList.remove('nope'), 300);
+      toast('60 секунд — на максимальном уровне доступа. Пока сделай два по 30.', 'warn');
+      return;
+    }
+    $$('#ldur .lchip').forEach(x=>x.classList.toggle('on', x===b));
+    LDUR = v;
+    applyLite(); lockHint(); syncDurUI();
+    toast('Длительность: ' + (v===60?'1 минута':v+' секунд'));
+    draw0();
+  };
+});
+
+/* переключатель максимального доступа — только для нас (Ctrl/Cmd+Shift+M) */
+document.addEventListener('keydown', e=>{
+  if((e.ctrlKey||e.metaKey) && e.shiftKey && e.key.toLowerCase()==='m'){
+    MAXACCESS = !MAXACCESS;
+    try{ localStorage.setItem('ragnell-max', MAXACCESS?'1':'0'); }catch{}
+    lockHint();
+    toast('Максимальный доступ: ' + (MAXACCESS?'ВКЛ':'выкл'), 'warn');
+  }
+});
+
+/* камера из текста при генерации */
+const _doGenerate0 = doGenerate;
+doGenerate = function(){
+  applyTextCamera();
+  _doGenerate0();
+};
+
+lockHint();
 
 /* ================= СТАРТ ================= */
 setLogical();
