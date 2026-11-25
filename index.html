@@ -374,6 +374,14 @@ const SECTIONS=[
         +'</svg></span>'
         +'<span class="prod-txt"><b>TypeV</b><small>3D-леттеринг в браузере · первый продукт</small></span>'
         +'<span class="prod-go">открыть →</span></div></li>'
+      +'<li class="prod"><div class="prod-card" data-product="ragnell" role="button" tabindex="0">'
+        +'<span class="prod-ico"><svg viewBox="0 0 120 120" aria-hidden="true">'
+        +'<path d="M34 92 V28 h26 a22 22 0 0 1 0 44 h-26" fill="none" stroke="#0E4D55" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>'
+        +'<path d="M62 72 L92 92" fill="none" stroke="#0E4D55" stroke-width="15" stroke-linecap="round"/>'
+        +'<path d="M38 33 V86" fill="none" stroke="#C7DED6" stroke-width="5" stroke-linecap="round" opacity=".65"/>'
+        +'</svg></span>'
+        +'<span class="prod-txt"><b>Ragnell</b><small>видео-студия · камера, маски, замены</small></span>'
+        +'<span class="prod-go">открыть →</span></div></li>'
       +'<li>Coming soon<small>Add your first product here.</small></li>'
       +'</ul>'},
  {name:'Ready Solutions',rim:'Solutions',svg:ico('<path d="M18 3L7 18h8l-1.5 11L25 14h-8z"/><circle cx="26" cy="6" r=".9" fill="currentColor"/><circle cx="5" cy="25" r=".9" fill="currentColor"/>'),
@@ -571,6 +579,9 @@ document.addEventListener('click', e=>{
   if(k==='typev'){
     card.classList.add('sucking');
     teleport('desk.html');
+  } else if(k==='ragnell'){
+    card.classList.add('sucking');
+    teleport('ragnell.html');
   }
 });
 document.addEventListener('keydown', e=>{
