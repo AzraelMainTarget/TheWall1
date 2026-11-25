@@ -104,15 +104,11 @@ canvas#edge{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-
 /* всё окно уходит в глубину */
 body.tp-out .win:not(.prodwin){animation:winSuck .7s ease-in forwards}
 @keyframes winSuck{to{transform:scale(.9);opacity:0;filter:blur(10px)}}
-#onlythed{position:fixed;left:0;right:0;bottom:calc(max(16px,env(safe-area-inset-bottom)) + 40px);text-align:center;
-  font:400 9px/1.4 var(--sans);letter-spacing:.26em;text-transform:uppercase;color:rgba(95,166,155,.42);
-  pointer-events:none;z-index:2}
-#onlythed b{font-weight:700;color:rgba(184,206,198,.5);letter-spacing:.26em}
-@supports not (-webkit-touch-callout:none){#onlythed{display:none}}
+@supports not (-webkit-touch-callout:none){}
 #hint{position:fixed;bottom:max(16px,env(safe-area-inset-bottom));left:0;right:0;text-align:center;pointer-events:none;z-index:2;
   display:flex;flex-direction:column;gap:4px;padding:0 14px;opacity:.72}
 #hint .credit-line{font:400 9.5px/1.35 var(--sans);letter-spacing:.15em;text-transform:uppercase;color:#5FA69B}
-#hint .credit-line:nth-child(2){font-size:8.5px;letter-spacing:.10em;color:#4A7B76}
+#hint .credit-line:nth-child(2){font-size:8.5px;letter-spacing:.10em;color:#5FA69B}
 #hint .credit-year{font:400 10px/1 var(--sans);letter-spacing:.38em;color:#8FB6AE;margin-top:1px}
 #hint b{font-weight:700;color:#F0F0EA;letter-spacing:.2em;text-shadow:0 0 12px rgba(20,123,120,.75)}
 
@@ -316,10 +312,9 @@ body.tp-out .win:not(.prodwin){animation:winSuck .7s ease-in forwards}
 <audio id="bg" src="PONTE SALVAJE (Slowed).mp3" loop preload="auto"></audio>
 <canvas id="c"></canvas>
 <h1 id="title" data-t="THAT DARKNESS">THAT DARKNESS</h1>
-<div id="onlythed"><span>сделано при поддержке <b>Arena</b></span></div>
 <div id="hint"><span class="credit-line">Made with the support of <b>Arena</b> · Agent Mode</span>
-  <span class="credit-line">Built by Arena.ai's agent — a studio of many minds: Claude, ChatGPT, Gemini, Grok, Qwen &amp; Kimi</span>
-  <span class="credit-line credit-year">© <b>2027</b></span></div>
+  <span class="credit-line">Built by <b>NeWerMoRe</b> (Author) — First Assistant of the Creator</span>
+  <span class="credit-line credit-year">Project Gate · © <b>2027</b></span></div>
 <div id="icons"></div>
 <div id="windows" aria-live="polite"></div>
 <div id="tp" aria-hidden="true">
