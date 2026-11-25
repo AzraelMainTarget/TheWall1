@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>TypeV — виджет</title>
+<style>
+  :root{
+    --deep:#081A23; --deep2:#0E4D55; --mid:#147B78; --soft:#5FA69B; --pale:#B8CEC6; --light:#F0F0EA;
+    --spring:cubic-bezier(.32,1.62,.54,1);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    margin:0;display:grid;place-items:center;padding:24px;
+    background:
+      radial-gradient(120% 80% at 50% 0%,#0E4D55 0%,#081A23 58%,#041015 100%);
+    font-family:"Jost",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--light);
+  }
+  .stage{display:flex;flex-direction:column;align-items:center;gap:26px}
+  /* ореол: только мягкий радиальный свет, никаких прямоугольных границ */
+  .shell{position:relative;display:grid;place-items:center;isolation:isolate}
+  /* тёмная тень-«лужа» под плиткой: без боковых лучей, тянется за формой */
+  /* тень = часть плитки (box-shadow), поэтому едет с ней кадр в кадр без артефактов */
+  .halo{display:none}
+
+  /* ---------- общая плитка ---------- */
+  .app{
+    position:relative;width:320px;height:160px;
+    border-radius:38px;cursor:pointer;user-select:none;
+    background:
+      radial-gradient(120% 120% at 22% -10%,#EAF3EF 0%,#C9DED7 34%,#9FC7BC 62%,#77AFA5 88%,#5FA69B 100%);
+    box-shadow:
+      0 2px 0 rgba(178,190,186,.5) inset,
+      0 -12px 24px rgba(8,26,35,.26) inset,
+      /* бортик: сплошная нижняя стенка = толщина пластины */
+      0 6px 0 -1px #4E8C84,
+      0 7px 0 -1px rgba(6,26,30,.55),
+      0 22px 40px rgba(0,0,0,.58),
+      0 10px 18px rgba(0,0,0,.4),
+      0 3px 6px rgba(0,0,0,.32);
+    overflow:hidden;
+    transition:
+      width .42s cubic-bezier(.4,0,.2,1), height .42s cubic-bezier(.4,0,.2,1),
+      border-radius .42s cubic-bezier(.4,0,.2,1), background .4s ease,
+      box-shadow .42s ease, transform .18s ease;
+    will-change:width,height,border-radius,box-shadow;
+  }
+  .app:active{transform:scale(.985)}
+  /* верхний глянец */
+  .app::before{
+    content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;
+    background:linear-gradient(180deg,rgba(214,222,218,.42),rgba(196,206,202,.12) 30%,rgba(196,206,202,0) 52%);
+    mix-blend-mode:soft-light;opacity:.85;transition:opacity .45s ease;
+  }
+  /* нижняя фаска-скос: подсветка内部 кромки */
+  .bevel{position:absolute;left:10px;right:10px;bottom:0;height:12px;pointer-events:none;
+    border-radius:0 0 34px 34px;
+    background:linear-gradient(180deg,rgba(255,255,255,0),rgba(255,255,255,.35) 40%,rgba(240,240,234,.55));
+    mix-blend-mode:soft-light;opacity:.9}
+
+  /* зерно, чтобы плитка не была «пластиковой» */
+  .app::after{
+    content:"";position:absolute;inset:0;pointer-events:none;opacity:.16;
+    background-image:radial-gradient(rgba(8,26,35,.9) .5px,rgba(8,26,35,0) .9px);
+    background-size:3px 3px;mix-blend-mode:multiply;
+  }
+
+  /* «жидкий металл»: капля блика пробегает по плите в момент схлопывания */
+  .sheen{position:absolute;inset:0;pointer-events:none;opacity:0;border-radius:inherit;contain:strict;
+    background:linear-gradient(102deg,rgba(220,228,224,0) 34%,rgba(220,228,224,.5) 50%,rgba(220,228,224,0) 66%);
+    mix-blend-mode:soft-light}
+  .app.morph .sheen{animation:sheenRun .46s linear}
+  @keyframes sheenRun{
+    0%{opacity:0;transform:translateX(-46%)}
+    18%{opacity:.95}
+    100%{opacity:0;transform:translateX(46%)}}
+
+  /* ---------- содержимое виджета ---------- */
+  .inner{position:absolute;inset:0;display:block}
+
+  .mark{position:absolute;z-index:4;top:50%;left:22px;width:112px;height:112px;
+    transform:translate(0,-50%);
+    transition:left .4s cubic-bezier(.4,0,.2,1),width .4s cubic-bezier(.4,0,.2,1),
+               height .4s cubic-bezier(.4,0,.2,1),transform .4s cubic-bezier(.4,0,.2,1);}
+  .mark svg{width:100%;height:100%;display:block}
+
+  /* раскрытие: элементы «выныривают» из плитки пружиной, с задержкой друг за другом */
+  /* текст вдавлен в поверхность, гаснет и уходит в размытие — на месте */
+  .meta{position:absolute;left:178px;right:30px;top:50%;transform:translate(0,-50%);opacity:1;z-index:2;
+    filter:none;will-change:opacity;
+    transition:opacity .16s linear, transform .42s cubic-bezier(.4,0,.2,1)}
+
+  .meta .t{font:800 22px/1.1 "Montserrat",system-ui,sans-serif;letter-spacing:.02em;white-space:nowrap;
+    color:#0A2A2E;
+    text-shadow:0 -1px 0 rgba(6,26,30,.55),0 1px 0 rgba(255,255,255,.85),0 2px 3px rgba(255,255,255,.28)}
+  .meta .s{margin-top:5px;font-size:10px;letter-spacing:.16em;text-transform:uppercase;white-space:nowrap;
+    color:#1B5355;display:flex;align-items:center;gap:7px;
+    text-shadow:0 -1px 0 rgba(6,26,30,.45),0 1px 0 rgba(255,255,255,.7)}
+  .meta .dot{width:5px;height:5px;border-radius:50%;background:#147B78;
+    box-shadow:0 0 8px rgba(20,123,120,.9)}
+  .meta .d{margin-top:8px;display:flex;gap:6px;flex-wrap:nowrap}
+  .pill{font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:#0E4D55;
+    border:1px solid rgba(14,77,85,.28);border-radius:8px;padding:3px 7px;
+    background:linear-gradient(180deg,rgba(8,26,35,.14),rgba(240,240,234,.55));
+    box-shadow:inset 0 1px 2px rgba(8,26,35,.35),0 1px 0 rgba(255,255,255,.55);
+    text-shadow:0 1px 0 rgba(255,255,255,.55)}
+
+  /* ---------- свёрнутое состояние: одна иконка ---------- */
+  .app.mini{width:172px;height:172px;border-radius:48px}
+  .app.mini .mark{left:50%;width:118px;height:118px;transform:translate(-50%,-50%);
+    transition:left .42s cubic-bezier(.4,0,.2,1),width .42s cubic-bezier(.4,0,.2,1),
+               height .42s cubic-bezier(.4,0,.2,1),transform .42s cubic-bezier(.4,0,.2,1)}
+  /* исчезают на месте: уходят «вглубь» и растворяются, без съезда вбок */
+  /* схлопывание: текст втягивается внутрь плитки и гаснет, без съезда вбок */
+  /* спряталось за спинку: сдвиг вправо за край, плитка обрезает как задней панелью */
+  /* уезжает влево, уходя под зону иконки — как под землю, вместе с буквами */
+  /* уезжает влево и уходит ПОД крышку — её перекрывает непрозрачная зона */
+  .app.mini .meta{opacity:0;transform:translate(-22px,-50%);pointer-events:none;visibility:hidden;
+    transition:opacity .1s linear,transform .42s cubic-bezier(.4,0,.2,1),visibility 0s .1s}
+
+  /* тень-подложка под иконкой появляется в свёрнутом виде */
+  .app .glowpad{position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;
+    box-shadow:0 0 0 1px rgba(240,240,234,.35) inset;transition:opacity .4s ease}
+  .app.mini .glowpad{opacity:1}
+  .shell.mini .halo{width:104%;height:66%;top:calc(50% + 46px);opacity:.92}
+
+  /* ---------- подпись под сценой ---------- */
+  .cap{font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--soft);text-align:center}
+  .cap b{color:var(--pale);font-weight:700}
+  .row{display:flex;gap:18px;align-items:flex-end;justify-content:center}
+  .small{opacity:.55;transform:scale(.62);transform-origin:center top;pointer-events:none}
+</style>
+</head>
+<body>
+<div class="stage">
+
+  <div class="shell">
+  <div class="app" id="app" role="button" tabindex="0" aria-label="TypeV">
+    <div class="glowpad"></div>
+    <div class="sheen"></div>
+    <div class="bevel"></div>
+    <div class="inner">
+
+      <!-- знак: вдавленная V -->
+      <div class="mark">
+        <svg viewBox="0 0 120 120" aria-hidden="true">
+          <defs>
+            <linearGradient id="vBody" x1=".18" y1="0" x2=".72" y2="1">
+              <stop offset="0" stop-color="#1B4A4C"/>
+              <stop offset=".30" stop-color="#0E2E33"/>
+              <stop offset=".72" stop-color="#06181E"/>
+              <stop offset="1" stop-color="#03100F"/>
+            </linearGradient>
+            <linearGradient id="vGloss" x1="0" y1="0" x2=".3" y2="1">
+              <stop offset="0" stop-color="#EFFBF6" stop-opacity=".92"/>
+              <stop offset=".28" stop-color="#B8CEC6" stop-opacity=".30"/>
+              <stop offset=".55" stop-color="#B8CEC6" stop-opacity="0"/>
+            </linearGradient>
+            <linearGradient id="vRim" x1="0" y1="1" x2=".2" y2="0">
+              <stop offset="0" stop-color="#7FD9C8" stop-opacity=".55"/>
+              <stop offset=".5" stop-color="#7FD9C8" stop-opacity="0"/>
+            </linearGradient>
+            <filter id="vSoft"><feGaussianBlur stdDeviation="1.4"/></filter>
+            <filter id="vDrop" x="-30%" y="-30%" width="160%" height="160%">
+              <feDropShadow dx="0" dy="4" stdDeviation="3.4" flood-color="#04181A" flood-opacity=".55"/>
+            </filter>
+          </defs>
+
+          <!-- тело буквы: толстый штрих с круглыми концами = форма из референса -->
+          <g filter="url(#vDrop)">
+            <path d="M26 30 L60 88 L94 30" fill="none" stroke="url(#vBody)" stroke-width="33"
+                  stroke-linecap="round" stroke-linejoin="round"/>
+            <!-- объём: внутренняя светлая полоса сверху слева -->
+            <path d="M31 33 L60 82 L89 33" fill="none" stroke="url(#vGloss)" stroke-width="13"
+                  stroke-linecap="round" stroke-linejoin="round" opacity=".85"/>
+            <!-- нижний бирюзовый отблеск по кромке -->
+            <path d="M60 88 L94 30" fill="none" stroke="url(#vRim)" stroke-width="6"
+                  stroke-linecap="round" opacity=".7"/>
+          </g>
+          <!-- маленькая жёсткая тень под буквой, чтобы сидела «на» плитке -->
+          <path d="M28 34 L60 90 L92 34" fill="none" stroke="#04181A" stroke-width="33"
+                stroke-linecap="round" stroke-linejoin="round" opacity=".18" filter="url(#vSoft)"
+                transform="translate(0,5)"/>
+        </svg>
+      </div>
+
+      <div class="meta">
+        <div class="t">TypeV</div>
+        <div class="s"><span class="dot"></span>lettering studio</div>
+        <div class="d"><span class="pill">3D</span><span class="pill">Upgrade</span></div>
+      </div>
+
+    </div>
+  </div>
+  </div>
+
+  <div class="cap" id="cap">нажми — <b>сложится в иконку</b></div>
+</div>
+
+<script>
+  const app = document.getElementById('app');
+  const cap = document.getElementById('cap');
+  let mini = false;
+
+  function toggle() {
+    mini = !mini;
+    app.classList.toggle('mini', mini);
+    document.querySelector('.shell').classList.toggle('mini', mini);
+    cap.innerHTML = mini ? 'нажми — <b>развернётся обратно</b>'
+                         : 'нажми — <b>сложится в иконку</b>';
+    // «жидкий металл»: капля блика + мягкая деформация плитки
+    app.classList.add('morph');
+    clearTimeout(toggle._t);
+    toggle._t = setTimeout(() => app.classList.remove('morph'), 640);
+  }
+
+  app.addEventListener('click', toggle);
+  app.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+  });
+</script>
+</body>
+</html>

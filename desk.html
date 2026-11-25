@@ -1,0 +1,491 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
+<title>That Darkness — Workspace</title>
+<style>
+:root{
+  /* палитра со второй картинки */
+  --deep:#233B4D;      /* тёмный */
+  --orange:#FE7F2D;    /* оранжевый */
+  --yellow:#FCCA46;    /* жёлтый */
+  --menthol:#A1C181;   /* ментоловый */
+  --teal:#619B8A;      /* бирюзово-зелёный */
+
+  /* два рабочих стола: тёмный беж и светлый беж */
+  --wsA-1:#3B332A; --wsA-2:#241F19;
+  --wsB-1:#EDE3D2; --wsB-2:#D6C9B2;
+
+  --r:18px;
+  --ease:cubic-bezier(.32,.9,.28,1);
+  --safe-t:env(safe-area-inset-top);
+  --safe-b:env(safe-area-inset-bottom);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0;overflow:hidden;background:var(--wsA-2)}
+body{font-family:"Jost",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#F0F0EA;
+  -webkit-font-smoothing:antialiased;overscroll-behavior:none}
+
+/* ---------- стек из двух рабочих столов ---------- */
+.stack{position:fixed;inset:0;overflow-y:scroll;scroll-snap-type:y mandatory;scroll-behavior:smooth;
+  scrollbar-width:none}
+.stack::-webkit-scrollbar{display:none}
+.ws{position:relative;height:100dvh;scroll-snap-align:start;overflow:hidden}
+.wsA{background:
+    radial-gradient(120% 90% at 20% 0%,#4A4136 0%,var(--wsA-1) 38%,var(--wsA-2) 100%)}
+.wsB{background:
+    radial-gradient(120% 90% at 20% 0%,#F6EEE0 0%,var(--wsB-1) 40%,var(--wsB-2) 100%);color:#2A241C}
+/* зерно на обоих */
+.ws::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.05;
+  background-image:radial-gradient(currentColor .6px,transparent .9px);background-size:3px 3px}
+.wsA::after{color:#fff}
+.wsB::after{color:#2A241C}
+
+/* подпись рабочего стола */
+.ws-tag{position:absolute;left:0;right:0;bottom:calc(var(--safe-b) + 92px);text-align:center;
+  font-size:10px;letter-spacing:.3em;text-transform:uppercase;opacity:.35;pointer-events:none}
+.wsA .ws-tag{color:#F0F0EA}
+.wsB .ws-tag{color:#2A241C}
+
+/* ---------- окна ---------- */
+.win{position:absolute;display:flex;flex-direction:column;border-radius:var(--r);overflow:hidden;
+  width:min(92%,540px);height:min(58%,460px);left:0;right:0;margin:0 auto;top:calc(var(--safe-t) + 96px);
+  box-shadow:0 24px 60px rgba(0,0,0,.45),0 6px 16px rgba(0,0,0,.28);
+  transition:opacity .28s ease,transform .34s var(--ease),height .34s var(--ease),filter .3s ease}
+.wsA .win{background:linear-gradient(170deg,#FFFDF8,#F3EADA);color:#2A241C;
+  border:1px solid rgba(255,255,255,.5)}
+.wsB .win{background:linear-gradient(170deg,#33485C,#233B4D);color:#F0F0EA;
+  border:1px solid rgba(255,255,255,.14)}
+.win.dragging{transition:none;box-shadow:0 34px 80px rgba(0,0,0,.55)}
+.win-bar{flex:0 0 auto;display:flex;align-items:center;gap:9px;padding:11px 12px;cursor:grab;
+  touch-action:none;user-select:none}
+.win.dragging .win-bar{cursor:grabbing}
+.wsA .win-bar{background:linear-gradient(100deg,var(--menthol),#B8D19C)}
+.wsB .win-bar{background:linear-gradient(100deg,var(--teal),#4E8B7A)}
+.win-ico{width:22px;height:22px;border-radius:7px;display:grid;place-items:center;flex:0 0 auto;
+  background:rgba(35,59,77,.22);font-size:12px;color:#233B4D}
+.wsB .win-ico{background:rgba(255,255,255,.18);color:#F0F0EA}
+.win-t{font:700 12.5px/1 inherit;letter-spacing:.1em;text-transform:uppercase;color:#1E3324}
+.wsB .win-t{color:#F0F0EA}
+.win-sp{flex:1}
+.win-btn{width:26px;height:26px;border-radius:9px;border:none;cursor:pointer;font-size:14px;line-height:1;
+  display:grid;place-items:center;background:rgba(35,59,77,.16);color:#1E3324;transition:background .2s,transform .15s}
+.wsB .win-btn{background:rgba(255,255,255,.16);color:#F0F0EA}
+.win-btn:active{transform:scale(.9)}
+.win-btn.off{background:rgba(35,59,77,.28)}
+.win-body{flex:1 1 auto;overflow:auto;padding:14px 16px;font-size:13.5px;line-height:1.55}
+.wsA .win-body{color:#3A3126}
+.wsB .win-body{color:#DCE6E2}
+.win-body h3{margin:0 0 8px;font-size:13px;letter-spacing:.14em;text-transform:uppercase;opacity:.6;font-weight:700}
+.win-body p{margin:0 0 10px}
+.win-body iframe{width:100%;height:100%;border:0;border-radius:12px;background:#081A23}
+
+/* свёрнутое окно — таблетка внизу */
+.win.min{height:46px;top:auto;bottom:calc(var(--safe-b) + 20px);width:min(70%,300px)}
+.win.min .win-body{display:none}
+
+/* выключенное приложение: замирает серым, взаимодействие заблокировано */
+.win.off{filter:grayscale(1) brightness(.82);pointer-events:none}
+.win.off .win-bar{cursor:default}
+.win .offlay{position:absolute;inset:0;display:none;place-items:center;text-align:center;
+  background:rgba(20,20,20,.42);backdrop-filter:grayscale(1)}
+.win.off .offlay{display:grid;pointer-events:auto}
+.offlay .card{pointer-events:auto;font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+  color:#fff;display:flex;flex-direction:column;gap:10px;align-items:center}
+.offlay button{padding:9px 16px;border-radius:12px;border:1px solid rgba(255,255,255,.5);
+  background:rgba(255,255,255,.18);color:#fff;font:600 11px inherit;letter-spacing:.14em;
+  text-transform:uppercase;cursor:pointer;pointer-events:auto}
+
+/* ---------- левый выезжающий ящик ---------- */
+.drawer{position:fixed;left:0;top:0;bottom:0;width:272px;z-index:40;transform:translateX(-102%);
+  transition:transform .38s var(--ease);
+  background:linear-gradient(190deg,#2A465A,#233B4D 42%,#1B2F3E);
+  box-shadow:18px 0 50px rgba(0,0,0,.5);
+  display:flex;flex-direction:column;padding:calc(var(--safe-t) + 16px) 0 calc(var(--safe-b) + 14px)}
+.drawer.open{transform:translateX(0)}
+.dr-head{display:flex;align-items:center;gap:10px;padding:0 18px 16px}
+.dr-logo{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;
+  background:linear-gradient(160deg,var(--orange),#E0621A);color:#fff;font:900 15px/1 inherit;
+  box-shadow:0 8px 18px rgba(254,127,45,.4)}
+.dr-name{font:800 14px/1.1 inherit;letter-spacing:.14em;text-transform:uppercase}
+.dr-sub{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:#7E9AAB;margin-top:3px}
+.dr-sec{padding:12px 18px 6px;font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:#6E8A9B}
+
+/* строка приложения с тумблером */
+.app-row{display:flex;align-items:center;gap:11px;padding:9px 18px;cursor:pointer;
+  transition:background .2s}
+.app-row:active{background:rgba(255,255,255,.06)}
+.app-chip{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;flex:0 0 auto;
+  background:rgba(161,193,129,.16);color:var(--menthol);font-size:15px}
+.app-row.on .app-chip{background:linear-gradient(160deg,var(--orange),#E0621A);color:#fff;
+  box-shadow:0 6px 16px rgba(254,127,45,.4)}
+.app-nm{flex:1;font-size:13px;font-weight:600;letter-spacing:.02em}
+.app-row .st{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#6E8A9B}
+.app-row.on .st{color:var(--menthol)}
+
+/* тумблер как в iPhone */
+.sw{width:44px;height:26px;border-radius:13px;flex:0 0 auto;position:relative;
+  background:#3A5163;transition:background .25s ease;border:none;padding:0;cursor:pointer}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;
+  background:#E8EEF1;box-shadow:0 2px 5px rgba(0,0,0,.35);transition:transform .26s var(--ease)}
+.sw.on{background:var(--menthol)}
+.sw.on::after{transform:translateX(18px)}
+
+.dr-link{display:flex;align-items:center;gap:11px;padding:11px 18px;font-size:12.5px;
+  color:#C6D6DF;cursor:pointer;transition:background .2s,color .2s}
+.dr-link:active{background:rgba(255,255,255,.06)}
+.dr-link i{width:20px;text-align:center;font-style:normal;opacity:.75;font-size:14px}
+.dr-link.danger{color:#F0A9A9}
+.dr-foot{margin-top:auto;padding:12px 18px 0;border-top:1px solid rgba(255,255,255,.08)}
+.lvl{display:flex;align-items:center;gap:10px;padding:10px 0}
+.lvl-badge{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;
+  font:900 12px/1 inherit;color:#233B4D;background:linear-gradient(160deg,var(--yellow),#E8A82E)}
+.lvl-txt{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#8FA8B6;line-height:1.5}
+.lvl-txt b{display:block;color:#F0F0EA;font-size:11.5px;letter-spacing:.1em}
+
+/* затемнение под ящиком */
+.scrim{position:fixed;inset:0;background:rgba(10,18,24,.5);opacity:0;pointer-events:none;
+  transition:opacity .3s;z-index:35;backdrop-filter:blur(2px)}
+.scrim.on{opacity:1;pointer-events:auto}
+
+/* ---------- верхняя ментоловая плашка ---------- */
+.topbar{position:fixed;left:8px;right:8px;top:calc(var(--safe-t) + 6px);z-index:30;
+  height:54px;border-radius:16px;display:flex;align-items:center;gap:8px;padding:0 10px;
+  background:linear-gradient(120deg,var(--menthol),#8FB072);
+  box-shadow:0 12px 26px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.5);
+  transform:translateY(0);transition:transform .34s var(--ease)}
+.topbar.hide{transform:translateY(calc(-100% - var(--safe-t) - 12px))}
+.tb-btn{width:36px;height:36px;border-radius:11px;border:none;cursor:pointer;display:grid;place-items:center;
+  background:rgba(35,59,77,.16);color:#233B4D;font-size:15px;transition:transform .15s,background .2s}
+.tb-btn:active{transform:scale(.92)}
+.tb-btn.ora{background:linear-gradient(160deg,var(--orange),#E0621A);color:#fff;
+  box-shadow:0 6px 14px rgba(254,127,45,.42)}
+.tb-title{flex:1;min-width:0;font:800 11.5px/1.2 inherit;letter-spacing:.16em;text-transform:uppercase;
+  color:#20351F;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tb-ws{font-size:9px;letter-spacing:.2em;color:#3D5A3A;opacity:.8;display:block;margin-top:2px}
+/* ручка, чтобы вернуть плашку */
+.tb-handle{position:fixed;left:50%;transform:translateX(-50%);top:calc(var(--safe-t) + 2px);z-index:29;
+  width:66px;height:16px;border-radius:0 0 12px 12px;border:none;cursor:pointer;
+  background:linear-gradient(180deg,rgba(161,193,129,.9),rgba(161,193,129,.5));
+  display:grid;place-items:center;opacity:0;pointer-events:none;transition:opacity .3s}
+.tb-handle.show{opacity:1;pointer-events:auto}
+.tb-handle::after{content:"";width:22px;height:2px;border-radius:2px;background:#233B4D;opacity:.6}
+
+/* индикатор рабочих столов справа */
+.wsdots{position:fixed;right:9px;top:50%;transform:translateY(-50%);z-index:25;display:flex;
+  flex-direction:column;gap:8px}
+.wsdot{width:6px;height:22px;border-radius:3px;background:rgba(255,255,255,.3);transition:background .3s,height .3s}
+.wsdot.on{background:var(--orange);height:34px}
+
+/* плавающая кнопка свайпа (для ПК) */
+.wsswap{position:fixed;right:14px;bottom:calc(var(--safe-b) + 20px);z-index:26;
+  width:46px;height:46px;border-radius:16px;border:none;cursor:pointer;
+  background:linear-gradient(160deg,var(--orange),#E0621A);color:#fff;font-size:18px;
+  box-shadow:0 12px 26px rgba(254,127,45,.42);transition:transform .15s}
+.wsswap:active{transform:scale(.93)}
+
+/* ---------- прибытие: обратный телепорт ---------- */
+#arrive{position:fixed;inset:0;z-index:90;pointer-events:none;opacity:1;
+  background:radial-gradient(circle at 50% 50%,#FFFFFF 0%,#B8CEC6 14%,rgba(20,123,120,.65) 30%,rgba(4,14,18,.9) 62%,#01060a 100%)}
+#arrive.done{animation:arriveOut .95s cubic-bezier(.22,.8,.24,1) forwards}
+@keyframes arriveOut{
+  0%{opacity:1;transform:scale(1)}
+  55%{opacity:.55}
+  100%{opacity:0;transform:scale(2.2)}
+}
+#arrive .ring{position:absolute;left:50%;top:50%;width:34vmin;aspect-ratio:1;border-radius:50%;
+  border:2px solid rgba(240,240,234,.9);transform:translate(-50%,-50%);animation:arrRing .9s ease-out forwards}
+#arrive .ring:nth-child(2){animation-delay:.12s}
+@keyframes arrRing{0%{opacity:.9;transform:translate(-50%,-50%) scale(.2)}100%{opacity:0;transform:translate(-50%,-50%) scale(2.6)}}
+#arrive .txt{position:absolute;left:0;right:0;top:50%;text-align:center;transform:translateY(-50%);
+  font:800 10px/1.6 inherit;letter-spacing:.42em;text-transform:uppercase;color:#081A23}
+
+/* приветственный лист на светлом столе */
+.wsB .ws-tag{color:#2A241C}
+</style>
+<script src="guard.js?v=2"></script>
+</head>
+<body>
+
+<div id="arrive"><div class="ring"></div><div class="ring"></div><div class="txt">перенос завершён</div></div>
+
+<div class="stack" id="stack">
+  <!-- рабочий стол 1 — тёмный беж -->
+  <section class="ws wsA" data-i="0">
+    <div class="ws-tag">рабочий стол 1 · тёмный</div>
+  </section>
+  <!-- рабочий стол 2 — светлый беж -->
+  <section class="ws wsB" data-i="1">
+    <div class="ws-tag">рабочий стол 2 · светлый</div>
+  </section>
+</div>
+
+<!-- верхняя плашка -->
+<header class="topbar" id="topbar">
+  <button class="tb-btn" id="btnDrawer" aria-label="Меню">☰</button>
+  <div class="tb-title">Workspace<span class="tb-ws" id="wsName">стол 1 · тёмный</span></div>
+  <button class="tb-btn ora" data-tool="new" aria-label="Добавить">＋</button>
+  <button class="tb-btn ora" data-tool="search" aria-label="Поиск">⌕</button>
+  <button class="tb-btn" id="btnHide" aria-label="Скрыть панель">⌃</button>
+</header>
+<button class="tb-handle" id="tbHandle" aria-label="Показать панель"></button>
+
+<!-- левый ящик -->
+<aside class="drawer" id="drawer">
+  <div class="dr-head">
+    <div class="dr-logo">T</div>
+    <div>
+      <div class="dr-name">That Darkness</div>
+      <div class="dr-sub">workspace</div>
+    </div>
+  </div>
+
+  <div class="dr-sec">Приложения</div>
+  <div id="appList"></div>
+
+  <div class="dr-sec">Переходы</div>
+  <a class="dr-link" data-jump="0"><i>▣</i> Рабочий стол 1<span class="dr-sp"></span></a>
+  <a class="dr-link" data-jump="1"><i>▢</i> Рабочий стол 2</a>
+  <a class="dr-link" data-go="home"><i>⌂</i> На главную</a>
+
+  <div class="dr-sec">Прочее</div>
+  <a class="dr-link" data-go="settings"><i>⚙</i> Настройки</a>
+  <a class="dr-link" data-go="theme"><i>◐</i> Оформление</a>
+  <a class="dr-link danger" data-go="exit"><i>⏻</i> Выход</a>
+
+  <div class="dr-foot">
+    <div class="lvl">
+      <div class="lvl-badge">1</div>
+      <div class="lvl-txt">уровень доступа<b>Гость стола</b></div>
+    </div>
+  </div>
+</aside>
+<div class="scrim" id="scrim"></div>
+
+<div class="wsdots" id="wsdots">
+  <div class="wsdot on"></div>
+  <div class="wsdot"></div>
+</div>
+<button class="wsswap" id="wsSwap" aria-label="Сменить рабочий стол">⇅</button>
+
+<script>
+(() => {
+  const stack = document.getElementById('stack');
+  const topbar = document.getElementById('topbar');
+  const handle = document.getElementById('tbHandle');
+  const drawer = document.getElementById('drawer');
+  const scrim = document.getElementById('scrim');
+  const appList = document.getElementById('appList');
+  const wsName = document.getElementById('wsName');
+  const dots = [...document.querySelectorAll('.wsdot')];
+
+  /* ---------- приложения ---------- */
+  const APPS = [
+    { id:'typev',  name:'TypeV',       ico:'V',  on:false, kind:'typev'  },
+    { id:'notes',  name:'Заметки',     ico:'✎',  on:false, kind:'notes'  },
+    { id:'files',  name:'Файлы',       ico:'▤',  on:false, kind:'files'  },
+  ];
+
+  const ICONS = { typev:'V', notes:'✎', files:'▤' };
+
+  /* ---------- состояние ---------- */
+  const state = { ws:0, wins:new Map() };   // wins: appId -> {pen:Object}
+  let opened = new Set();
+
+  /* ---------- левый ящик ---------- */
+  const openDrawer = (v) => {
+    drawer.classList.toggle('open', v);
+    scrim.classList.toggle('on', v);
+  };
+  document.getElementById('btnDrawer').onclick = () => openDrawer(!drawer.classList.contains('open'));
+  scrim.onclick = () => openDrawer(false);
+
+  /* ---------- верхняя плашка ---------- */
+  const setBar = (v) => {
+    topbar.classList.toggle('hide', !v);
+    handle.classList.toggle('show', !v);
+  };
+  document.getElementById('btnHide').onclick = () => setBar(false);
+  handle.onclick = () => setBar(true);
+
+  /* ---------- свайп по ручке плашки ---------- */
+  let barY = null;
+  topbar.addEventListener('pointerdown', e => {
+    if (e.target.closest('.tb-btn')) return;
+    barY = e.clientY;
+  });
+  topbar.addEventListener('pointerup', e => {
+    if (barY === null) return;
+    if (e.clientY - barY < -26) setBar(false);
+    barY = null;
+  });
+
+  /* ---------- смена рабочего стола ---------- */
+  function goWs(i){
+    stack.scrollTo({ top: i * stack.clientHeight, behavior:'smooth' });
+  }
+  document.getElementById('wsSwap').onclick = () => goWs(state.ws ? 0 : 1);
+
+  stack.addEventListener('scroll', () => {
+    const i = Math.round(stack.scrollTop / stack.clientHeight) || 0;
+    if (i === state.ws) return;
+    state.ws = i;
+    dots.forEach((d,k)=>d.classList.toggle('on', k===i));
+    wsName.textContent = i ? 'стол 2 · светлый' : 'стол 1 · тёмный';
+  }, { passive:true });
+
+  /* ---------- список приложений в ящике ---------- */
+  function renderApps(){
+    appList.innerHTML = APPS.map(a => `
+      <div class="app-row ${a.on?'on':''}" data-app="${a.id}">
+        <div class="app-chip">${ICONS[a.id]}</div>
+        <div class="app-nm">${a.name}</div>
+        <div class="st">${a.on?'вкл':'выкл'}</div>
+        <button class="sw ${a.on?'on':''}" data-sw="${a.id}" aria-label="${a.name}"></button>
+      </div>`).join('');
+  }
+  renderApps();
+
+  appList.addEventListener('click', e => {
+    const sw = e.target.closest('[data-sw]');
+    if (sw) {
+      e.stopPropagation();
+      const a = APPS.find(x => x.id === sw.dataset.sw);
+      a.on = !a.on;
+      if (!a.on) offApp(a.id); else renderApps();
+      renderApps();
+      return;
+    }
+    const row = e.target.closest('[data-app]');
+    if (row) {
+      const a = APPS.find(x => x.id === row.dataset.app);
+      if (!a.on) { a.on = true; renderApps(); }
+      launch(a);
+      openDrawer(false);
+    }
+  });
+
+  /* ---------- окна ---------- */
+  function wsEl(i){ return document.querySelectorAll('.ws')[i]; }
+
+  function launch(app){
+    let w = state.wins.get(app.id);
+    if (w) {                       // уже есть — поднимаем
+      w.el.classList.remove('min');
+      w.el.style.zIndex = ++zTop;
+      return;
+    }
+    const el = document.createElement('div');
+    el.className = 'win';
+    el.dataset.app = app.id;
+    el.style.zIndex = ++zTop;
+    el.innerHTML = `
+      <div class="win-bar">
+        <div class="win-ico">${ICONS[app.id]}</div>
+        <div class="win-t">${app.name}</div>
+        <div class="win-sp"></div>
+        <button class="win-btn" data-min title="Свернуть">–</button>
+        <button class="win-btn" data-close title="Закрыть">✕</button>
+      </div>
+      <div class="win-body">${bodyFor(app.kind)}</div>
+      <div class="offlay"><div class="card">приложение выключено
+        <button data-collapse>свернуть вниз</button></div></div>`;
+    wsEl(state.ws).appendChild(el);
+    makeDrag(el);
+    el.querySelector('[data-min]').onclick = (e)=>{ e.stopPropagation(); el.classList.toggle('min'); };
+    el.querySelector('[data-close]').onclick = (e)=>{ e.stopPropagation(); el.remove(); state.wins.delete(app.id); };
+    el.querySelector('[data-collapse]').onclick = (e)=>{ e.stopPropagation(); el.classList.add('min'); };
+    el.addEventListener('pointerdown', () => { el.style.zIndex = ++zTop; }, true);
+    state.wins.set(app.id, { el });
+    opened.add(app.id);
+  }
+
+  function bodyFor(kind){
+    if (kind === 'typev') return `<iframe src="typev-widget.html" title="TypeV" loading="lazy"></iframe>`;
+    if (kind === 'notes') return `<h3>Заметки</h3><p>Черновик. Здесь будет история правок и версии текста.</p>`;
+    return `<h3>Файлы</h3><p>Пока пусто. Сюда сложим продукты и экспорты.</p>`;
+  }
+
+  let zTop = 10;
+  function makeDrag(el){
+    const bar = el.querySelector('.win-bar');
+    let sx=0, sy=0, ox=0, oy=0, drag=false;
+    bar.addEventListener('pointerdown', e => {
+      if (e.target.closest('.win-btn')) return;
+      drag = true; el.classList.add('dragging');
+      const r = el.getBoundingClientRect(), pr = el.parentElement.getBoundingClientRect();
+      sx = e.clientX; sy = e.clientY;
+      ox = r.left - pr.left; oy = r.top - pr.top;
+      bar.setPointerCapture(e.pointerId);
+      el.dataset.locked = '1';   // фиксируем позицию при перетаскивании
+      el.style.left = ox + 'px'; el.style.right = 'auto'; el.style.margin = '0';
+      el.style.top = oy + 'px';
+      e.preventDefault();
+    });
+    bar.addEventListener('pointermove', e => {
+      if (!drag) return;
+      const pr = el.parentElement.getBoundingClientRect();
+      let nx = ox + (e.clientX - sx), ny = oy + (e.clientY - sy);
+      nx = Math.max(4, Math.min(pr.width - el.offsetWidth - 4, nx));
+      ny = Math.max(4, Math.min(pr.height - el.offsetHeight - 4, ny));
+      el.style.left = nx + 'px'; el.style.top = ny + 'px';
+    });
+    const end = () => { drag = false; el.classList.remove('dragging'); };
+    bar.addEventListener('pointerup', end);
+    bar.addEventListener('pointercancel', end);
+  }
+
+  /* выключение приложения: окно замирает серым */
+  function offApp(id){
+    const w = state.wins.get(id);
+    if (w) w.el.classList.add('off');
+    renderApps();
+  }
+  function onApp(id){
+    const w = state.wins.get(id);
+    if (w) w.el.classList.remove('off');
+  }
+
+  /* ссылки ящика */
+  drawer.addEventListener('click', e => {
+    const j = e.target.closest('[data-jump]');
+    if (j) { goWs(+j.dataset.jump); openDrawer(false); return; }
+    const g = e.target.closest('[data-go]');
+    if (g) {
+      const k = g.dataset.go;
+      if (k === 'home') location.href = 'index.html';
+      else if (k === 'exit') { try{ localStorage.removeItem('td-gate'); }catch{} location.href='index.html'; }
+      else openDrawer(false);
+    }
+  });
+
+  /* инструменты сверху */
+  topbar.addEventListener('click', e => {
+    const t = e.target.closest('[data-tool]');
+    if (!t) return;
+    if (t.dataset.tool === 'new') launch(APPS[0]);
+    if (t.dataset.tool === 'search') openDrawer(true);
+  });
+
+  /* клавиши для ПК */
+  addEventListener('keydown', e => {
+    if (e.key === 'Escape') openDrawer(false);
+    if (e.altKey && e.key === 'ArrowDown') { goWs(state.ws ? 0 : 1); }
+  });
+
+  /* прибытие после телепорта */
+  const arrive = document.getElementById('arrive');
+  if (arrive) {
+    requestAnimationFrame(() => setTimeout(() => {
+      arrive.classList.add('done');
+      setTimeout(() => arrive.remove(), 1000);
+    }, 220));
+  }
+
+  /* первый запуск: подсказка */
+  setTimeout(() => { window.__ready = true; }, 120);
+})();
+</script>
+</body>
+</html>

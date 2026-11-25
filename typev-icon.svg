@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#147B78"/>
+      <stop offset=".55" stop-color="#0E4D55"/>
+      <stop offset="1" stop-color="#081A23"/>
+    </linearGradient>
+    <linearGradient id="face" x1="0" y1="0" x2=".2" y2="1">
+      <stop offset="0" stop-color="#F7FBF9"/>
+      <stop offset=".3" stop-color="#DCEAE5"/>
+      <stop offset=".68" stop-color="#B8CEC6"/>
+      <stop offset="1" stop-color="#8FB6AE"/>
+    </linearGradient>
+    <linearGradient id="side" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5FA69B"/>
+      <stop offset="1" stop-color="#0E4D55"/>
+    </linearGradient>
+    <radialGradient id="glow" cx=".5" cy=".08" r=".9">
+      <stop offset="0" stop-color="#5FA69B" stop-opacity=".55"/>
+      <stop offset=".7" stop-color="#5FA69B" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="clip"><rect x="4" y="4" width="120" height="120" rx="30"/></clipPath>
+  </defs>
+
+  <rect x="4" y="4" width="120" height="120" rx="30" fill="url(#tile)"/>
+  <g clip-path="url(#clip)">
+    <rect x="4" y="4" width="120" height="120" fill="url(#glow)"/>
+    <rect x="4" y="4" width="120" height="120" fill="none" stroke="#F0F0EA" stroke-opacity=".18" stroke-width="2"/>
+    <!-- extrude -->
+    <path d="M31 34 L46.5 34 L64 78.5 L81.5 34 L97 34 L72.5 100 L55.5 100 Z"
+          fill="url(#side)" transform="translate(4.5,5.5)"/>
+    <path d="M31 34 L46.5 34 L64 78.5 L81.5 34 L97 34 L72.5 100 L55.5 100 Z"
+          fill="url(#side)" opacity=".9" transform="translate(2.6,3.2)"/>
+    <!-- face -->
+    <path d="M31 34 L48 34 L64 76 L80 34 L97 34 L72.5 100 L55.5 100 Z" fill="url(#face)"/>
+    <!-- top bevel -->
+    <path d="M31 34 L48 34 L64 76 L80 34 L97 34 L93 40 L79.5 40 L64 82 L48.5 40 L35 40 Z"
+          fill="#FFFFFF" opacity=".42"/>
+    <!-- notch: the V carries a typographic serif notch on the right arm -->
+    <path d="M97 34 L97 40 L80 40 L76.6 49 Z" fill="#F0F0EA" opacity=".85"/>
+  </g>
+</svg>
