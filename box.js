@@ -18,7 +18,7 @@
 
   const token = C.token;
   const esc = C.esc;
-  const linkify = (t) => t.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
+  const linkify = C.linkify;
   const show = (t) => { st.textContent = t; };
 
   /* ---------- трекер ---------- */
@@ -42,46 +42,16 @@
     catch { show('не сохранилось'); }
   };
 
-  const api = (p, opt = {}) => fetch('https://api.github.com/repos/' + O + '/' + R + p, {
-    ...opt, cache: 'no-store',
-    headers: {
-      'Authorization': 'Bearer ' + token(),
-      'Accept': 'application/vnd.github+json',
-      'Content-Type': 'application/json',
-      'Cache-Control': 'no-cache',
-      ...(opt.headers || {})
-    }
-  });
+  const api = C.api;
   const b64 = C.b64;
-  const unb64 = (s) => decodeURIComponent(escape(atob(s.replace(/\n/g, ''))));
-  const nowStamp = () => {
-    const d = new Date(), p = (n) => String(n).padStart(2, '0');
-    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
-  };
+  const unb64 = C.unb64;
+  const nowStamp = C.nowStamp;
 
   /* ---------- разбор ---------- */
   const READ = /\s*·\s*read\s*$/;
   const AUDIO = /audio:(\S+)/;
   const localise = C.localise;
-
-  const parse = (l) => {
-    const raw = l.replace(/^\s*-\s*/, '').trim();
-    let m = raw.match(/^(\d{4}-\d{2}-\d{2})[ T](\d{2}:\d{2})\s*\|\s*([^|]+?)\s*\|\s*(.*)$/);
-    if (m) {
-      const read = READ.test(m[4]);
-      const who = m[3].trim();
-      return { day: m[1], time: m[2],
-               who: /^(ты|azrael|иван)$/i.test(who) ? NAME_ME : NAME_AI,
-               text: m[4].replace(READ, ''), read };
-    }
-    m = raw.match(/^\*\*([\d.]{4,10}),?\s*(\d{2}:\d{2})\*\*\s*[·|]\s*(.*)$/);
-    if (m) {
-      const [dd, mm] = m[1].split('.');
-      return { day: '2026-' + (mm || '01').padStart(2, '0') + '-' + (dd || '01').padStart(2, '0'),
-               time: m[2], who: /arena|арена/i.test(m[3]) ? NAME_AI : NAME_ME, text: m[3], read: false };
-    }
-    return null;
-  };
+  const parse = C.parse;
 
   /* ---------- пузырь ---------- */
   /* руки смотрят друг на друга: Azrael →, Arena ←, при прочтении 🤝 */
@@ -112,19 +82,7 @@
 
   let lastSig = '';
 
-  async function readFeed() {
-    if (token()) {
-      try {
-        const r = await api('/contents/' + FEED + '?t=' + Date.now());
-        if (r.ok) return unb64((await r.json()).content);
-      } catch {}
-    }
-    try {
-      const r = await fetch(RAW + FEED + '?t=' + Date.now(), { cache: 'no-store' });
-      if (r.ok) return await r.text();
-    } catch {}
-    return '';
-  }
+  const readFeed = C.readFeed;
 
   async function load(force) {
     track('читаю ленту', true);
@@ -135,7 +93,7 @@
     txt.trim().split('\n').filter(Boolean).forEach(l => { const e = parse(l); if (e) entries.push(e); });
 
     /* ещё не доехавшие до файла */
-    const key = (e) => (e.who + '|' + (e.text || '')).replace(/\s+/g, ' ').trim();
+    const key = C.key;
     const have = new Set(entries.map(key));
     readPend().forEach(p => { if (!have.has(key(p))) entries.push({ ...p, pending: true, read: false }); });
 

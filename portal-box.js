@@ -15,34 +15,14 @@
   const token = C.token;
   const esc = C.esc;
   const b64 = C.b64;
-  const unb64 = (s) => decodeURIComponent(escape(atob(s.replace(/\n/g, ''))));
-  const nowStamp = () => {
-    const d = new Date(), p = (n) => String(n).padStart(2, '0');
-    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
-  };
+  const unb64 = C.unb64;
+  const nowStamp = C.nowStamp;
 
-  const api = (p, opt = {}) => fetch('https://api.github.com/repos/' + O + '/' + R + p, {
-    ...opt, cache: 'no-store',
-    headers: {
-      'Authorization': 'Bearer ' + token(),
-      'Accept': 'application/vnd.github+json',
-      'Content-Type': 'application/json',
-      ...(opt.headers || {})
-    }
-  });
+  const api = C.api;
 
   const READ = /\s*·\s*read\s*$/;
   const AUDIO = /audio:(\S+)/;
-  const parse = (l) => {
-    const raw = l.replace(/^\s*-\s*/, '').trim();
-    const m = raw.match(/^(\d{4}-\d{2}-\d{2})[ T](\d{2}:\d{2})\s*\|\s*([^|]+?)\s*\|\s*(.*)$/);
-    if (!m) return null;
-    const read = READ.test(m[4]);
-    const who = m[3].trim();
-    return { date: m[1], time: m[2],
-             who: /^(ты|azrael|иван)$/i.test(who) ? NAME_ME : NAME_AI,
-             text: m[4].replace(READ, ''), read };
-  };
+  const parse = C.parse;
 
   const localise = C.localise;
 
@@ -87,25 +67,13 @@
   }
 
   const readPend = C.readPend;
-  const addPend = (i) => { const a = readPend(); a.push(i); try { localStorage.setItem(PEND, JSON.stringify(a.slice(-40))); } catch {} };
+  const addPend = C.addPend;
   const dropPend = (i) => {
     const a = readPend().filter(x => !(x.who === i.who && x.text === i.text));
     try { localStorage.setItem(PEND, JSON.stringify(a)); } catch {}
   };
 
-  async function readFeed() {
-    if (token()) {
-      try {
-        const r = await api('/contents/' + FEED + '?t=' + Date.now());
-        if (r.ok) return unb64((await r.json()).content);
-      } catch {}
-    }
-    try {
-      const r = await fetch(RAW + FEED + '?t=' + Date.now(), { cache: 'no-store' });
-      if (r.ok) return await r.text();
-    } catch {}
-    return '';
-  }
+  const readFeed = C.readFeed;
 
   async function load() {
     let txt = '';
@@ -113,7 +81,7 @@
     const entries = [];
     txt.trim().split('\n').filter(Boolean).forEach(l => { const e = parse(l); if (e) entries.push(e); });
 
-    const key = (e) => (e.who + '|' + (e.text || '')).replace(/\s+/g, ' ').trim();
+    const key = C.key;
     const have = new Set(entries.map(key));
     readPend().forEach(p => { if (!have.has(key(p))) entries.push({ ...p, read: false }); });
 

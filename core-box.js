@@ -45,6 +45,25 @@
   var writePend = function (a) { try { localStorage.setItem(PEND, JSON.stringify(a.slice(-40))); } catch (e) {} };
   var addPend = function (i) { var a = readPend(); a.push(i); writePend(a); };
 
+  /* ---------- разбор строки ленты ---------- */
+  var READ = /\s*\[read\]\s*$/i;
+
+  var parse = function (l) {
+    var raw = String(l).replace(/^\s*-\s*/, "").trim();
+    var m = raw.match(/^(\d{4}-\d{2}-\d{2})[ T](\d{2}:\d{2})\s*\|\s*([^|]+?)\s*\|\s*(.*)$/);
+    if (!m) return null;
+    var read = READ.test(m[4]);
+    var who = m[3].trim();
+    return {
+      date: m[1], time: m[2],
+      who: /^(ты|azrael|иван)$/i.test(who) ? NAME_ME : NAME_AI,
+      text: m[4].replace(READ, ""), read: read
+    };
+  };
+
+  /* ключ для сравнения сообщений «это уже есть?» */
+  var key = function (e) { return (e.who + "|" + (e.text || "")).replace(/\s+/g, " ").trim(); };
+
   /* ---------- чтение ленты ----------
      Если есть токен — читаем через API (можно приватный репозиторий).
      Нет токена — читаем публичный raw. Оба пути возвращают текст. */
@@ -70,6 +89,6 @@
     token: token, esc: esc, linkify: linkify, b64: b64, unb64: unb64,
     localise: localise, nowStamp: nowStamp, api: api,
     readPend: readPend, writePend: writePend, addPend: addPend,
-    readFeed: readFeed, key: key
+    readFeed: readFeed, key: key, parse: parse, READ: READ
   };
 })(typeof globalThis !== "undefined" ? globalThis : this);
