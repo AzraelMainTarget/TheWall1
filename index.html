@@ -203,6 +203,8 @@ body.tp-out .win:not(.prodwin){animation:winSuck .7s ease-in forwards}
   font:700 8.5px/1 "Jost",system-ui,sans-serif;letter-spacing:.22em;text-transform:uppercase;
   color:#5FA69B;opacity:.55;text-shadow:0 1px 6px rgba(4,14,18,.8)}
 @media (max-width:520px){.alpha-tag{left:10px;bottom:max(8px,env(safe-area-inset-bottom));font-size:7.5px;letter-spacing:.16em}}
+.dev-line{font:700 8.5px/1.6 "Jost",sans-serif;letter-spacing:.16em;text-transform:uppercase;
+  color:#5FA69B;opacity:.8;margin:-6px 0 12px}
 .gate-line{margin-top:12px;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#5FA69B;opacity:.85}
 .prod-ico{grid-area:ico;width:46px;height:46px;flex:0 0 auto;border-radius:14px;display:grid;place-items:center;
   background:linear-gradient(160deg,#EAF3EF,#9FC7BC 62%,#5FA69B);
@@ -288,7 +290,8 @@ body.tp-out .win:not(.prodwin){animation:winSuck .7s ease-in forwards}
 </style>
 <script src="totp.js"></script>
 <script src="rescue.js"></script>
-<script src="guard.js?v=2"></script>
+<script src="device.js?v=1"></script>
+<script src="guard.js?v=3"></script>
 </head>
 <body>
 <canvas id="c"></canvas>
@@ -340,6 +343,7 @@ const SECTIONS=[
   html:'<p>Every build, grouped by what it does for your business.</p><ul><li>Automation<small>Workflows that run without you.</small></li><li>AI tools<small>Assistants, generators, agents.</small></li><li>Startup kits<small>Ready to launch ideas.</small></li></ul>'},
  {name:'Products',rim:'Products',svg:ico('<path d="M16 3.5l11 6.2v12.6L16 28.5 5 22.3V9.7z"/><path d="M5 9.7l11 6.3 11-6.3M16 16v12.5"/><circle cx="27.5" cy="4" r=".8" fill="currentColor"/>'),
   html:'<p>Finished products and prototypes, listed as they ship.</p>'
+      +'<p class="dev-line" id="dev-line"></p>'
       +'<ul>'
       +'<li class="prod"><div class="prod-card" data-product="typev" role="button" tabindex="0">'
         +'<span class="prod-ico"><svg viewBox="0 0 120 120" aria-hidden="true">'
@@ -420,7 +424,30 @@ function markUnlocked(name){
   const u=unlocked();u.add(name);
   try{sessionStorage.setItem(PASS_KEY,JSON.stringify([...u]))}catch{}
 }
-function isUnlocked(name){return unlocked().has(name)}
+function isUnlocked(name){
+  if(unlocked().has(name)) return true;
+  /* раздел Products открыт паролем -> запомнен на этом устройстве */
+  if(name==='Products' && window.TD_DEVICE && TD_DEVICE.isOpen()){
+    markUnlocked(name);            // перенесли в текущую сессию
+    return true;
+  }
+  return false;
+}
+
+/* подпись «этот браузер помнит пароль» + выход */
+function devLine(body){
+  const el=body.querySelector('#dev-line');
+  if(!el) return;
+  if(!window.TD_DEVICE){ el.textContent='доступ без привязки к устройству'; return; }
+  const i=TD_DEVICE.info();
+  if(!i.open){ el.textContent='устройство не привязано · пароль спросят снова'; return; }
+  const hm=(()=>{const d=new Date(i.openAt); const p=n=>String(n).padStart(2,'0');
+    return p(d.getDate())+'.'+p(d.getMonth()+1)+'.'+d.getFullYear()+' '+p(d.getHours())+':'+p(d.getMinutes());})();
+  el.innerHTML='устройство '+i.device+' · доступ с '+hm
+    +' · <a href="#" id="dev-out" style="color:#B8CEC6;text-decoration:none;border-bottom:1px solid rgba(184,206,198,.45)">выйти</a>';
+  const a=el.querySelector('#dev-out');
+  a.onclick=(e)=>{ e.preventDefault(); TD_DEVICE.drop(); location.reload(); };
+}
 
 /* ---------- ОКНА ---------- */
 let zTop=10, winCount=0;
@@ -540,8 +567,11 @@ function lockWin(name, html){
       const v=inp.value.trim();
       if(window.TD_GATE ? TD_GATE.hit(v) : (TD_FOLD('td|'+v.toLowerCase()) ^ 0x5f3a91c7) >>> 0 === 2575410809){
         markUnlocked(name);
+        /* пароль привязывается к устройству: браузер запоминает доступ */
+        if(name==='Products' && window.TD_DEVICE) TD_DEVICE.mark();
         body.innerHTML=html;   /* содержимое раздела */
         body.classList.remove('locked');
+        devLine(body);         /* подпись устройства сразу после входа */
       } else {
         msg.textContent='неверный пароль';
         inp.value=''; inp.focus();
@@ -559,7 +589,7 @@ function openSec(i){
   PU.uPulse.value=1; PU.uPHole.value.copy(holes[i]);
   if(s.box){ openBoxWindow(); hint.style.opacity=0; return; }
   if(!isUnlocked(s.name)){ lockWin(s.name, '<h2>'+s.name+'</h2>'+s.html); }
-  else { addWin(s.name,(body)=>{ body.innerHTML='<h2>'+s.name+'</h2>'+s.html; }); }
+  else { addWin(s.name,(body)=>{ body.innerHTML='<h2>'+s.name+'</h2>'+s.html; devLine(body); }); }
   hint.style.opacity=0;
 }
 
