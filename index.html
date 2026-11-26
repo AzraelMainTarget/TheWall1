@@ -492,8 +492,17 @@ function alphaTile(){
   }
   const paint=()=>{
     const ms=alphaLeft(), v=el.querySelector('.v');
-    if(ms<=0){ v.textContent='00:00'; el.classList.add('dead'); el.querySelector('.n').textContent='истёк';
-      if(alphaTick){clearInterval(alphaTick);alphaTick=null;} return; }
+    if(ms<=0){
+      v.textContent='00:00'; el.classList.add('dead'); el.querySelector('.n').textContent='истёк';
+      if(alphaTick){clearInterval(alphaTick);alphaTick=null;}
+      /* час вышел: ключ сгорает, доступ закрывается, страница перезагружается */
+      if(!el.dataset.done){
+        el.dataset.done='1';
+        try{ if(window.TD_GATE && TD_GATE.alphaExpire) TD_GATE.alphaExpire(); }catch{}
+        setTimeout(()=>{ location.reload(); }, 1200);
+      }
+      return;
+    }
     v.textContent=alphaMM(ms); el.classList.add('on');
   };
   paint();
@@ -519,7 +528,13 @@ function alphaWelcome(body, key){
 
   const big=host.querySelector('#a-big'), rail=host.querySelector('#a-rail'), sub=host.querySelector('#a-sub');
   const paint=()=>{ const ms=alphaLeft(); big.textContent=alphaMM(ms);
-    rail.style.transform='scaleX('+(ms/3600000)+')'; };
+    rail.style.transform='scaleX('+(ms/3600000)+')';
+    if(ms<=0 && !host.dataset.done){
+      host.dataset.done='1'; clearInterval(t);
+      try{ if(window.TD_GATE && TD_GATE.alphaExpire) TD_GATE.alphaExpire(); }catch{}
+      setTimeout(()=>{ location.reload(); }, 1000);
+    }
+  };
   paint();
   const t=setInterval(paint,1000);
   setTimeout(()=>{ if(sub) sub.textContent='Доступ открыт на час — можно свернуть в панель'; },2000);
@@ -533,6 +548,13 @@ function alphaWelcome(body, key){
 
 /* часы уже идут — плитка возвращается сама, в том числе после перезагрузки */
 function alphaResume(){
+  const a=alphaState();
+  if(a && a.t1 && a.t1<=Date.now()){
+    /* срок вышел, пока страница была закрыта — выходим */
+    try{ if(window.TD_GATE && TD_GATE.alphaExpire) TD_GATE.alphaExpire(); }catch{}
+    const el=document.getElementById('alpha-tile'); if(el) el.remove();
+    return;
+  }
   if(alphaLeft()>0) alphaTile();
   else { const el=document.getElementById('alpha-tile'); if(el) el.remove(); }
 }

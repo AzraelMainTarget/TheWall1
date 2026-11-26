@@ -22,6 +22,27 @@
     return Math.max(0, s.until - Date.now());
   }
   function isOpen(id) { return left(id) > 0; }
+  /* час вышел: ключ сгорает, доступ закрыт, страница перезагружается */
+  var leaving = false;
+  function expire(cfg) {
+    if (leaving) return;
+    leaving = true;
+    try { if (window.TD_GATE && TD_GATE.alphaExpire) TD_GATE.alphaExpire(); } catch (e) {}
+    localStorage.removeItem(KEY + cfg.id);
+    showEnded(cfg);
+    setTimeout(function () { location.reload(); }, 1400);
+  }
+  function showEnded(cfg) {
+    var el = document.getElementById('tbt');
+    if (el) {
+      el.classList.add('dead');
+      el.querySelector('.nm').textContent = cfg.title + ' · истёк';
+      el.querySelector('.tm').textContent = '00:00';
+      el.querySelector('.dot').style.background = '#F1A9A0';
+      el.querySelector('.bd').innerHTML = '<div class="rail"><i style="transform:scaleX(0)"></i></div>'
+        + '<div class="row"><span class="lbl">доступ закрыт · нужен новый ключ</span></div>';
+    }
+  }
 
   /* ---------- формат 59:59 ---------- */
   function mmss(ms) {
@@ -180,7 +201,7 @@
         var ms = Math.max(0, until - Date.now());
         big.textContent = mmss(ms);
         rail.style.transform = 'scaleX(' + (ms / HOUR) + ')';
-        if (ms <= 0) clearInterval(live);
+        if (ms <= 0) { clearInterval(live); expire(cfg); }
       }, 1000);
 
       ov.querySelector('#tba-min').onclick = function () {
@@ -234,9 +255,7 @@
     };
     el.querySelector('.out').onclick = function (e) {
       e.stopPropagation();
-      localStorage.removeItem(KEY + cfg.id);
-      if (cfg.onExpire) cfg.onExpire();
-      else location.reload();
+      expire(cfg);
     };
 
     var tick = null;
@@ -244,11 +263,7 @@
       var ms = left(cfg.id);
       if (ms <= 0) {
         stop();
-        tm.textContent = '00:00';
-        rail.style.transform = 'scaleX(0)';
-        el.querySelector('.nm').textContent = cfg.title + ' · закрыто';
-        el.querySelector('.dot').style.background = '#F1A9A0';
-        if (cfg.onExpire) cfg.onExpire(); else location.reload();
+        if (cfg.onExpire) cfg.onExpire(); else expire(cfg);
         return;
       }
       tm.textContent = mmss(ms);

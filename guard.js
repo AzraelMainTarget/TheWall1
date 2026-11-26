@@ -47,15 +47,41 @@
   /* Часовой ключ приглашения: TD-A1-XXXX-XXXX-XXXX-X
      Живёт ровно час по стенным часам устройства, привязывается к браузеру.
      Проверка строгая: формат, алфавит и контрольная цифра. */
-  const ALPHA_RE = /^TD-A1-([ACDEFGHJKLMNPQRSTUVWXYZ23456789]{4})-([ACDEFGHJKLMNPQRSTUVWXYZ23456789]{4})-([ACDEFGHJKLMNPQRSTUVWXYZ23456789]{4})-([ACDEFGHJKLMNPQRSTUVWXYZ23456789])$/i;
+  const A1 = '[ACDEFGHJKLMNPQRSTUVWXYZ23456789]';
+  const ALPHA_RE = new RegExp('^TD-A1-(' + A1 + '{4})-(' + A1 + '{4})-(' + A1 + '{4})-(' + A1 + ')$', 'i');
   const ALPHA_LS = 'td-alpha-key';
   const ALPHA_PENDING = 'td-alpha-pending';   // ключ введён, но час ещё не запущен
+  const ALPHA_SPENT = 'td-alpha-spent';       // сгоревшие ключи: второй раз не пускают
   function hourStamp(d) {
     const p = (n) => String(n).padStart(2, '0');
     return String(d.getUTCFullYear()) + p(d.getUTCMonth() + 1) + p(d.getUTCDate()) + p(d.getUTCHours());
   }
   function readAlpha() {
     try { return JSON.parse(localStorage.getItem(ALPHA_LS) || 'null'); } catch { return null; }
+  }
+  function readSpent() {
+    try { return JSON.parse(localStorage.getItem(ALPHA_SPENT) || '[]'); } catch { return []; }
+  }
+  function isSpent(k) {
+    return readSpent().indexOf(String(k || '').toUpperCase()) !== -1;
+  }
+  /* ключ сгорел: доступ закрыт, повторный ввод больше не пускает */
+  function alphaExpire(k) {
+    const key = String(k || (readAlpha() || {}).k || '').toUpperCase();
+    if (key) {
+      const list = readSpent().filter(x => x !== key);
+      list.push(key);
+      while (list.length > 20) list.shift();
+      try { localStorage.setItem(ALPHA_SPENT, JSON.stringify(list)); } catch {}
+    }
+    try {
+      localStorage.removeItem(ALPHA_LS);
+      localStorage.removeItem(ALPHA_PENDING);
+      localStorage.removeItem('td-dev-open');
+      sessionStorage.removeItem('td-unlocked');
+      sessionStorage.removeItem('td-gate');
+    } catch {}
+    return true;
   }
   /* true, если ключ правильного вида и его час ещё не вышел */
   function hitAlpha(raw) {
@@ -76,6 +102,9 @@
     }
     if (!stamp) return false;
     if (fold('td-alpha|' + stamp + '|' + raw12).toString(36).toUpperCase().slice(-1) !== m[4].toUpperCase()) return false;
+
+    /* сгоревший ключ не принимается ни при каких условиях */
+    if (isSpent(k)) return false;
 
     /* Ключ верный. Часы здесь НЕ запускаются: пока человек не активировал
        доступ, ключ просто лежит. Старт — в alphaActivate(). */
@@ -210,7 +239,7 @@
     setTimeout(() => inp.focus(), 120);
   }
 
-  window.TD_GATE = { hit, hitPass, hitTotp, hitRescue, hitAlpha, alphaActivate, alphaLeft: () => { const a = readAlpha(); return a && a.t1 ? Math.max(0, a.t1 - Date.now()) : 0; }, fold, norm, KEY, ROLE, ls, open, v: 4 };
+  window.TD_GATE = { hit, hitPass, hitTotp, hitRescue, hitAlpha, alphaActivate, alphaExpire, isSpent, alphaLeft: () => { const a = readAlpha(); return a && a.t1 ? Math.max(0, a.t1 - Date.now()) : 0; }, fold, norm, KEY, ROLE, ls, open, v: 4 };
 
   if (!allowed) { open(); return; }   // экран входа выключен — сразу пускаем внутрь
   document.documentElement.dataset.gate = 'lock';
