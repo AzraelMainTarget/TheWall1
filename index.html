@@ -138,7 +138,7 @@ body.tp-out .win:not(.prodwin){animation:winSuck .7s ease-in forwards}
 #icons button.on:hover span{color:#fff;letter-spacing:.18em}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-.win{position:fixed;width:min(90vw,368px);max-height:62vh;max-height:min(62dvh,560px);display:flex;flex-direction:column;
+.win{position:fixed;width:min(90vw,368px);max-height:74vh;max-height:min(74dvh,680px);display:flex;flex-direction:column;
   background:
     radial-gradient(130% 90% at 14% 0%,rgba(184,206,198,.22),rgba(184,206,198,0) 62%),
     radial-gradient(100% 80% at 96% 100%,rgba(20,123,120,.30),rgba(20,123,120,0) 64%),
@@ -181,7 +181,7 @@ body.tp-out .win:not(.prodwin){animation:winSuck .7s ease-in forwards}
 .win-body ul{margin:0;padding:0;list-style:none}
 .win-body li{padding:8px 0;border-top:1px solid rgba(236,206,255,.16);font:300 13px var(--sans)}
 .win-body li.prod{border-top:none;padding:2px 0 10px}
-.prod-card{display:flex;align-items:center;gap:13px;padding:12px 14px;border-radius:18px;cursor:pointer;
+.prod-card{display:grid;grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:"ico head go" "ico txt txt";align-items:center;gap:4px 12px;padding:12px 14px;border-radius:18px;cursor:pointer;
   background:linear-gradient(168deg,rgba(184,206,198,.24),rgba(8,26,35,.6));
   border:1px solid rgba(184,206,198,.36);
   box-shadow:inset 0 1px 0 rgba(240,240,234,.24),0 10px 26px rgba(0,0,0,.35);
@@ -190,22 +190,28 @@ body.tp-out .win:not(.prodwin){animation:winSuck .7s ease-in forwards}
 .prod-card:active{transform:scale(.985)}
 .prod-card.dead{opacity:.62;cursor:default}
 .prod-card.dead:hover{border-color:rgba(240,240,234,.3)}
-.prod-txt{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}
+.prod-txt{grid-area:txt;display:flex;flex-direction:column;gap:5px;min-width:0}
 .prod-by{font:700 9px/1 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:#5FA69B;font-style:normal;opacity:.9}
-.prod-txt small{color:#93A6AD;font-size:11.5px;line-height:1.45}
-.prod-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px}
+.prod-head{grid-area:head;display:flex;flex-direction:column;gap:3px;min-width:0}
+.prod-head>b{font:800 14.5px/1.2 "Montserrat",sans-serif;letter-spacing:.04em;color:#F0F0EA}
+.prod-txt small{color:#93A6AD;font-size:11.5px;line-height:1.45;margin-top:1px}
+.prod-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:2px}
 .prod-tags u{text-decoration:none;font:800 8.5px/1 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:#B8CEC6;
   padding:4px 7px;border-radius:7px;background:rgba(20,123,120,.16);border:1px solid rgba(95,166,155,.3)}
 .contact li b{color:#F0F0EA}
 .gate-line{margin-top:12px;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#5FA69B;opacity:.85}
-.prod-ico{width:46px;height:46px;flex:0 0 auto;border-radius:14px;display:grid;place-items:center;
+.prod-ico{grid-area:ico;width:46px;height:46px;flex:0 0 auto;border-radius:14px;display:grid;place-items:center;
   background:linear-gradient(160deg,#EAF3EF,#9FC7BC 62%,#5FA69B);
   box-shadow:0 6px 0 -2px #4E8C84,0 10px 20px rgba(0,0,0,.4)}
-.prod-ico svg{width:32px;height:32px}
+.prod-ico svg{width:32px;height:32px;filter:drop-shadow(0 1px 0 rgba(255,255,255,.28))}
+/* иконка чуть дышит при наведении: отклик, а не просто картинка */
+.prod-card:hover .prod-ico svg{transform:scale(1.07)}
+.prod-ico svg{transition:transform .35s cubic-bezier(.22,.8,.24,1)}
+
 .prod-txt{display:flex;flex-direction:column;gap:3px;min-width:0}
 .prod-txt b{font:800 14.5px/1.2 "Montserrat",sans-serif;letter-spacing:.04em;color:#F0F0EA}
 .prod-txt small{font-size:11px;color:#9FC0B8;letter-spacing:.02em}
-.prod-go{margin-left:auto;font:800 9.5px/1 inherit;letter-spacing:.16em;text-transform:uppercase;color:#5FA69B;
+.prod-go{grid-area:go;align-self:center;font:800 9.5px/1 inherit;letter-spacing:.16em;text-transform:uppercase;color:#5FA69B;
   white-space:nowrap}
 .win-body li small{display:block;color:#bda6d2;margin-top:3px;font-size:12.5px}
 
@@ -335,9 +341,8 @@ const SECTIONS=[
         +'<path d="M26 30 L60 88 L94 30" fill="none" stroke="#0E4D55" stroke-width="33" stroke-linecap="round" stroke-linejoin="round"/>'
         +'<path d="M31 33 L60 82 L89 33" fill="none" stroke="#8FB6AE" stroke-width="13" stroke-linecap="round" stroke-linejoin="round" opacity=".55"/>'
         +'</svg></span>'
-        +'<span class="prod-txt"><b>TypeV</b>'
-        +'<i class="prod-by">by Azrael · Director NeWerMoRe</i>'
-        +'<small>3D-леттеринг прямо в браузере: выдавливание, материал, свет и глубина. Первый продукт Project Gate.</small>'
+        +'<span class="prod-txt"><span class="prod-head"><b>TypeV</b><i class="prod-by">by Azrael · Director NeWerMoRe</i></span>'
+        +'<small>3D-леттеринг в браузере: выдавливание, материал, свет, глубина.</small>'
         +'<span class="prod-tags"><u>WebGL</u><u>no install</u><u>free</u></span></span>'
         +'<span class="prod-go">открыть →</span></div></li>'
       +'<li class="prod"><div class="prod-card" data-product="ragnell" role="button" tabindex="0">'
@@ -346,10 +351,20 @@ const SECTIONS=[
         +'<path d="M62 72 L92 92" fill="none" stroke="#0E4D55" stroke-width="15" stroke-linecap="round"/>'
         +'<path d="M38 33 V86" fill="none" stroke="#C7DED6" stroke-width="5" stroke-linecap="round" opacity=".65"/>'
         +'</svg></span>'
-        +'<span class="prod-txt"><b>Ragnell</b>'
-        +'<i class="prod-by">by Azrael · engine NeWerMoRe</i>'
-        +'<small>Видео-студия: промпт превращается в сцену, камера едет по-настоящему. Маски, замена лиц и предметов, запоминание персонажей.</small>'
+        +'<span class="prod-txt"><span class="prod-head"><b>Ragnell</b><i class="prod-by">by Azrael · engine NeWerMoRe</i></span>'
+        +'<small>Генератор видео и картинок: промпт превращается в сцену, камера едет по-настоящему.</small>'
         +'<span class="prod-tags"><u>LTX-ready</u><u>4K</u><u>GPU queue</u></span></span>'
+        +'<span class="prod-go">открыть →</span></div></li>'
+      +'<li class="prod"><div class="prod-card" data-product="dws" role="button" tabindex="0">'
+        +'<span class="prod-ico"><svg viewBox="0 0 120 120" aria-hidden="true">'
+        +'<rect x="22" y="28" width="76" height="64" rx="10" fill="none" stroke="#0E4D55" stroke-width="13"/>'
+        +'<path d="M22 45 h76" stroke="#0E4D55" stroke-width="11"/>'
+        +'<path d="M46 64 L60 74 L46 84 Z" fill="#0E4D55"/>'
+        +'<path d="M68 70 h20" stroke="#C7DED6" stroke-width="5" stroke-linecap="round" opacity=".6"/>'
+        +'</svg></span>'
+        +'<span class="prod-txt"><span class="prod-head"><b>DWS</b><i class="prod-by">Dark Work Space · NeWerMoRe</i></span>'
+        +'<small>Рабочий стол проекта: окна, движок и сцена в одном месте.</small>'
+        +'<span class="prod-tags"><u>desktop</u><u>engine</u><u>free</u></span></span>'
         +'<span class="prod-go">открыть →</span></div></li>'
       +'<li class="prod soon"><div class="prod-card dead" role="button" tabindex="0" aria-disabled="true">'
         +'<span class="prod-ico"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="30" fill="none" stroke="#0E4D55" stroke-width="12"/>'
@@ -453,7 +468,7 @@ function toggleMin(node){
 /* пределы раскладки: телефон/ПК, безопасные зоны, ничего не свисает за экран */
 function winBox(){
   const narrow=innerWidth<560;
-  return {pad:narrow?8:14, top:narrow?92:74, w:Math.min(innerWidth*.9,narrow?420:368), narrow};
+  return {pad:narrow?8:14, top:narrow?92:74, w:Math.min(innerWidth*.92,narrow?440:470), narrow};
 }
 function fitWin(node,keepPos){
   const b=winBox();
@@ -557,9 +572,10 @@ function openBoxWindow(){
 }
 
 /* ---------- телепорт на рабочий стол ---------- */
-function teleport(target){
+function teleport(target,label){
   const tp=$('tp');
   if(!tp || tp.classList.contains('run')) return;
+  const cap=tp.querySelector('.cap'); if(cap && label) cap.textContent='перенос · '+label;
   tp.classList.add('run');
   document.body.classList.add('tp-out');
   /* подсветка портала, как будто сфера всасывает */
@@ -570,12 +586,10 @@ document.addEventListener('click', e=>{
   const card=e.target.closest('[data-product]');
   if(!card) return;
   const k=card.dataset.product;
-  if(k==='typev'){
+  const MAP={typev:['studio.html','V'],ragnell:['ragnell.html','Ragnell'],dws:['desk.html','DWS']};
+  if(MAP[k]){
     card.classList.add('sucking');
-    teleport('desk.html');
-  } else if(k==='ragnell'){
-    card.classList.add('sucking');
-    teleport('ragnell.html');
+    teleport(MAP[k][0], MAP[k][1]);
   }
 });
 document.addEventListener('keydown', e=>{
