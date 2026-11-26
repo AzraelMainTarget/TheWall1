@@ -431,6 +431,11 @@ function isUnlocked(name){
     markUnlocked(name);            // перенесли в текущую сессию
     return true;
   }
+  /* часовой ключ: раздел помнит вход ровно столько, сколько живёт ключ */
+  try{
+    const a=JSON.parse(localStorage.getItem('td-alpha-key')||'null');
+    if(name==='Products' && a && a.k && a.bound && a.t1>Date.now()){ markUnlocked(name); return true; }
+  }catch{}
   return false;
 }
 
@@ -524,11 +529,13 @@ let edgeDirty=true;
 
 function closeWin(name){
   const w=openWins[name]; if(!w)return;
+  delete openWins[name];            // сразу, а не после анимации: повторный клик должен открывать заново
   w.classList.remove('open');
-  setTimeout(()=>{ w.remove(); delete openWins[name]; edgeDirty=true; syncHint(); },380);
+  setTimeout(()=>{ w.remove(); edgeDirty=true; syncHint(); },380);
 }
 
 function addWin(name, buildBody){
+  if(openWins[name] && !openWins[name].classList.contains('open')) delete openWins[name];
   if(openWins[name]){ bringFront(openWins[name]); return openWins[name]; }
   const node=winTpl.content.firstElementChild.cloneNode(true);
   node.querySelector('.win-title').textContent=name;

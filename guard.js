@@ -44,10 +44,65 @@
     return false;
   }
 
+  /* Часовой ключ приглашения: TD-A1-XXXX-XXXX-XXXX-X
+     Живёт ровно час по стенным часам устройства, привязывается к браузеру.
+     Проверка строгая: формат, алфавит и контрольная цифра. */
+  const ALPHA_RE = /^TD-A1-([ACDEFGHJKLMNPQRSTUVWXYZ23456789]{4})-([ACDEFGHJKLMNPQRSTUVWXYZ23456789]{4})-([ACDEFGHJKLMNPQRSTUVWXYZ23456789]{4})-([ACDEFGHJKLMNPQRSTUVWXYZ23456789])$/i;
+  const ALPHA_LS = 'td-alpha-key';
+  function hourStamp(d) {
+    const p = (n) => String(n).padStart(2, '0');
+    return String(d.getUTCFullYear()) + p(d.getUTCMonth() + 1) + p(d.getUTCDate()) + p(d.getUTCHours());
+  }
+  function readAlpha() {
+    try { return JSON.parse(localStorage.getItem(ALPHA_LS) || 'null'); } catch { return null; }
+  }
+  /* true, если ключ правильного вида и его час ещё не вышел */
+  function hitAlpha(raw) {
+    const k = String(raw || '').trim().toUpperCase();
+    const m = k.match(ALPHA_RE);
+    if (!m) return false;
+    /* контрольная цифра */
+    const raw12 = (m[1] + m[2] + m[3]).toUpperCase();
+    const saved = readAlpha();
+    let stamp;
+    if (saved && saved.k && saved.k.toUpperCase() === k) {
+      stamp = String(saved.hour || '');
+    } else {
+      /* ключ не с этого устройства: допускаем только текущий и прошлый час */
+      const now = new Date();
+      const hours = [hourStamp(now), hourStamp(new Date(now.getTime() - 3600e3))];
+      stamp = hours.find(h => fold('td-alpha|' + h + '|' + raw12).toString(36).toUpperCase().slice(-1) === m[4].toUpperCase()) || '';
+    }
+    if (!stamp) return false;
+    if (fold('td-alpha|' + stamp + '|' + raw12).toString(36).toUpperCase().slice(-1) !== m[4].toUpperCase()) return false;
+    /* срок: если ключ уже выдан этому браузеру — по нему, иначе час с текущего момента */
+    if (!saved || !saved.k || saved.k.toUpperCase() !== k) {
+      const now = Date.now();
+      /* час стартует в момент ввода и идёт по стенным часам — без участия пользователя */
+      try { localStorage.setItem(ALPHA_LS, JSON.stringify({ k: k, t0start: now, t1: now + 3600e3, hour: stamp, bound: 1 })); } catch {}
+    }
+    const cur = readAlpha();
+    return !!(cur && cur.k && cur.k.toUpperCase() === k && cur.t1 > Date.now());
+  }
+
+  /* Письмо-приглашение: час начинается сразу, как человек открыл его.
+     Так ключ живёт в реальном времени, даже если страницу потом закрыли. */
+  try {
+    const inv = JSON.parse(localStorage.getItem('td-alpha-invite') || 'null');
+    if (inv && inv.k && inv.k.toUpperCase().match(ALPHA_RE) && !readAlpha()) {
+      const t1 = inv.t1 || (inv.t0 + 3600e3);
+      if (t1 > Date.now()) {
+        localStorage.setItem(ALPHA_LS, JSON.stringify({
+          k: inv.k.toUpperCase(), t0start: inv.t0, t1: t1, hour: inv.hour || '', bound: 0, invite: 1
+        }));
+      }
+    }
+  } catch {}
+
   /* Аварийный ключ: работает офлайн, даже если всё остальное сломано. */
   const hitRescue = (raw) => !!(window.RESCUE && RESCUE.hit(raw));
 
-  const hit = (raw) => hitRescue(raw) || hitPass(raw) || hitTotp(raw);
+  const hit = (raw) => hitRescue(raw) || hitPass(raw) || hitTotp(raw) || hitAlpha(raw);
 
   const ls = {
     get: (k) => { try { return localStorage.getItem(k); } catch { return null; } },
@@ -138,7 +193,7 @@
     setTimeout(() => inp.focus(), 120);
   }
 
-  window.TD_GATE = { hit, hitPass, hitTotp, hitRescue, fold, norm, KEY, ROLE, ls, open, v: 2 };
+  window.TD_GATE = { hit, hitPass, hitTotp, hitRescue, hitAlpha, fold, norm, KEY, ROLE, ls, open, v: 3 };
 
   if (!allowed) { open(); return; }   // экран входа выключен — сразу пускаем внутрь
   document.documentElement.dataset.gate = 'lock';

@@ -123,11 +123,18 @@
       probe().then(n => log('net', { ip: n.ip, cc: n.country }));
       return now;
     },
-    /* впущен ли этот браузер; срок жизни — DAYS дней */
+    /* впущен ли этот браузер.
+       — обычный пароль: срок жизни DAYS дней;
+       — часовой ключ приглашения: ровно час по стенным часам. */
     openAt() {
       const v = parseInt(load('td-dev-open') || '0', 10) || 0;
       if (!v) return 0;
-      return Date.now() - v < DAYS * 864e5 ? v : 0;
+      let span = DAYS * 864e5;
+      try {
+        const a = JSON.parse(load('td-alpha-key') || 'null');
+        if (a && a.k && a.t1) span = Math.max(0, a.t1 - a.t0start || 3600e3);
+      } catch {}
+      return Date.now() - v < span ? v : 0;
     },
     isOpen() { return this.openAt() > 0; },
     drop() {

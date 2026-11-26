@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Alpha keys — That Darkness</title>
+<meta name="td-build" content="alpha-issuer-1">
+<style>
+  :root{--deep:#081A23;--deep2:#0E4D55;--mid:#147B78;--soft:#5FA69B;--pale:#B8CEC6;--light:#F0F0EA;
+        --ease:cubic-bezier(.22,.8,.24,1)}
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;padding:clamp(14px,3vw,34px);
+    background:radial-gradient(120% 80% at 50% -10%,#0E4D55,#081A23 55%,#040F14);
+    color:var(--light);font-family:"Jost",system-ui,sans-serif}
+  .wrap{width:min(760px,100%);margin:0 auto}
+  h1{margin:0 0 4px;font:800 19px/1.2 "Montserrat",sans-serif;letter-spacing:.1em;text-transform:uppercase}
+  .sub{margin:0 0 20px;font:700 9.5px/1.5 "Jost",sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--soft)}
+  .card{padding:16px;border-radius:18px;margin-bottom:14px;
+    background:linear-gradient(168deg,rgba(14,77,85,.5),rgba(8,26,35,.7));
+    border:1px solid rgba(184,206,198,.28);box-shadow:inset 0 1px 0 rgba(240,240,234,.16),0 20px 50px -24px #000}
+  .lbl{font:800 8.5px/1 "Jost",sans-serif;letter-spacing:.22em;text-transform:uppercase;color:var(--soft);margin-bottom:8px}
+  .key{font:800 clamp(15px,3vw,20px)/1.3 ui-monospace,monospace;letter-spacing:.14em;word-break:break-all;
+    padding:13px;border-radius:12px;border:1px dashed rgba(184,206,198,.45);background:rgba(4,14,18,.6);text-align:center}
+  .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  button,a.btn{flex:1 1 auto;padding:11px 14px;border-radius:12px;border:0;cursor:pointer;text-align:center;
+    font:800 9.5px/1 "Montserrat",sans-serif;letter-spacing:.18em;text-transform:uppercase;text-decoration:none;
+    transition:transform .16s var(--ease),filter .2s}
+  button:active{transform:scale(.985)}
+  .p{background:linear-gradient(160deg,#F0F0EA,#B8CEC6);color:#081A23}
+  .g{background:rgba(8,26,35,.5);color:var(--pale);border:1px solid rgba(184,206,198,.32)}
+  .g:hover{color:#fff;border-color:rgba(240,240,234,.6)}
+  textarea{width:100%;min-height:190px;padding:13px;border-radius:12px;resize:vertical;
+    background:rgba(4,14,18,.6);color:#DCE8E4;border:1px solid rgba(95,166,155,.3);
+    font:400 13px/1.6 "Jost",system-ui,sans-serif}
+  .t{font:700 9px/1.6 "Jost",sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#7F9E97;margin-top:8px}
+  .t b{color:var(--pale)}
+  .flash{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);opacity:0;
+    padding:10px 16px;border-radius:12px;background:rgba(20,123,120,.9);color:#F0F0EA;
+    font:800 9.5px/1 "Jost",sans-serif;letter-spacing:.18em;text-transform:uppercase;
+    transition:opacity .25s,transform .25s var(--ease);pointer-events:none}
+  .flash.on{opacity:1;transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Alpha keys</h1>
+  <p class="sub">выдача часовых ключей · Alpha Test 1.0</p>
+
+  <div class="card">
+    <div class="lbl">новый часовой ключ</div>
+    <div class="key" id="key">----</div>
+    <div class="row">
+      <button class="p" id="gen">Сгенерировать</button>
+      <button class="g" id="copyKey">Копировать ключ</button>
+    </div>
+    <p class="t">Ключ живёт <b>ровно час</b> с момента, когда человек откроет письмо.</p>
+  </div>
+
+  <div class="card">
+    <div class="lbl">сообщение для отправки</div>
+    <textarea id="msg" spellcheck="false"></textarea>
+    <div class="row">
+      <button class="p" id="copyMsg">Копировать сообщение</button>
+      <button class="g" id="openAtml">Открыть письмо</button>
+    </div>
+    <p class="t">Ссылка ведёт на <b>alpha.html</b> — там ключ, таймер и кнопка входа.</p>
+  </div>
+</div>
+<div class="flash" id="flash">скопировано</div>
+
+<script>
+(function(){
+  'use strict';
+  var CHARS='ACDEFGHJKLMNPQRSTUVWXYZ23456789';
+  var $=function(i){return document.getElementById(i)};
+  var BASE='https://azraelmaintarget.github.io/TheWall1/alpha.html';
+
+  function two(n){return (n<10?'0':'')+n}
+  function fold(str){var h=0x811c9dc5;for(var i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0}return h>>>0}
+  function randHex(n){var a=new Uint8Array(n);crypto.getRandomValues(a);
+    var o='';for(var i=0;i<n;i++)o+=a[i].toString(16).padStart(2,'0');return o}
+  function body(n){var h=randHex(8),o='';
+    for(var i=0;i<n;i++)o+=CHARS[parseInt(h.substr((i*2)%16,2),16)%CHARS.length];return o}
+  function hourStamp(d){return String(d.getUTCFullYear())+two(d.getUTCMonth()+1)+two(d.getUTCDate())+two(d.getUTCHours())}
+
+  function makeKey(){
+    var stamp=hourStamp(new Date());
+    var raw=body(4)+body(4)+body(4);
+    var sum=fold('td-alpha|'+stamp+'|'+raw).toString(36).toUpperCase().slice(-1);
+    return 'TD-A1-'+raw.slice(0,4)+'-'+raw.slice(4,8)+'-'+raw.slice(8,12)+'-'+sum;
+  }
+
+  function text(k){
+    return 'That Darkness — Alpha Test 1.0\n'
+      + 'С уважением, от проекта That Darkness.\n\n'
+      + 'Вот ваш часовой ключ доступа:\n' + k + '\n\n'
+      + 'Ссылка: ' + BASE + '\n\n'
+      + 'Ключ действует ровно 1 час реального времени с момента открытия письма — '
+      + 'отсчёт идёт сам, страницу держать открытой не нужно.\n\n'
+      + 'Благодарим за содействие — ваш отзыв незаменим.\n'
+      + 'Project Gate · NeWerMoRe (Author)';
+  }
+
+  function flash(txt){var f=$('flash');f.textContent=txt||'скопировано';f.classList.add('on');
+    setTimeout(function(){f.classList.remove('on')},1400)}
+
+  function copy(txt){
+    if(navigator.clipboard&&navigator.clipboard.writeText) return navigator.clipboard.writeText(txt).then(function(){flash()});
+    var ta=document.createElement('textarea');ta.value=txt;ta.style.position='fixed';ta.style.opacity='0';
+    document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();flash();
+    return Promise.resolve();
+  }
+
+  var current=makeKey();
+  function paint(k){current=k;$('key').textContent=k;$('msg').value=text(k)}
+  paint(current);
+
+  $('gen').onclick=function(){paint(makeKey())};
+  $('copyKey').onclick=function(){copy(current)};
+  $('copyMsg').onclick=function(){copy($('msg').value)};
+  $('openAtml').onclick=function(){window.open(BASE,'_blank','noopener')};
+})();
+</script>
+</body>
+</html>
