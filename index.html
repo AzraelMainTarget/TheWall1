@@ -203,6 +203,36 @@ body.tp-out .win:not(.prodwin){animation:winSuck .7s ease-in forwards}
   font:700 8.5px/1 "Jost",system-ui,sans-serif;letter-spacing:.22em;text-transform:uppercase;
   color:#5FA69B;opacity:.55;text-shadow:0 1px 6px rgba(4,14,18,.8)}
 @media (max-width:520px){.alpha-tag{left:10px;bottom:max(8px,env(safe-area-inset-bottom));font-size:7.5px;letter-spacing:.16em}}
+.alpha-ok{text-align:center}
+.alpha-ok .tick{width:58px;height:58px;margin:2px auto 12px;border-radius:50%;display:grid;place-items:center;
+  background:radial-gradient(circle at 40% 30%,rgba(240,240,234,.95),rgba(95,166,155,.9));
+  box-shadow:0 0 0 1px rgba(184,206,198,.5),0 0 30px rgba(20,123,120,.7);animation:apop .5s cubic-bezier(.32,1.6,.54,1) both}
+.alpha-ok .tick svg{width:28px;height:28px;stroke:#081A23;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+@keyframes apop{0%{transform:scale(.4);opacity:0}100%{transform:scale(1);opacity:1}}
+.alpha-ok h2{margin:0 0 5px;font:800 14px/1.2 "Montserrat",sans-serif;letter-spacing:.1em;text-transform:uppercase;color:#F0F0EA}
+.alpha-ok p{margin:0 0 12px;font:700 9px/1.5 var(--sans);letter-spacing:.18em;text-transform:uppercase;color:#5FA69B}
+.alpha-ok .big{font:800 32px/1 "Jost",sans-serif;letter-spacing:.06em;font-variant-numeric:tabular-nums;color:#F0F0EA}
+.alpha-ok .rail{height:3px;border-radius:3px;background:rgba(240,240,234,.14);overflow:hidden;margin:10px 0 12px}
+.alpha-ok .rail i{display:block;height:100%;width:100%;transform-origin:left center;background:linear-gradient(90deg,#5FA69B,#F0F0EA);transition:transform .95s linear}
+.alpha-ok button{width:100%;padding:12px;border:0;border-radius:13px;cursor:pointer;color:#081A23;
+  font:800 10px/1 "Montserrat",sans-serif;letter-spacing:.2em;text-transform:uppercase;
+  background:linear-gradient(160deg,#F0F0EA,#B8CEC6)}
+.alpha-ok button:active{transform:scale(.985)}
+/* плитка с часами на панели сайта */
+#alpha-tile{position:fixed;right:16px;bottom:16px;z-index:60;display:none;align-items:center;gap:9px;
+  padding:9px 12px;border-radius:15px;cursor:pointer;user-select:none;
+  background:linear-gradient(168deg,rgba(14,77,85,.82),rgba(8,26,35,.9));
+  border:1px solid rgba(184,206,198,.34);box-shadow:inset 0 1px 0 rgba(240,240,234,.2),0 16px 40px rgba(0,0,0,.55);
+  -webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);transition:transform .35s var(--ease),opacity .3s}
+#alpha-tile.on{display:flex}
+#alpha-tile:hover{transform:translateY(-1px)}
+#alpha-tile .d{width:7px;height:7px;border-radius:50%;background:#5FA69B;box-shadow:0 0 10px rgba(95,166,155,.9);
+  animation:apulse 2.4s ease-in-out infinite}
+@keyframes apulse{0%,100%{opacity:.45}50%{opacity:1}}
+#alpha-tile .n{font:800 8.5px/1 "Jost",sans-serif;letter-spacing:.18em;text-transform:uppercase;color:#B8CEC6}
+#alpha-tile .v{font:800 13px/1 "Jost",sans-serif;letter-spacing:.1em;font-variant-numeric:tabular-nums;color:#F0F0EA}
+#alpha-tile.dead .d{background:#F1A9A0;animation:none}#alpha-tile.dead .v{color:#F1A9A0}
+@media (max-width:520px){#alpha-tile{right:10px;left:auto;bottom:max(10px,env(safe-area-inset-bottom))}}
 .dev-line{font:700 8.5px/1.6 "Jost",sans-serif;letter-spacing:.16em;text-transform:uppercase;
   color:#5FA69B;opacity:.8;margin:-6px 0 12px}
 .gate-line{margin-top:12px;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#5FA69B;opacity:.85}
@@ -439,6 +469,76 @@ function isUnlocked(name){
   return false;
 }
 
+/* ---------- часовой ключ: поздравление и плитка с часами ---------- */
+const ALPHA_ID='td-alpha-key';
+function alphaState(){
+  try{ return JSON.parse(localStorage.getItem(ALPHA_ID)||'null'); }catch{ return null; }
+}
+function alphaLeft(){ const a=alphaState(); return a&&a.t1?Math.max(0,a.t1-Date.now()):0; }
+function alphaMM(ms){ const t=Math.min(3599,Math.floor(ms/1000)), m=Math.floor(t/60), q=t%60;
+  return (m<10?'0':'')+m+':'+(q<10?'0':'')+q; }
+
+/* плитка на панели: в свёрнутом виде всё равно видно время */
+let alphaTick=null;
+function alphaTile(){
+  let el=document.getElementById('alpha-tile');
+  if(!el){
+    el=document.createElement('div');
+    el.id='alpha-tile';
+    el.innerHTML='<span class="d"></span><span class="n">доступ</span><span class="v">--:--</span>';
+    el.title='Осталось доступа — нажмите, чтобы продлить';
+    el.onclick=()=>{ const k=alphaState(); if(k&&k.k) prefillAlpha(k.k); openSec(1); };
+    document.body.appendChild(el);
+  }
+  const paint=()=>{
+    const ms=alphaLeft(), v=el.querySelector('.v');
+    if(ms<=0){ v.textContent='00:00'; el.classList.add('dead'); el.querySelector('.n').textContent='истёк';
+      if(alphaTick){clearInterval(alphaTick);alphaTick=null;} return; }
+    v.textContent=alphaMM(ms); el.classList.add('on');
+  };
+  paint();
+  if(!alphaTick) alphaTick=setInterval(paint,1000);
+  return el;
+}
+/* предзаполнить поле ключом, если человек захочет продлить */
+function prefillAlpha(k){
+  setTimeout(()=>{ const i=document.querySelector('.win.open input'); if(i&&!i.value) i.value=k; },250);
+}
+
+/* поздравление + час в том же окне, потом сворачивание в плитку */
+function alphaWelcome(body, key){
+  const host=document.createElement('div');
+  host.className='alpha-ok';
+  host.innerHTML='<div class="tick"><svg viewBox="0 0 24 24"><path d="M4 12.5l5.2 5.2L20 6.6"/></svg></div>'
+    +'<h2>Доступ успешно активирован</h2>'
+    +'<p id="a-sub">Ключ принят · час пошёл</p>'
+    +'<div class="big" id="a-big">59:59</div>'
+    +'<div class="rail"><i id="a-rail"></i></div>'
+    +'<button type="button" id="a-min">Свернуть в панель</button>';
+  body.insertBefore(host, body.firstChild);
+
+  const big=host.querySelector('#a-big'), rail=host.querySelector('#a-rail'), sub=host.querySelector('#a-sub');
+  const paint=()=>{ const ms=alphaLeft(); big.textContent=alphaMM(ms);
+    rail.style.transform='scaleX('+(ms/3600000)+')'; };
+  paint();
+  const t=setInterval(paint,1000);
+  setTimeout(()=>{ if(sub) sub.textContent='Доступ открыт на час — можно свернуть в панель'; },2000);
+  host.querySelector('#a-min').onclick=()=>{
+    clearInterval(t);
+    host.style.transition='opacity .3s'; host.style.opacity='0';
+    setTimeout(()=>{ if(host.parentNode) host.parentNode.removeChild(host); },300);
+    alphaTile();
+  };
+}
+
+/* часы уже идут — плитка возвращается сама, в том числе после перезагрузки */
+function alphaResume(){
+  if(alphaLeft()>0) alphaTile();
+  else { const el=document.getElementById('alpha-tile'); if(el) el.remove(); }
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>setTimeout(alphaResume,400));
+else setTimeout(alphaResume,400);
+
 /* подпись «этот браузер помнит пароль» + выход */
 function devLine(body){
   const el=body.querySelector('#dev-line');
@@ -574,11 +674,15 @@ function lockWin(name, html){
       const v=inp.value.trim();
       if(window.TD_GATE ? TD_GATE.hit(v) : (TD_FOLD('td|'+v.toLowerCase()) ^ 0x5f3a91c7) >>> 0 === 2575410809){
         markUnlocked(name);
-        /* пароль привязывается к устройству: браузер запоминает доступ */
+        /* пароль или ключ привязывается к устройству: браузер запоминает доступ */
         if(name==='Products' && window.TD_DEVICE) TD_DEVICE.mark();
+        /* часовой ключ: час стартует только сейчас, в момент активации */
+        const isKey = window.TD_GATE && TD_GATE.hitAlpha && TD_GATE.hitAlpha(v);
+        if(isKey) TD_GATE.alphaActivate(v);
         body.innerHTML=html;   /* содержимое раздела */
         body.classList.remove('locked');
         devLine(body);         /* подпись устройства сразу после входа */
+        if(isKey) alphaWelcome(body, v);
       } else {
         msg.textContent='неверный пароль';
         inp.value=''; inp.focus();

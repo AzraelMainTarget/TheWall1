@@ -49,6 +49,7 @@
      Проверка строгая: формат, алфавит и контрольная цифра. */
   const ALPHA_RE = /^TD-A1-([ACDEFGHJKLMNPQRSTUVWXYZ23456789]{4})-([ACDEFGHJKLMNPQRSTUVWXYZ23456789]{4})-([ACDEFGHJKLMNPQRSTUVWXYZ23456789]{4})-([ACDEFGHJKLMNPQRSTUVWXYZ23456789])$/i;
   const ALPHA_LS = 'td-alpha-key';
+  const ALPHA_PENDING = 'td-alpha-pending';   // ключ введён, но час ещё не запущен
   function hourStamp(d) {
     const p = (n) => String(n).padStart(2, '0');
     return String(d.getUTCFullYear()) + p(d.getUTCMonth() + 1) + p(d.getUTCDate()) + p(d.getUTCHours());
@@ -75,29 +76,45 @@
     }
     if (!stamp) return false;
     if (fold('td-alpha|' + stamp + '|' + raw12).toString(36).toUpperCase().slice(-1) !== m[4].toUpperCase()) return false;
-    /* срок: если ключ уже выдан этому браузеру — по нему, иначе час с текущего момента */
-    if (!saved || !saved.k || saved.k.toUpperCase() !== k) {
-      const now = Date.now();
-      /* час стартует в момент ввода и идёт по стенным часам — без участия пользователя */
-      try { localStorage.setItem(ALPHA_LS, JSON.stringify({ k: k, t0start: now, t1: now + 3600e3, hour: stamp, bound: 1 })); } catch {}
-    }
+
+    /* Ключ верный. Часы здесь НЕ запускаются: пока человек не активировал
+       доступ, ключ просто лежит. Старт — в alphaActivate(). */
     const cur = readAlpha();
-    return !!(cur && cur.k && cur.k.toUpperCase() === k && cur.t1 > Date.now());
+    if (cur && cur.k && cur.k.toUpperCase() === k) {
+      /* повторный ввод: пускаем, только если час уже идёт и не вышел */
+      return cur.t1 > Date.now();
+    }
+    try { localStorage.setItem(ALPHA_PENDING, k); } catch {}
+    return true;
   }
 
-  /* Письмо-приглашение: час начинается сразу, как человек открыл его.
-     Так ключ живёт в реальном времени, даже если страницу потом закрыли. */
-  try {
-    const inv = JSON.parse(localStorage.getItem('td-alpha-invite') || 'null');
-    if (inv && inv.k && inv.k.toUpperCase().match(ALPHA_RE) && !readAlpha()) {
-      const t1 = inv.t1 || (inv.t0 + 3600e3);
-      if (t1 > Date.now()) {
-        localStorage.setItem(ALPHA_LS, JSON.stringify({
-          k: inv.k.toUpperCase(), t0start: inv.t0, t1: t1, hour: inv.hour || '', bound: 0, invite: 1
-        }));
-      }
-    }
-  } catch {}
+  /* Активация: с этого момента и ровно на час. Вызывается один раз — при первом входе. */
+  function alphaActivate(raw) {
+    const k = String(raw || '').trim().toUpperCase();
+    if (!hitAlpha(k)) return false;
+    const cur = readAlpha();
+    if (cur && cur.k && cur.k.toUpperCase() === k && cur.t1 > Date.now()) return true;
+    const now = Date.now();
+    const stamp = hourStampOf(k) || hourStamp(new Date());
+    try {
+      localStorage.setItem(ALPHA_LS, JSON.stringify({
+        k: k, t0start: now, t1: now + 3600e3, hour: stamp, bound: 1, activated: now
+      }));
+      localStorage.removeItem(ALPHA_PENDING);
+    } catch {}
+    return true;
+  }
+
+  /* час, зашитый в ключ (по контрольной цифре); null — если ключ не сходится */
+  function hourStampOf(k) {
+    const m = k.match(ALPHA_RE);
+    if (!m) return null;
+    const raw12 = (m[1] + m[2] + m[3]).toUpperCase();
+    const now = new Date();
+    const hours = [];
+    for (let i = 0; i < 48; i++) hours.push(hourStamp(new Date(now.getTime() - i * 3600e3)));
+    return hours.find(h => fold('td-alpha|' + h + '|' + raw12).toString(36).toUpperCase().slice(-1) === m[4].toUpperCase()) || null;
+  }
 
   /* Аварийный ключ: работает офлайн, даже если всё остальное сломано. */
   const hitRescue = (raw) => !!(window.RESCUE && RESCUE.hit(raw));
@@ -193,7 +210,7 @@
     setTimeout(() => inp.focus(), 120);
   }
 
-  window.TD_GATE = { hit, hitPass, hitTotp, hitRescue, hitAlpha, fold, norm, KEY, ROLE, ls, open, v: 3 };
+  window.TD_GATE = { hit, hitPass, hitTotp, hitRescue, hitAlpha, alphaActivate, alphaLeft: () => { const a = readAlpha(); return a && a.t1 ? Math.max(0, a.t1 - Date.now()) : 0; }, fold, norm, KEY, ROLE, ls, open, v: 4 };
 
   if (!allowed) { open(); return; }   // экран входа выключен — сразу пускаем внутрь
   document.documentElement.dataset.gate = 'lock';

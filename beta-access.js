@@ -25,7 +25,7 @@
 
   /* ---------- формат 59:59 ---------- */
   function mmss(ms) {
-    var t = Math.max(0, Math.floor(ms / 1000));
+    var t = Math.max(0, Math.min(3599, Math.floor(ms / 1000)));   // ровно 59:59 в начале
     var m = Math.floor(t / 60), s = t % 60;
     return (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
   }
@@ -65,6 +65,14 @@
     + '  box-shadow:0 0 0 1px rgba(184,206,198,.5),0 0 34px rgba(20,123,120,.7);animation:tbapop .5s cubic-bezier(.32,1.6,.54,1) both}'
     + '#tba .ok .tick svg{width:30px;height:30px;stroke:#081A23;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}'
     + '@keyframes tbapop{0%{transform:scale(.4);opacity:0}100%{transform:scale(1);opacity:1}}'
+    + '#tba .timer{margin:2px 0 12px;padding:12px;border-radius:15px;background:rgba(4,14,18,.45);'
+    + '  border:1px solid rgba(95,166,155,.3)}'
+    + '#tba .timer .big{font:800 30px/1 "Jost",sans-serif;letter-spacing:.06em;font-variant-numeric:tabular-nums;color:#F0F0EA}'
+    + '#tba .timer .rail{height:3px;border-radius:3px;background:rgba(240,240,234,.14);overflow:hidden;margin:9px 0 7px}'
+    + '#tba .timer .rail i{display:block;height:100%;width:100%;transform-origin:left center;'
+    + '  background:linear-gradient(90deg,#5FA69B,#F0F0EA);transition:transform .95s linear}'
+    + '#tba .timer .cap{font:700 8.5px/1 "Jost",sans-serif;letter-spacing:.18em;text-transform:uppercase;color:#5FA69B}'
+    + '#tba .ok .go{background:linear-gradient(160deg,#B8CEC6,#5FA69B)}'
 
     /* таймер */
     + '#tbt{position:fixed;right:16px;bottom:16px;z-index:880;display:none;width:212px;border-radius:18px;overflow:hidden;'
@@ -123,8 +131,14 @@
       + '</div>'
       + '<div class="ok">'
       + '  <div class="tick"><svg viewBox="0 0 24 24"><path d="M4 12.5l5.2 5.2L20 6.6"/></svg></div>'
-      + '  <h2>Доступ получен</h2>'
-      + '  <p>Открыто на час · <b id="tba-left">59:59</b></p>'
+      + '  <h2>Доступ успешно активирован</h2>'
+      + '  <p id="tba-sub">Ключ принят · час пошёл</p>'
+      + '  <div class="timer" id="tba-timer">'
+      + '    <div class="big" id="tba-left">59:59</div>'
+      + '    <div class="rail"><i id="tba-rail"></i></div>'
+      + '    <div class="cap">до конца доступа</div>'
+      + '  </div>'
+      + '  <button class="go" type="button" id="tba-min">Свернуть в панель</button>'
       + '</div>'
       + '</div>';
     document.body.appendChild(ov);
@@ -144,16 +158,39 @@
           { duration: 260, easing: 'ease-out' });
         return;
       }
-      var until = Date.now() + HOUR;
-      write(cfg.id, { until: until });
+      /* час стартует здесь и только здесь — в момент активации */
+      var now = Date.now(), until = now + HOUR;
+      write(cfg.id, { until: until, started: now });
       ov.classList.add('done');
-      ov.querySelector('#tba-left').textContent = mmss(HOUR);
+
+      var big = ov.querySelector('#tba-left'), rail = ov.querySelector('#tba-rail');
+      var sub = ov.querySelector('#tba-sub');
+      big.textContent = mmss(until - Date.now());
+      rail.style.transform = 'scaleX(1)';
+
+      /* через две секунды поздравление уступает место таймеру в том же окне */
       setTimeout(function () {
+        if (sub) sub.textContent = 'Доступ открыт на час — можно свернуть в панель';
+        var tt = ov.querySelector('#tba-timer');
+        if (tt) tt.style.animation = 'tbapop .45s cubic-bezier(.32,1.6,.54,1) both';
+      }, 2000);
+
+      /* живой отсчёт прямо в окне, пока его не свернули */
+      var live = setInterval(function () {
+        var ms = Math.max(0, until - Date.now());
+        big.textContent = mmss(ms);
+        rail.style.transform = 'scaleX(' + (ms / HOUR) + ')';
+        if (ms <= 0) clearInterval(live);
+      }, 1000);
+
+      ov.querySelector('#tba-min').onclick = function () {
+        clearInterval(live);
         ov.style.opacity = '0';
-        ov.style.transition = 'opacity .35s';
-        setTimeout(function () { ov.remove(); }, 360);
-        if (onPass) onPass(until);
-      }, 1250);
+        ov.style.transition = 'opacity .3s';
+        setTimeout(function () { ov.remove(); }, 320);
+        timer(cfg, until);          /* маленькое окно на панели внизу */
+      };
+      if (onPass) onPass(until);
     }
     ov.querySelector('#tba-go').onclick = tryPass;
     inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') tryPass(); });
@@ -178,7 +215,12 @@
     el.classList.add('on');
 
     var tm = el.querySelector('.tm'), rail = el.querySelector('.rail i'), bar = el.querySelector('.bar');
-    var collapsed = false;
+    var collapsed = true;                 // сразу маленький — время видно, места не занимает
+    try {
+      var saved = localStorage.getItem(KEY + 'min-' + cfg.id);
+      if (saved === '0') collapsed = false;
+    } catch (err) {}
+    if (collapsed) el.classList.add('min');
     bar.onclick = function (e) {
       if (e.target.closest('.mn')) return;
       collapsed = !collapsed;
@@ -188,6 +230,7 @@
       e.stopPropagation();
       collapsed = !collapsed;
       el.classList.toggle('min', collapsed);
+      try { localStorage.setItem(KEY + 'min-' + cfg.id, collapsed ? '1' : '0'); } catch (err) {}
     };
     el.querySelector('.out').onclick = function (e) {
       e.stopPropagation();

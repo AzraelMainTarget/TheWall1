@@ -180,26 +180,26 @@
   </div>
 
   <div class="clock" id="clock">
-    <div class="top"><span class="t" id="t">--:--</span><span class="cap" id="cap">до конца действия ключа</span></div>
+    <div class="top"><span class="t" id="t">--:--</span><span class="cap" id="cap">начнётся после активации</span></div>
     <div class="rail"><i id="rail"></i></div>
     <div class="to">ключ действует до <b id="until">—</b> · <span id="tz">местное время</span></div>
   </div>
 
   <ol class="steps">
     <li>Откройте портал: <b>azraelmaintarget.github.io/TheWall1</b></li>
-    <li>Нажмите <b>Products</b> и введите ключ.</li>
+    <li>Нажмите <b>Products</b> и введите ключ — <b>час пойдёт с этого момента</b>.</li>
     <li>Войдите в <b>TypeV</b>, <b>Ragnell</b> или <b>DWS</b> — у каждого своя проверка.</li>
     <li>Посмотрите, как всё работает на компьютере, и напишите отзыв.</li>
   </ol>
 
   <div class="cta">
-    <a class="btn main" href="index.html">Открыть портал →</a>
+    <a class="btn main" href="./">Открыть портал →</a>
     <a class="btn ghost" href="mailto:?subject=That%20Darkness%20Alpha%20Test%201.0%20—%20отзыв">Написать отзыв</a>
   </div>
 
   <div class="note">
-    Ключ одноразовый для одного устройства и живёт <b>ровно час реального времени</b> — отсчёт идёт
-    независимо от того, открыта страница или нет. Продление — по запросу у команды.<br>
+    Ключ одноразовый для одного устройства. Час начинается <b>в момент активации</b> на портале
+    и идёт по реальному времени, даже если страницу закрыть. Продление — по запросу у команды.<br>
     Project Gate · <b>NeWerMoRe</b> (Author) · © 2027
   </div>
 </main>
@@ -209,8 +209,9 @@
   'use strict';
   /* ---------- срок: час от загрузки страницы, по стенным часам ---------- */
   var HOUR = 3600 * 1000;
-  var T0 = Date.now();                // момент открытия письма
-  var T1 = T0 + HOUR;                 // когда ключ истекает
+  /* Ничего не отсчитывается: час начинается только при активации на портале.
+     Письмо можно прочитать, отложить и активировать позже. */
+  var T0 = Date.now();                // момент выпуска самого ключа (час выпуска в ключе)
 
   var $ = function(id){ return document.getElementById(id); };
   var elT = $('t'), elRail = $('rail'), elCap = $('cap'), elUntil = $('until'),
@@ -261,11 +262,11 @@
 
   /* ключ фиксируется на этом устройстве: при повторном открытии письма
      показывается тот же ключ, пока не истёк его час */
-  var LS = 'td-alpha-key';
+  var LS = 'td-alpha-invite';
   try {
     var saved = JSON.parse(localStorage.getItem(LS) || 'null');
-    if (saved && saved.k && saved.t1 > Date.now()) { KEY = saved.k; T1 = saved.t1; }
-    else { localStorage.setItem(LS, JSON.stringify({ k: KEY, t1: T1 })); }
+    if (saved && saved.k) { KEY = saved.k; }
+    else { localStorage.setItem(LS, JSON.stringify({ k: KEY, issued: T0 })); }
   } catch(e) {}
 
   elCode.textContent = KEY;
@@ -289,48 +290,40 @@
   };
 
   /* ---------- обратный отсчёт по стенным часам ---------- */
-  elUntil.textContent = new Date(T1).toLocaleString(navigator.language || 'ru', {
-    day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
-  });
-  elUntil.title = new Date(T1).toISOString();
+  elUntil.textContent = 'не активирован';
+  elUntil.title = 'Час начнётся в момент активации ключа на портале';
+  elClock.classList.add('idle');
+  elT.textContent = '1 час';
+  elCap.textContent = 'начнётся после активации';
+  elRail.style.transform = 'scaleX(1)';
 
-  function tick(){
-    var left = T1 - Date.now();               // считаем от настоящего времени, не от счётчика
-    if (left <= 0){
-      elT.textContent = '00:00';
-      elRail.style.transform = 'scaleX(0)';
-      elClock.classList.add('dead');
-      elCap.textContent = 'срок ключа истёк';
-      elCode.style.opacity = '.45';
-      elCode.title = 'Ключ истёк — запросите новый';
-      return false;
+  /* если ключ уже активирован на этом устройстве — показываем, сколько осталось */
+  try {
+    var act = JSON.parse(localStorage.getItem('td-alpha-key') || 'null');
+    if (act && act.k === KEY && act.t1 > Date.now()) {
+      elClock.classList.remove('idle');
+      elCap.textContent = 'осталось доступа';
+      elUntil.textContent = new Date(act.t1).toLocaleString(navigator.language || 'ru',
+        { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+      (function run(){
+        var ms = act.t1 - Date.now();
+        if (ms <= 0) { elT.textContent = '00:00'; elClock.classList.add('dead');
+          elCap.textContent = 'срок истёк'; elRail.style.transform = 'scaleX(0)'; return; }
+        var sec = Math.min(3599, Math.floor(ms / 1000));
+        elT.textContent = two(Math.floor(sec / 60)) + ':' + two(sec % 60);
+        elRail.style.transform = 'scaleX(' + (ms / HOUR) + ')';
+        setTimeout(run, 1000);
+      })();
     }
-    var sec = Math.floor(left / 1000);        // ровно 59:59 в первую секунду
-    elT.textContent = two(Math.floor(sec / 60)) + ':' + two(sec % 60);
-    elRail.style.transform = 'scaleX(' + (left / HOUR) + ')';
-    return true;
-  }
-  if (tick()){
-    var timer = setInterval(function(){ if (!tick()) clearInterval(timer); }, 1000);
-    /* вернулись на вкладку — сразу пересчитываем, без «застывшего» времени */
-    document.addEventListener('visibilitychange', function(){ if (!document.hidden) tick(); });
-    window.addEventListener('focus', tick);
-  }
+  } catch(e) {}
 
   /* ---------- отдаём ключ дальше по сайту ---------- */
-  /* Портал при вводе ключа в Products узнаёт его и запускает свой час. */
+  /* Только сам ключ. Час начнётся на портале, в момент активации. */
   try {
-    /* час уже идёт: момент открытия письма — точка старта */
-    localStorage.setItem('td-alpha-key', JSON.stringify({
-      k: KEY, t0start: T0, t1: T1, hour: hourStamp(new Date(T0)), bound: 0, invite: 1
-    }));
-    localStorage.setItem('td-alpha-invite', JSON.stringify({
-      k: KEY, t0: T0, t1: T1, hour: hourStamp(new Date(T0))
-    }));
+    localStorage.setItem('td-alpha-invite', JSON.stringify({ k: KEY, issued: Date.now() }));
   } catch(e){}
 
-  /* ---------- печать в PDF: тот же ключ, что на экране ---------- */
-  window.TD_INVITE = { key: KEY, expires: T1, left: function(){ return Math.max(0, T1 - Date.now()); } };
+  window.TD_INVITE = { key: KEY, activated: false };
 })();
 </script>
 </body>
