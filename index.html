@@ -21,44 +21,8 @@ html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family
 canvas#c{position:fixed;inset:0;display:block;touch-action:none;cursor:grab}
 canvas#c.drag{cursor:grabbing}
 canvas#edge{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:4;mix-blend-mode:screen;opacity:.9}
-#title{position:fixed;top:max(8px,env(safe-area-inset-top));left:50%;margin:0;z-index:2;pointer-events:none;
-  transform:translateX(-50%);transform-origin:50% 40%;
-  font:800 clamp(26px,5.55vw,78px)/1.08 "Baloo 2",system-ui,sans-serif;text-transform:uppercase;
-  letter-spacing:.005em;white-space:nowrap;
-  color:transparent;
-  filter:drop-shadow(0 2px 0 rgba(184,206,198,.9))
-         drop-shadow(0 8px 12px rgba(0,0,0,.5))
-         drop-shadow(0 26px 34px rgba(0,0,0,.65))
-         drop-shadow(0 0 44px rgba(20,123,120,.4))}
-/* светлая боковая грань уходит вниз-вправо */
-#title::before{content:attr(data-t);position:absolute;left:0;top:0;width:100%;z-index:-1;text-align:center;
-  letter-spacing:.005em;color:transparent;
-  text-shadow:
-    0 0 1px rgba(6,20,26,.9),
-    1px 1px 0 #E4EEE9,2px 2px 0 #D9E7E1,3px 3px 0 #CEDFD8,4px 4px 0 #C3D7CE,
-    5px 5px 0 #B8CEC6,6px 6px 0 #ADC5BB,7px 7px 0 #A2BCB1,8px 8px 0 #97B3A7,
-    10px 11px 10px rgba(0,0,0,.5),0 22px 26px rgba(0,0,0,.5)}
-/* лицо: тёмная бирюза с зерном, поверх грани */
-#title::after{content:attr(data-t);position:absolute;left:0;top:0;width:100%;z-index:0;text-align:center;
-  letter-spacing:.005em;
-  background-image:
-    radial-gradient(rgba(240,240,234,.34) .5px,rgba(240,240,234,0) .9px),
-    radial-gradient(rgba(4,14,18,.75) .5px,rgba(4,14,18,0) .9px),
-    radial-gradient(130% 100% at 30% 0%,rgba(95,166,155,.30),rgba(95,166,155,0) 58%),
-    linear-gradient(168deg,#0F6A66 0%,#0B4A51 42%,#073039 74%,#05161C 100%);
-  background-size:2px 2px,2px 2px,100% 100%,100% 100%;
-  background-position:0 0,1px 1px,0 0,0 0;
-  -webkit-background-clip:text;background-clip:text;color:transparent;
-  filter:drop-shadow(0 1px 0 rgba(240,240,234,.35)) drop-shadow(0 -1px 0 rgba(4,14,18,.95))}
-@media (max-width:520px){
-  #title{font-size:clamp(22px,7.2vw,42px);letter-spacing:0}
-  #title::after{letter-spacing:0}
-  #title::before{letter-spacing:0;text-shadow:
-    0 0 1px rgba(6,20,26,.9),
-    1px 1px 0 #E4EEE9,2px 2px 0 #D6E4DE,3px 3px 0 #C8D9D2,4px 4px 0 #BAD0C7,
-    5px 5px 0 #ACC6BC,6px 6px 0 #9EBCB1,7px 7px 0 #90B2A6,9px 10px 8px rgba(0,0,0,.45),0 18px 20px rgba(0,0,0,.4)}}
 
-</style>@media (max-width:520px){
+@media (max-width:520px){
   #hint{gap:3px;bottom:max(10px,env(safe-area-inset-bottom));left:0;right:0;opacity:.66}
   #hint .credit-line{font-size:8.2px;letter-spacing:.08em}
   #hint .credit-line:nth-child(2){font-size:7.4px;letter-spacing:.04em}
