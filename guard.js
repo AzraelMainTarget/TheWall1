@@ -55,8 +55,12 @@
     del: (k) => { try { localStorage.removeItem(k); } catch {} }
   };
 
-  const forced = /[?&]tdgate=1/.test(location.search);     // показать замок принудительно (для проверки вида)
-  const allowed = forced || HOSTS.includes(location.hostname) || LOCAL_OK.test(location.hostname);
+  /* ЭКРАН ВХОДА ОТКЛЮЧЁН: сайт открывается сразу.
+     Сам замок (TD_GATE.hit и т.д.) остаётся — им пользуется пароль разделов.
+     Чтобы вернуть экран, поставь GATE_SCREEN = true. */
+  const GATE_SCREEN = false;
+  const forced = GATE_SCREEN && /[?&]tdgate=1/.test(location.search);
+  const allowed = forced || (GATE_SCREEN && (HOSTS.includes(location.hostname) || LOCAL_OK.test(location.hostname)));
 
   function open() {
     document.documentElement.dataset.gate = 'open';
@@ -136,8 +140,7 @@
 
   window.TD_GATE = { hit, hitPass, hitTotp, hitRescue, fold, norm, KEY, ROLE, ls, open, v: 2 };
 
-  if (!allowed) return;               // локально и в песочнице замок не мешает работе
-  if (ls.get(KEY) && !forced) { open(); return; }
+  if (!allowed) { open(); return; }   // экран входа выключен — сразу пускаем внутрь
   document.documentElement.dataset.gate = 'lock';
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', build, { once: true });
