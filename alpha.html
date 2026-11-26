@@ -262,11 +262,27 @@
 
   /* ключ фиксируется на этом устройстве: при повторном открытии письма
      показывается тот же ключ, пока не истёк его час */
+  /* ключ можно передать прямо в ссылке: alpha.html?k=TD-A1-XXXX-…
+     тогда человек видит именно выданный ему ключ, а не случайный новый */
+  var fromLink = (function(){
+    try {
+      var q = new URLSearchParams(location.search).get('k');
+      if (!q) return null;
+      q = q.trim().toUpperCase();
+      return /^TD-A1-[ACDEFGHJKLMNPQRSTUVWXYZ23456789]{4}(-[ACDEFGHJKLMNPQRSTUVWXYZ23456789]{4}){2}-[ACDEFGHJKLMNPQRSTUVWXYZ23456789]/.test(q) ? q : null;
+    } catch(e){ return null; }
+  })();
+
   var LS = 'td-alpha-invite';
   try {
-    var saved = JSON.parse(localStorage.getItem(LS) || 'null');
-    if (saved && saved.k) { KEY = saved.k; }
-    else { localStorage.setItem(LS, JSON.stringify({ k: KEY, issued: T0 })); }
+    if (fromLink) {
+      KEY = fromLink;
+      localStorage.setItem(LS, JSON.stringify({ k: KEY, issued: T0 }));
+    } else {
+      var saved = JSON.parse(localStorage.getItem(LS) || 'null');
+      if (saved && saved.k) { KEY = saved.k; }
+      else { localStorage.setItem(LS, JSON.stringify({ k: KEY, issued: T0 })); }
+    }
   } catch(e) {}
 
   elCode.textContent = KEY;
